@@ -106,8 +106,15 @@
     background-color: var(--header-color);
     color: var(--subname-text-color);
     border: none;
-    border-left: 2px solid #32bf91;
     transition: .5s ease;
+}
+
+.input__value-ok {
+    border-left: 2px solid #32bf91 !important;
+}
+
+.input__value-not-ok {
+    border-left: 2px solid #e95757 !important;
 }
 
 .input-desc {

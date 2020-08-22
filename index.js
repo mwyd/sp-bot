@@ -4,11 +4,11 @@ const botHTML = `
     <div id="sp-bot-settings__wrapper">
         <div id="sp-bot-settings">
             <h3>Options</h3>
-            <div class="input-desc"><span>Hot deal %</span><input id="hotDealIn" type="number" min="0" max="100"></div>
-            <div class="input-desc"><span>Deal %</span><input id="dealIn" type="number" min="0" max="100"></div>
-            <div class="input-desc"><span>Item min price $</span><input id="minPriceItemIn" type="number" min="0" step="0.01"></div>
-            <div class="input-desc"><span>Money to spend $</span><input id="moneyToSpendIn" type="number" min="0" step="0.01"></div>
-            <div class="input-desc"><span>Current preset</span><select id="presets-select"></select></div>
+            <div class="input-desc"><span>Hot deal %</span><input class="input__value-ok" id="hotDealIn" type="number" min="0" max="100"></div>
+            <div class="input-desc"><span>Deal %</span><input class="input__value-ok" id="dealIn" type="number" min="0" max="100"></div>
+            <div class="input-desc"><span>Item min price $</span><input class="input__value-ok" id="minPriceItemIn" type="number" min="0" step="0.01"></div>
+            <div class="input-desc"><span>Money to spend $</span><input class="input__value-ok" id="moneyToSpendIn" type="number" min="0" step="0.01"></div>
+            <div class="input-desc"><span>Current preset</span><select class="input__value-ok" id="presets-select"></select></div>
             <div class="input-desc"><span>Auto refresh items</span><input id="auto-items-refresh" type="checkbox"></div>
             <button id="sp-bot-start-button" class="button__green">START</button>
         </div>
@@ -105,9 +105,6 @@ class SpBot {
         })
         this.currentPreset = this.presets.get('default')
 
-        this.inputOkBorder = '2px solid #32bf91'
-        this.inputNotOkBorder = '2px solid #e95757'
-
         this.apiUrls = {
             getItems: 'https://shadowpay.com/api/market/get_items?types=[]&exteriors=[]&rarities=[]&collections=[]&item_subcategories=[]&float=%7B%22from%22:0,%22to%22:1%7D&price_from=0&price_to=12958.58&game=csgo&stickers=[]&count_stickers=[]&short_name=&search=&stack=false&sort=desc&sort_column=price_rate&limit=50&offset=0',
             buyItem: 'https://shadowpay.com/api/market/buy_item',
@@ -150,17 +147,17 @@ class SpBot {
         this.setupFilterInputs()
 
         this.ui.marketplaceSearch.style.borderRadius = "5px"
-        this.ui.marketplaceSearch.style.borderLeft = this.inputOkBorder
+        this.ui.marketplaceSearch.classList.add('input__value-ok')
 
         //search btn events
         this.ui.marketplaceSearch.addEventListener('input', (e) => {
-            this.currentPreset.searchItem == e.target.value ? e.target.style.borderLeft = this.inputOkBorder : e.target.style.borderLeft = this.inputNotOkBorder
+            this.currentPreset.searchItem == e.target.value ? e.target.classList.replace('input__value-not-ok', 'input__value-ok') : e.target.classList.replace('input__value-ok', 'input__value-not-ok')
         })
         this.ui.marketplaceSearch.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
                 this.currentPreset.searchItem = e.target.value
                 this.updateSearchItemParm()
-                e.target.style.borderLeft = this.inputOkBorder
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
             }
         })
 
@@ -197,42 +194,42 @@ class SpBot {
         //hotdeal
         this.ui.hotDealIn.addEventListener('focusout', (e) => {
             e.target.value = this.currentPreset.hotDeal
-            e.target.style.borderLeft = this.inputOkBorder
+            e.target.classList.replace('input__value-not-ok', 'input__value-ok')
         })
         this.ui.hotDealIn.addEventListener('input', (e) => {
-            this.currentPreset.hotDeal == parseInt(e.target.value) ? e.target.style.borderLeft = this.inputOkBorder : e.target.style.borderLeft = this.inputNotOkBorder
+            this.currentPreset.hotDeal == parseInt(e.target.value) ? e.target.classList.replace('input__value-not-ok', 'input__value-ok') : e.target.classList.replace('input__value-ok', 'input__value-not-ok')
         })
         this.ui.hotDealIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
                 validateNumberInput(e.target, 0, 100)
                 this.currentPreset.hotDeal = parseInt(e.target.value)
-                e.target.style.borderLeft = this.inputOkBorder
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
             }
         })
 
         //deal
         this.ui.dealIn.addEventListener('focusout', (e) => {
             e.target.value = this.currentPreset.deal
-            e.target.style.borderLeft = this.inputOkBorder
+            e.target.classList.replace('input__value-not-ok', 'input__value-ok')
         })
         this.ui.dealIn.addEventListener('input', (e) => {
-            this.currentPreset.deal == parseInt(e.target.value) ? e.target.style.borderLeft = this.inputOkBorder : e.target.style.borderLeft = this.inputNotOkBorder
+            this.currentPreset.deal == parseInt(e.target.value) ? e.target.classList.replace('input__value-not-ok', 'input__value-ok') : e.target.classList.replace('input__value-ok', 'input__value-not-ok')
         })
         this.ui.dealIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
                 validateNumberInput(e.target, 0, 100)
                 this.currentPreset.deal = parseInt(e.target.value)
-                e.target.style.borderLeft = this.inputOkBorder
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
             }
         })
 
         //min price item
         this.ui.minPriceItemIn.addEventListener('focusout', (e) => {
             e.target.value = this.currentPreset.minPriceItem.toFixed(2)
-            e.target.style.borderLeft = this.inputOkBorder
+            e.target.classList.replace('input__value-not-ok', 'input__value-ok')
         })
         this.ui.minPriceItemIn.addEventListener('input', (e) => {
-            this.currentPreset.minPriceItem == parseFloat(e.target.value) ? e.target.style.borderLeft = this.inputOkBorder : e.target.style.borderLeft = this.inputNotOkBorder
+            this.currentPreset.minPriceItem == parseFloat(e.target.value) ? e.target.classList.replace('input__value-not-ok', 'input__value-ok') : e.target.classList.replace('input__value-ok', 'input__value-not-ok')
         })
         this.ui.minPriceItemIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
@@ -245,17 +242,17 @@ class SpBot {
                     e.target.value = this.currentPreset.moneyToSpend
                 }
                 e.target.value = this.currentPreset.minPriceItem.toFixed(2)
-                e.target.style.borderLeft = this.inputOkBorder
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
             }
         })
 
         //money to spend
         this.ui.moneyToSpendIn.addEventListener('focusout', (e) => {
             e.target.value = this.currentPreset.moneyToSpend.toFixed(2)
-            e.target.style.borderLeft = this.inputOkBorder
+            e.target.classList.replace('input__value-not-ok', 'input__value-ok')
         })
         this.ui.moneyToSpendIn.addEventListener('input', (e) => {
-            this.currentPreset.moneyToSpend == parseFloat(e.target.value) ? e.target.style.borderLeft = this.inputOkBorder : e.target.style.borderLeft = this.inputNotOkBorder
+            this.currentPreset.moneyToSpend == parseFloat(e.target.value) ? e.target.classList.replace('input__value-not-ok', 'input__value-ok') : e.target.classList.replace('input__value-ok', 'input__value-not-ok')
         })
         this.ui.moneyToSpendIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
@@ -268,7 +265,7 @@ class SpBot {
                     e.target.value = this.currentPreset.minPriceItem
                 }
                 e.target.value = this.currentPreset.moneyToSpend.toFixed(2)
-                e.target.style.borderLeft = this.inputOkBorder
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
             }
         })
 
@@ -350,7 +347,7 @@ class SpBot {
     updateGetItemsUrl() {
         let dlhURL = new URL(document.location.href)
     
-        if(dlhURL.pathname == '/en' || dlhURL.pathname == '/en/') {
+        if(dlhURL.pathname.length == 3 || dlhURL.pathname.length == 4) {
             if(document.location.href != this.lastDocumentLoc) {
                 this.lastDocumentLoc = document.location.href
                 let giURL = new URL(this.apiUrls.getItems)
@@ -419,9 +416,15 @@ class SpBot {
     }
 }
 
-window.onload = () => {
+function init() {
     if(document.readyState == "complete") {
-        const spBot = new SpBot()
-        spBot.run()
+        let dlhURL = new URL(document.location.href)
+        if(dlhURL.pathname.length == 3 || dlhURL.pathname.length == 4) {
+            const spBot = new SpBot()
+            spBot.run()
+        }
     }
+    else init()
 }
+
+window.addEventListener('load', init)
