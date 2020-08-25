@@ -8,6 +8,7 @@ const botHTML = `
             <div class="input-desc"><span>Deal %</span><input class="input__value-ok" id="dealIn" type="number" min="0" max="100"></div>
             <div class="input-desc"><span>Item min price $</span><input class="input__value-ok" id="minPriceItemIn" type="number" min="0" step="0.01"></div>
             <div class="input-desc"><span>Money to spend $</span><input class="input__value-ok" id="moneyToSpendIn" type="number" min="0" step="0.01"></div>
+            <div class="input-desc"><span>Refresh time s</span><input class="input__value-ok" id="refreshTimeIn" type="number" min="0" step="1"></div>
             <div class="input-desc"><span>Current preset</span><select class="input__value-ok" id="presets-select"></select></div>
             <div class="input-desc"><span>Auto refresh items</span><input id="auto-items-refresh" type="checkbox"></div>
             <button id="sp-bot-start-button" class="button__green">START</button>
@@ -81,7 +82,7 @@ async function loadJsonFile(fileName) {
 
 class SpBot {
     constructor() {
-        this.runDelay = 4000
+        this.runDelay = 4
         this.submitKeyCode = 13
         this.moneyAlreadySpent = 0
         this.csrfCookie = ''
@@ -139,6 +140,7 @@ class SpBot {
         this.ui.dealIn = document.querySelector("#dealIn")
         this.ui.minPriceItemIn = document.querySelector("#minPriceItemIn")
         this.ui.moneyToSpendIn = document.querySelector("#moneyToSpendIn")
+        this.ui.refreshTimeIn = document.querySelector('#refreshTimeIn')
         this.ui.processedList = document.querySelector("#processed-list")
         this.ui.moneySpentContainer = document.querySelector('#money-spent')
         this.ui.marketplaceRefresher = document.querySelector('a.refresh, a.marketplace-clear')
@@ -150,9 +152,7 @@ class SpBot {
         this.ui.marketplaceSearch.classList.add('input__value-ok')
 
         //search btn events
-        this.ui.marketplaceSearch.addEventListener('input', (e) => {
-            this.currentPreset.searchItem == e.target.value ? e.target.classList.replace('input__value-not-ok', 'input__value-ok') : e.target.classList.replace('input__value-ok', 'input__value-not-ok')
-        })
+        this.ui.marketplaceSearch.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.searchItem))
         this.ui.marketplaceSearch.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
                 this.currentPreset.searchItem = e.target.value
@@ -192,45 +192,44 @@ class SpBot {
         //input filters events
 
         //hotdeal
-        this.ui.hotDealIn.addEventListener('focusout', (e) => {
-            e.target.value = this.currentPreset.hotDeal
-            e.target.classList.replace('input__value-not-ok', 'input__value-ok')
-        })
-        this.ui.hotDealIn.addEventListener('input', (e) => {
-            this.currentPreset.hotDeal == parseInt(e.target.value) ? e.target.classList.replace('input__value-not-ok', 'input__value-ok') : e.target.classList.replace('input__value-ok', 'input__value-not-ok')
-        })
+        this.ui.hotDealIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.hotDeal))
+        this.ui.hotDealIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.hotDeal))
         this.ui.hotDealIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
                 validateNumberInput(e.target, 0, 100)
                 this.currentPreset.hotDeal = parseInt(e.target.value)
+                e.target.value = this.currentPreset.hotDeal
                 e.target.classList.replace('input__value-not-ok', 'input__value-ok')
             }
         })
 
         //deal
-        this.ui.dealIn.addEventListener('focusout', (e) => {
-            e.target.value = this.currentPreset.deal
-            e.target.classList.replace('input__value-not-ok', 'input__value-ok')
-        })
-        this.ui.dealIn.addEventListener('input', (e) => {
-            this.currentPreset.deal == parseInt(e.target.value) ? e.target.classList.replace('input__value-not-ok', 'input__value-ok') : e.target.classList.replace('input__value-ok', 'input__value-not-ok')
-        })
+        this.ui.dealIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.deal))
+        this.ui.dealIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.deal))
         this.ui.dealIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
                 validateNumberInput(e.target, 0, 100)
                 this.currentPreset.deal = parseInt(e.target.value)
+                e.target.value  = this.currentPreset.deal
                 e.target.classList.replace('input__value-not-ok', 'input__value-ok')
             }
         })
 
+        //refresh time
+        this.ui.refreshTimeIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.runDelay))
+        this.ui.refreshTimeIn.addEventListener('input', e => this.inputOnInput(e, this.runDelay))
+        this.ui.refreshTimeIn.addEventListener('keydown', (e) => {
+            if(e.keyCode == this.submitKeyCode) {
+                validateNumberInput(e.target, 0, 10)
+                this.runDelay = parseInt(e.target.value)
+                e.target.value = this.runDelay
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
+            }
+        })        
+
         //min price item
-        this.ui.minPriceItemIn.addEventListener('focusout', (e) => {
-            e.target.value = this.currentPreset.minPriceItem.toFixed(2)
-            e.target.classList.replace('input__value-not-ok', 'input__value-ok')
-        })
-        this.ui.minPriceItemIn.addEventListener('input', (e) => {
-            this.currentPreset.minPriceItem == parseFloat(e.target.value) ? e.target.classList.replace('input__value-not-ok', 'input__value-ok') : e.target.classList.replace('input__value-ok', 'input__value-not-ok')
-        })
+        this.ui.minPriceItemIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.minPriceItem.toFixed(2)))
+        this.ui.minPriceItemIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.minPriceItem))
         this.ui.minPriceItemIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
                 validateNumberInput(e.target, 0, null)
@@ -247,13 +246,8 @@ class SpBot {
         })
 
         //money to spend
-        this.ui.moneyToSpendIn.addEventListener('focusout', (e) => {
-            e.target.value = this.currentPreset.moneyToSpend.toFixed(2)
-            e.target.classList.replace('input__value-not-ok', 'input__value-ok')
-        })
-        this.ui.moneyToSpendIn.addEventListener('input', (e) => {
-            this.currentPreset.moneyToSpend == parseFloat(e.target.value) ? e.target.classList.replace('input__value-not-ok', 'input__value-ok') : e.target.classList.replace('input__value-ok', 'input__value-not-ok')
-        })
+        this.ui.moneyToSpendIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.moneyToSpend.toFixed(2)))
+        this.ui.moneyToSpendIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.moneyToSpend))
         this.ui.moneyToSpendIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
                 validateNumberInput(e.target, 0, null)
@@ -287,11 +281,21 @@ class SpBot {
         })
     }
 
+    inputOnFocusOut(e, botVar) {
+        e.target.value = botVar
+        e.target.classList.replace('input__value-not-ok', 'input__value-ok')
+    }
+
+    inputOnInput(e, botVar) {
+        botVar == e.target.value ? e.target.classList.replace('input__value-not-ok', 'input__value-ok') : e.target.classList.replace('input__value-ok', 'input__value-not-ok')
+    }
+
     setupFilterInputs() {
         this.ui.hotDealIn.value = this.currentPreset.hotDeal
         this.ui.dealIn.value = this.currentPreset.deal
         this.ui.minPriceItemIn.value = this.currentPreset.minPriceItem.toFixed(2)
         this.ui.moneyToSpendIn.value = this.currentPreset.moneyToSpend.toFixed(2)
+        this.ui.refreshTimeIn.value = this.runDelay
 
         let priceToFilter = document.querySelectorAll('.marketplace-range-value__input')[1]
         priceToFilter.value = this.currentPreset.priceTo.toFixed(2)
@@ -411,7 +415,7 @@ class SpBot {
                 if(this.pendingBuyItems.length != 0) this.updateBuyHistory()
                 this.ui.moneySpentContainer.innerHTML = `$ ${this.moneyAlreadySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`
             }
-            await new Promise(r => setTimeout(r, this.runDelay))
+            await new Promise(r => setTimeout(r, this.runDelay * 1000))
         }
     }
 }
