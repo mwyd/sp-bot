@@ -76,7 +76,13 @@ function fetchPOST(url, _body, callback) {
 }
 
 async function loadJsonFile(fileName) {
-    const data = await fetch(chrome.extension.getURL(fileName))
+    let _browser = undefined
+    let userAgent = navigator.userAgent
+
+    if(userAgent.includes("Firefox")) _browser = browser
+    else _browser = chrome
+
+    const data = await fetch(_browser.extension.getURL(fileName))
     return data.json()
 }
 
