@@ -87,6 +87,11 @@ async function loadJsonFile(fileName) {
 }
 
 class SpBot {
+    static allowedPaths = [
+        '/en/',
+        '/en'
+    ]
+
     constructor() {
         this.runDelay = 4
         this.submitKeyCode = 13
@@ -357,7 +362,7 @@ class SpBot {
     updateGetItemsUrl() {
         let dlhURL = new URL(document.location.href)
     
-        if(dlhURL.pathname.length == 3 || dlhURL.pathname.length == 4) {
+        if(SpBot.allowedPaths.includes(dlhURL.pathname)) {
             if(document.location.href != this.lastDocumentLoc) {
                 this.lastDocumentLoc = document.location.href
                 let giURL = new URL(this.apiUrls.getItems)
@@ -429,7 +434,7 @@ class SpBot {
 function init() {
     if(document.readyState == "complete") {
         let dlhURL = new URL(document.location.href)
-        if(dlhURL.pathname.length == 3 || dlhURL.pathname.length == 4) {
+        if(SpBot.allowedPaths.includes(dlhURL.pathname)) {
             const spBot = new SpBot()
             spBot.run()
         }
