@@ -128,10 +128,12 @@ class SpBot {
     }
 
     initCsrfToken() {
-        fetchPOST(this.apiUrls.buyItem, `id=0&price=0&csrf_token=${this.csrfCookie}`, data => {
-            if(data.status == "error")
-                if(data.error_message == "wrong_token") this.csrfCookie = getCookie('csrf_cookie')
-        })
+        if(getCookie('csrf_cookie') == '') {
+            fetchPOST(this.apiUrls.buyItem, `id=0&price=0&csrf_token=${this.csrfCookie}`, data => {
+                if(data.status == "error")
+                    if(data.error_message == "wrong_token") this.csrfCookie = getCookie('csrf_cookie')
+            })
+        }
     }
 
     async initUi() {
