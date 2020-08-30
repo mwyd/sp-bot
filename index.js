@@ -96,7 +96,7 @@ class SpBot {
         this.runDelay = 4
         this.submitKeyCode = 13
         this.moneyAlreadySpent = 0
-        this.csrfCookie = ''
+        this.csrfCookie = getCookie('csrf_cookie')
         this.pendingBuyItems = []
         this.isRunning = false
         this.refreshMarketplace = false
@@ -128,7 +128,7 @@ class SpBot {
     }
 
     initCsrfToken() {
-        if(getCookie('csrf_cookie') == '') {
+        if(this.csrfCookie == '') {
             fetchPOST(this.apiUrls.buyItem, `id=0&price=0&csrf_token=${this.csrfCookie}`, data => {
                 if(data.status == "error")
                     if(data.error_message == "wrong_token") this.csrfCookie = getCookie('csrf_cookie')
