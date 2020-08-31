@@ -29,6 +29,10 @@ const botHTML = `
 </div>
 `
 
+function getDiffAsPercentage(num1, num2) {
+    return Math.round((1 - (num1 / num2)) * 100)
+}
+
 function validateNumberInput(target, min, max) {
     if(target.value < min && min !== null) target.value = min
     if(target.value > max && max !== null) target.value = max
@@ -416,7 +420,7 @@ class SpBot {
                         let itemList = Array.from(data.items)
             
                         itemList = itemList.filter(item => !item.is_my_item)
-                        itemList = itemList.filter(item => (item.discount >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || item.discount >= this.currentPreset.hotDeal)
+                        itemList = itemList.filter(item => (getDiffAsPercentage(item.price_market, item.steam_price_en) >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || getDiffAsPercentage(item.price_market, item.steam_price_en) >= this.currentPreset.hotDeal)
             
                         itemList.sort((itemC, itemN) => { return (itemC.discount <= itemN.discount && itemC.price_market <= itemN.price_market) ? 1 : -1})
             
