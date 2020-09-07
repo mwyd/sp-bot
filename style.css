@@ -87,7 +87,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    max-height: 570px;
+    max-height: 650px;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -137,10 +137,6 @@
     font-size: 14px;
 }
 
-#processed-list a {
-    display: block;
-}
-
 #processed-list-header {
     width: 100%;
     display: flex;
@@ -152,6 +148,7 @@
 #processed-list {
     overflow-y: auto;
     overflow-x: hidden;
+    color: var(--second-text-color);
 }
 
 .processed-list-item {
@@ -175,30 +172,28 @@
     border-left: 2px solid rgb(50, 191, 145);
 }
 
-.processed-list-col1 {
+.processed-list-col {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+}
+
+.processed-list-item-name {
     width: 50%;
 }
 
-.processed-list-col2 {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    width: 15%;
+.processed-list-price {
+    width: 12%;
 }
 
-.processed-list-col3 {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    width: 15%;
+.processed-list-status {
+    width: 12%;
 }
 
-.processed-list-col4 {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
+.processed-list-date {
     width: 20%;
+}
+
+.processed-list-seller {
+    width: 6%;
 }
