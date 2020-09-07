@@ -128,7 +128,7 @@
 
 .processed-list-row {
     height: 60px;
-    width: 100%;
+    width: initial;
     border-radius: 5px;
     background-color: var(--header-color);
     display: flex;
@@ -149,6 +149,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     color: var(--second-text-color);
+    width: 100%;
 }
 
 #processed-list a {
