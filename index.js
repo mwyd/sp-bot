@@ -18,10 +18,11 @@ const botHTML = `
         <div id="sp-bot-processed">
             <h3>Buy history</h3>
             <div id="processed-list-header">
-                <div class="processed-list-col1">Item</div>
-                <div class="processed-list-col2">Price</div>
-                <div class="processed-list-col3">Status</div>
-                <div class="processed-list-col4">Date</div>
+                <div class="processed-list-col processed-list-item-name">Item</div>
+                <div class="processed-list-col processed-list-price">Price</div>
+                <div class="processed-list-col processed-list-status">Status</div>
+                <div class="processed-list-col processed-list-date">Date</div>
+                <div class="processed-list-col processed-list-seller">Seller</div>
             </div>
             <div id="processed-list"></div>
         </div>
@@ -320,12 +321,21 @@ class SpBot {
     }
 
     buildBoughtItemContainer(item) {
-        return `<a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}"><div class="processed-list-row item-state-${item.state}">
-        <div class="processed-list-col1"><img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">${item.steam_market_hash_name}</div>
-        <div class="processed-list-col2">${item.price} $</div>
-        <div class="processed-list-col3">${item.state}</div>
-        <div class="processed-list-col4">${getFullDate(new Date(item.time_finished), 2)}</div>
-    </div></a>`
+        return `<div class="processed-list-row item-state-${item.state}">
+        <div class="processed-list-col processed-list-item-name">
+            <a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">
+                <img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">
+            ${item.steam_market_hash_name}</a>
+        </div>
+        <div class="processed-list-col processed-list-price">${item.price} $</div>
+        <div class="processed-list-col processed-list-status">${item.state}</div>
+        <div class="processed-list-col processed-list-date">${getFullDate(new Date(item.time_finished), 2)}</div>
+        <div class="processed-list-col processed-list-seller">
+            <a target="_blank" href="https://steamcommunity.com/profiles/${item.steamid}">
+                <img src="https://cdn2.iconfinder.com/data/icons/gaming-platforms-logo-shapes/250/steam_logo-24.png">
+            </a>
+        </div>
+    </div>`
     }
 
     updateBuyHistory() {
