@@ -179,15 +179,15 @@
 }
 
 .processed-list-item-name {
-    width: 50%;
+    width: 45%;
 }
 
 .processed-list-price {
-    width: 12%;
+    width: 15%;
 }
 
 .processed-list-status {
-    width: 12%;
+    width: 15%;
 }
 
 .processed-list-date {
@@ -195,5 +195,5 @@
 }
 
 .processed-list-seller {
-    width: 6%;
+    width: 5%;
 }
