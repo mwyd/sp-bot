@@ -151,6 +151,10 @@
     color: var(--second-text-color);
 }
 
+#processed-list a {
+    color: inherit;
+}
+
 .processed-list-item {
     height: 60px;
     width: 100%;
