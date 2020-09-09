@@ -332,7 +332,7 @@ class SpBot {
         <div class="processed-list-col processed-list-date">${getFullDate(new Date(item.time_finished), 2)}</div>
         <div class="processed-list-col processed-list-seller">
             <a target="_blank" href="https://steamcommunity.com/profiles/${item.steamid}">
-                <img src="https://cdn2.iconfinder.com/data/icons/gaming-platforms-logo-shapes/250/steam_logo-24.png">
+                <img height="20px" src="https://cdn2.iconfinder.com/data/icons/gaming-platforms-logo-shapes/250/steam_logo-24.png">
             </a>
         </div>
     </div>`
@@ -430,9 +430,17 @@ class SpBot {
                         let itemList = Array.from(data.items)
             
                         itemList = itemList.filter(item => !item.is_my_item)
-                        itemList = itemList.filter(item => (getDiffAsPercentage(item.price_market, item.steam_price_en) >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || getDiffAsPercentage(item.price_market, item.steam_price_en) >= this.currentPreset.hotDeal)
+                        itemList = itemList.filter(item => {
+                            let discount = getDiffAsPercentage(item.price_market, item.steam_price_en)
+                            return (discount >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || discount >= this.currentPreset.hotDeal
+                        })
             
-                        itemList.sort((itemC, itemN) => { return (itemC.discount <= itemN.discount && itemC.price_market <= itemN.price_market) ? 1 : -1})
+                        itemList.sort((itemC, itemN) => { 
+                            let itemCPriceF = parseFloat(itemC.price_market)
+                            if(itemCPriceF < itemN.price_market) return 1
+                            if(itemCPriceF > itemN.price_market) return -1        
+                            return 0
+                        })
             
                         console.log('Filtered items', itemList)
                         this.proceedBuy(itemList)
