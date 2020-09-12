@@ -24,7 +24,10 @@ const botHTML = `
                 <div class="processed-list-col processed-list-date">Date</div>
                 <div class="processed-list-col processed-list-seller">Seller</div>
             </div>
-            <div id="processed-list"></div>
+            <div id="processed-list">
+                <div id="processed-list__active"></div>
+                <div id="processed-list__finished"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -159,7 +162,8 @@ class SpBot {
         this.ui.minPriceItemIn = document.querySelector("#minPriceItemIn")
         this.ui.moneyToSpendIn = document.querySelector("#moneyToSpendIn")
         this.ui.refreshTimeIn = document.querySelector('#refreshTimeIn')
-        this.ui.processedList = document.querySelector("#processed-list")
+        this.ui.processedListActive = document.querySelector("#processed-list__active")
+        this.ui.processedListFinished = document.querySelector("#processed-list__finished")
         this.ui.moneySpentContainer = document.querySelector('#money-spent')
         this.ui.marketplaceRefresher = document.querySelector('a.refresh, a.marketplace-clear')
         this.ui.presetsSelect = document.querySelector('#presets-select')
@@ -327,7 +331,7 @@ class SpBot {
                 <img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">
             ${item.steam_market_hash_name}</a>
         </div>
-        <div class="processed-list-col processed-list-price">${item.price} $</div>
+        <div class="processed-list-col processed-list-price">$ ${item.price} ${item.discount_real > 0 ? '<sup>-' + item.discount_real + '%</sup>': ''}</div>
         <div class="processed-list-col processed-list-status">${item.state}</div>
         <div class="processed-list-col processed-list-date">${getFullDate(new Date(item.time_finished), 2)}</div>
         <div class="processed-list-col processed-list-seller">
@@ -341,30 +345,35 @@ class SpBot {
     updateBuyHistory() {
         fetchPOST(this.apiUrls.getBuyHistory, `page=1&limit=1&sort_column=id&sort_dir=asc&custom_id=&date_start=${this.initDate}&date_end=&state=all`, data => {
             fetchPOST(this.apiUrls.getBuyHistory, `page=1&limit=${data.total_items}&sort_column=time_finished&sort_dir=desc&custom_id=&date_start=${this.initDate}&date_end=&state=all`, data => {
-                let processedItemsListHTML = ''
+                let processedItemsActiveListHTML = ''
                 switch(data.status) {
                     case 'success':
-                        for(let item of data.items) {
-                            processedItemsListHTML += this.buildBoughtItemContainer(item)
-        
-                            let index = this.pendingBuyItems.indexOf(item.id)
-                            if(index > -1) {
-                                switch(item.state) {
+                        for(let i = 0; i < this.pendingBuyItems.length; i++) {
+                            let historyItem = data.items.find(item => item.id == this.pendingBuyItems[i].id)
+                            if(historyItem !== undefined) {
+                                historyItem.discount_real = this.pendingBuyItems[i].discount_real
+                                switch(historyItem.state) {
                                     case 'cancelled':
-                                        this.pendingBuyItems.splice(index, 1)
-                                        this.moneyAlreadySpent -= parseFloat(item.price)
+                                        this.pendingBuyItems.splice(i, 1)
+                                        this.moneyAlreadySpent -= parseFloat(historyItem.price)
+                                        this.ui.processedListFinished.innerHTML = this.buildBoughtItemContainer(historyItem) + this.ui.processedListFinished.innerHTML
                                         break
 
                                     case 'finished':
-                                        this.pendingBuyItems.splice(index, 1)
+                                        this.pendingBuyItems.splice(i, 1)
+                                        this.ui.processedListFinished.innerHTML = this.buildBoughtItemContainer(historyItem) + this.ui.processedListFinished.innerHTML
                                         if(this.pendingBuyItems.length == 0 && Math.abs(this.moneyAlreadySpent - this.currentPreset.moneyToSpend) < this.currentPreset.minPriceItem) this.ui.startStopBtn.click()
+                                        break
+
+                                    case 'active':
+                                        processedItemsActiveListHTML += this.buildBoughtItemContainer(historyItem)
                                         break
                                 }
                             }
                         }
                         break
                 }
-                this.ui.processedList.innerHTML = processedItemsListHTML
+                this.ui.processedListActive.innerHTML = processedItemsActiveListHTML
             })
         })
     }
@@ -406,7 +415,7 @@ class SpBot {
                             break
                         
                         case "success":
-                            this.pendingBuyItems.push(data.id)
+                            this.pendingBuyItems.push({id: data.id, discount_real: item.discount_real})
                             this.notifiSound.play()
                             break
                     }
@@ -431,8 +440,8 @@ class SpBot {
             
                         itemList = itemList.filter(item => !item.is_my_item)
                         itemList = itemList.filter(item => {
-                            let discount = getDiffAsPercentage(item.price_market, item.steam_price_en)
-                            return (discount >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || discount >= this.currentPreset.hotDeal
+                            item.discount_real = getDiffAsPercentage(item.price_market, item.price_real)
+                            return (item.discount_real >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || item.discount_real >= this.currentPreset.hotDeal
                         })
             
                         itemList.sort((itemC, itemN) => { 
