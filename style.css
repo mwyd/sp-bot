@@ -34,7 +34,7 @@
     font-size: 18px;
     line-height: 27px;
     white-space: nowrap;
-    margin-top: 8px;
+    margin-top: 8px !important;
 }
 
 #sp-bot-start-button {
@@ -79,8 +79,17 @@
     justify-content: center;
 }
 
-#sp-bot-settings *, #sp-bot-processed *{
-    margin: 4px 4px;
+#sp-bot-settings *, #sp-bot-processed h3{
+    margin: 4px;
+}
+
+#processed-list-header, #processed-list {
+    padding: 0px 8px;
+    margin: 4px 0;
+}
+
+#processed-list-header {
+    padding-right: 16px;
 }
 
 #sp-bot-settings, #sp-bot-processed {
@@ -135,6 +144,8 @@
     align-items: center;
     font-weight: 100;
     font-size: 14px;
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
 
 #processed-list-header {
@@ -142,7 +153,6 @@
     display: flex;
     align-items: center;
     height: 60px;
-    width: 100%;
 }
 
 #processed-list {
@@ -181,6 +191,7 @@
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+    padding: 4px;
 }
 
 .processed-list-item-name {
@@ -189,6 +200,12 @@
 
 .processed-list-price {
     width: 15%;
+}
+
+.processed-list-price sup {
+    vertical-align: sub;
+    font-size: 1em;
+    color: #ff9200;
 }
 
 .processed-list-status {
