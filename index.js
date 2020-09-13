@@ -451,7 +451,7 @@ class SpBot {
                             return 0
                         })
             
-                        console.log('Filtered items', itemList)
+                        if(itemList.length > 0) console.log('Filtered items', itemList)
                         this.proceedBuy(itemList)
                     }
                 }
