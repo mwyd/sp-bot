@@ -1,5 +1,5 @@
 const botHTML = `
-<div class="sp-bot-header__wrapper"><h1>SP-BOT</h1><h1 id="money-spent">$ 0.00 / 0.00</h1></div>
+<div class="sp-bot-header__wrapper"><div><h1>SP-BOT</h1><div id="sp-bot-error-dot" class="button__green"></div></div><h1 id="money-spent">$ 0.00 / 0.00</h1></div>
 <div id="sp-bot-content">
     <div id="sp-bot-settings__wrapper">
         <div id="sp-bot-settings">
@@ -167,6 +167,7 @@ class SpBot {
         this.ui.moneySpentContainer = document.querySelector('#money-spent')
         this.ui.marketplaceRefresher = document.querySelector('a.refresh, a.marketplace-clear')
         this.ui.presetsSelect = document.querySelector('#presets-select')
+        this.ui.errorDot = document.querySelector('#sp-bot-error-dot')
 
         this.setupFilterInputs()
 
@@ -183,19 +184,24 @@ class SpBot {
             }
         })
 
+        //error dot
+        this.ui.errorDot.addEventListener('click', e => {
+            if(e.target.getAttribute('class') == 'button__red') e.target.setAttribute('class', 'button__green')
+        })
+
         //startstop btn events
         this.ui.startStopBtn.addEventListener('click', (e) => {
             if(this.isRunning) {
                 this.isRunning = false
                 this.ui.startStopBtn.setAttribute('class', 'button__green')
                 e.target.innerHTML = "START"
+                for(let pendingBuyItem of this.pendingBuyItems) pendingBuyItem.current_run = false
             }
             else {
                 this.isRunning = true
                 this.ui.startStopBtn.setAttribute('class', 'button__red')
-                this.moneyAlreadySpent = 0
-                this.pendingBuyItems = []
                 e.target.innerHTML = "STOP"
+                this.moneyAlreadySpent = 0
             }
         })
 
@@ -352,10 +358,11 @@ class SpBot {
                             let historyItem = data.items.find(item => item.id == this.pendingBuyItems[i].id)
                             if(historyItem !== undefined) {
                                 historyItem.discount_real = this.pendingBuyItems[i].discount_real
+                                historyItem.current_run = this.pendingBuyItems[i].current_run
                                 switch(historyItem.state) {
                                     case 'cancelled':
                                         this.pendingBuyItems.splice(i, 1)
-                                        this.moneyAlreadySpent -= parseFloat(historyItem.price)
+                                        if(historyItem.current_run) this.moneyAlreadySpent -= parseFloat(historyItem.price)
                                         this.ui.processedListFinished.innerHTML = this.buildBoughtItemContainer(historyItem) + this.ui.processedListFinished.innerHTML
                                         break
 
@@ -415,7 +422,7 @@ class SpBot {
                             break
                         
                         case "success":
-                            this.pendingBuyItems.push({id: data.id, discount_real: item.discount_real})
+                            this.pendingBuyItems.push({id: data.id, discount_real: item.discount_real, current_run: true})
                             this.notifiSound.play()
                             break
                     }
@@ -431,28 +438,33 @@ class SpBot {
             if(this.isRunning) {
                 this.updateGetItemsUrl()
                 if(Math.abs(this.moneyAlreadySpent - this.currentPreset.moneyToSpend) >= this.currentPreset.minPriceItem) {
-                    let data = {status: 'undefined'}
-                    const response = await fetch(this.apiUrls.getItems).catch(err => console.log(new Error(err)))
-                    if(response != undefined) data = await response.json()
+                    try {    
+                        const response = await fetch(this.apiUrls.getItems)
+                        let data = await response.json()
 
-                    if(data.status == "success") {
-                        let itemList = Array.from(data.items)
-            
-                        itemList = itemList.filter(item => !item.is_my_item)
-                        itemList = itemList.filter(item => {
-                            item.discount_real = getDiffAsPercentage(item.price_market, item.price_real)
-                            return (item.discount_real >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || item.discount_real >= this.currentPreset.hotDeal
-                        })
-            
-                        itemList.sort((itemC, itemN) => { 
-                            let itemCPriceF = parseFloat(itemC.price_market)
-                            if(itemCPriceF < itemN.price_market) return 1
-                            if(itemCPriceF > itemN.price_market) return -1        
-                            return 0
-                        })
-            
-                        if(itemList.length > 0) console.log('Filtered items', itemList)
-                        this.proceedBuy(itemList)
+                        if(data.status == "success") {
+                            let itemList = Array.from(data.items)
+                
+                            itemList = itemList.filter(item => !item.is_my_item)
+                            itemList = itemList.filter(item => {
+                                item.discount_real = getDiffAsPercentage(item.price_market, item.price_real)
+                                return (item.discount_real >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || item.discount_real >= this.currentPreset.hotDeal
+                            })
+                
+                            itemList.sort((itemC, itemN) => { 
+                                let itemCPriceF = parseFloat(itemC.price_market)
+                                if(itemCPriceF < itemN.price_market) return 1
+                                if(itemCPriceF > itemN.price_market) return -1        
+                                return 0
+                            })
+                
+                            if(itemList.length > 0) console.log('Filtered items', itemList)
+                            this.proceedBuy(itemList)
+                        }
+                    }
+                    catch(err) {
+                        this.ui.errorDot.setAttribute('class', 'button__red')
+                        console.log(new Error(err))
                     }
                 }
                 console.log(this)
