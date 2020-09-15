@@ -1,5 +1,5 @@
 {
-    "name": "SP-BOT EXPERIMENTAL",
+    "name": "SP-BOT SAFE",
     "version": "1.0",
     "description": "Bot that buys items",
     "content_scripts": [{
@@ -11,4 +11,4 @@
     "web_accessible_resources": [
       "presets.json"
     ]
-  }
+}
