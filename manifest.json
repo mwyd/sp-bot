@@ -1,5 +1,5 @@
 {
-    "name": "SP-BOT SAFE",
+    "name": "SP-BOT dev",
     "version": "1.0",
     "description": "Bot that buys items",
     "content_scripts": [{
@@ -7,6 +7,9 @@
         "js": ["index.js"],
         "matches": ["https://shadowpay.com/*"]
       }],
+    "background": {
+      "scripts": ["background/background.js"]
+    },
     "manifest_version": 2,
     "web_accessible_resources": [
       "presets.json"
