@@ -139,7 +139,7 @@ class SpBot {
         if(this.csrfCookie == '') {
             fetchPOST(this.apiUrls.buyItem, `id=0&price=0&csrf_token=${this.csrfCookie}`, data => {
                 if(data.status == "error")
-                    if(data.error_message == "wrong_token") this.csrfCookie = getCookie('csrf_cookie')
+                    if(data.error_message == "wrong_token") this.csrfCookie = data.token
             })
         }
     }
@@ -352,13 +352,16 @@ class SpBot {
         fetchPOST(this.apiUrls.getBuyHistory, `page=1&limit=1&sort_column=id&sort_dir=asc&custom_id=&date_start=${this.initDate}&date_end=&state=all`, data => {
             fetchPOST(this.apiUrls.getBuyHistory, `page=1&limit=${data.total_items}&sort_column=time_finished&sort_dir=desc&custom_id=&date_start=${this.initDate}&date_end=&state=all`, data => {
                 let processedItemsActiveListHTML = ''
+
                 switch(data.status) {
                     case 'success':
                         for(let i = 0; i < this.pendingBuyItems.length; i++) {
                             let historyItem = data.items.find(item => item.id == this.pendingBuyItems[i].id)
+
                             if(historyItem !== undefined) {
                                 historyItem.discount_real = this.pendingBuyItems[i].discount_real
                                 historyItem.current_run = this.pendingBuyItems[i].current_run
+
                                 switch(historyItem.state) {
                                     case 'cancelled':
                                         this.pendingBuyItems.splice(i, 1)
@@ -407,29 +410,32 @@ class SpBot {
         }
     }
 
-    proceedBuy(itemList) {
-        for(let item of itemList) {
-            if(parseFloat(item.price_market) + this.moneyAlreadySpent <= this.currentPreset.moneyToSpend) {
-                fetchPOST(this.apiUrls.buyItem, `id=${item.id}&price=${item.price_market}&csrf_token=${this.csrfCookie}`, data => {
-                    switch(data.status) {
-                        case "error":
-                            switch(data.error_message) {
-                                case 'wrong_token':
-                                    this.csrfCookie = getCookie('csrf_cookie')
-                                    break
-                            }
-                            this.moneyAlreadySpent -= parseFloat(item.price_market)
-                            break
+    proceedBuy(item) {
+        if(parseFloat(item.price_market) + this.moneyAlreadySpent <= this.currentPreset.moneyToSpend) {
+            fetchPOST(this.apiUrls.buyItem, `id=${item.id}&price=${item.price_market}&csrf_token=${this.csrfCookie}`, data => {
+                switch(data.status) {
+                    case "error":
+                        switch(data.error_message) {
+                            case 'wrong_token':
+                                this.csrfCookie = data.token
+                                break
+                        }
+                        this.moneyAlreadySpent -= parseFloat(item.price_market)
+                        break
                         
-                        case "success":
-                            this.pendingBuyItems.push({id: data.id, discount_real: item.discount_real, current_run: true})
-                            this.notifiSound.play()
-                            break
-                    }
-                    console.log('Buy info', data)
-                })
-                this.moneyAlreadySpent += parseFloat(item.price_market)
-            }
+                    case "success":
+                        this.pendingBuyItems.push({
+                            id: data.id,
+                            itemId: item.id,
+                            discount_real: item.discount_real,
+                            current_run: true
+                        })
+                        this.notifiSound.play()
+                        break
+                }
+                console.log('Buy info', data)
+            })
+            this.moneyAlreadySpent += parseFloat(item.price_market)
         }
     }
 
@@ -446,9 +452,9 @@ class SpBot {
                             let itemList = Array.from(data.items)
                 
                             itemList = itemList.filter(item => !item.is_my_item)
+                            //itemList = itemList.filter(item => this.pendingBuyItems.find(pendingBuyItem => pendingBuyItem.itemId == item.id) === undefined)
                             itemList = itemList.filter(item => {
-                                item.discount_real = getDiffAsPercentage(item.price_market, item.price_real)
-                                return (item.discount_real >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || item.discount_real >= this.currentPreset.hotDeal
+                                return (item.discount >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || item.discount >= this.currentPreset.hotDeal
                             })
                 
                             itemList.sort((itemC, itemN) => { 
@@ -459,7 +465,15 @@ class SpBot {
                             })
                 
                             if(itemList.length > 0) console.log('Filtered items', itemList)
-                            this.proceedBuy(itemList)
+                            for(let item of itemList) {
+                                chrome.runtime.sendMessage({action: 'get_price', params: {hash_name: item.steam_market_hash_name}}, res => {
+                                    const {data} = res
+                                    if(data.success) {
+                                        item.discount_real = getDiffAsPercentage(item.price_market, data.price_info.sell_price.replace(/,/g, '').substr(1))
+                                        if((item.discount_real >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || item.discount_real >= this.currentPreset.hotDeal) this.proceedBuy(item)
+                                    }
+                                })
+                            }
                         }
                     }
                     catch(err) {
@@ -467,7 +481,7 @@ class SpBot {
                         console.log(new Error(err))
                     }
                 }
-                console.log(this)
+                //console.log(this)
                 if(this.pendingBuyItems.length != 0) this.updateBuyHistory()
                 this.ui.moneySpentContainer.innerHTML = `$ ${this.moneyAlreadySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`
             }
@@ -476,15 +490,9 @@ class SpBot {
     }
 }
 
-function init() {
-    if(document.readyState == "complete") {
-        let dlhURL = new URL(document.location.href)
-        if(SpBot.allowedPaths.includes(dlhURL.pathname)) {
-            const spBot = new SpBot()
-            spBot.run()
-        }
-    }
-    else init()
-}
 
-window.addEventListener('load', init)
+let dlhURL = new URL(document.location.href)
+if(SpBot.allowedPaths.includes(dlhURL.pathname)) {
+    const spBot = new SpBot()
+    spBot.run()
+}
