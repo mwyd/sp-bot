@@ -485,7 +485,7 @@ class SpBot {
                                 chrome.runtime.sendMessage({action: 'get_price', params: {hash_name: item.steam_market_hash_name}}, res => {
                                     const {data} = res
                                     if(data.success) {
-                                        item.discount_real = getDiffAsPercentage(item.price_market, data.price_info.sell_price.replace(/,/g, '').substr(1))
+                                        item.discount_real = getDiffAsPercentage(item.price_market, data.price_info.sell_price_num / 100)
                                         if((item.discount_real >= this.currentPreset.deal - this.currentPreset.dealMargin && item.price_market >= this.currentPreset.minPriceItem) || item.discount_real >= this.currentPreset.hotDeal - this.currentPreset.dealMargin) this.proceedBuy(item)
                                     }
                                 })
