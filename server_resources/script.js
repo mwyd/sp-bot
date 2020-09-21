@@ -6,6 +6,7 @@ const botHTML = `
             <h3>Options</h3>
             <div class="input-desc"><span>Hot deal %</span><input class="input__value-ok" id="hotDealIn" type="number" min="0" max="100"></div>
             <div class="input-desc"><span>Deal %</span><input class="input__value-ok" id="dealIn" type="number" min="0" max="100"></div>
+            <div class="input-desc"><span>Deal margin % p</span><input class="input__value-ok" id="dealMarginIn" type="number" min="0" max="100"></div>
             <div class="input-desc"><span>Item min price $</span><input class="input__value-ok" id="minPriceItemIn" type="number" min="0" step="0.01"></div>
             <div class="input-desc"><span>Money to spend $</span><input class="input__value-ok" id="moneyToSpendIn" type="number" min="0" step="0.01"></div>
             <div class="input-desc"><span>Refresh time s</span><input class="input__value-ok" id="refreshTimeIn" type="number" min="0" step="1"></div>
@@ -118,6 +119,7 @@ class SpBot {
             'name': 'default',
             'hotDeal': 70,
             'deal': 50,
+            'dealMargin': 0,
             'minPriceItem': 1.00,
             'moneyToSpend': 10.00,
             'searchItem': '',
@@ -159,6 +161,7 @@ class SpBot {
         this.ui.startStopBtn = document.querySelector("#sp-bot-start-button")
         this.ui.hotDealIn = document.querySelector("#hotDealIn")
         this.ui.dealIn = document.querySelector("#dealIn")
+        this.ui.dealMarginIn = document.querySelector("#dealMarginIn")
         this.ui.minPriceItemIn = document.querySelector("#minPriceItemIn")
         this.ui.moneyToSpendIn = document.querySelector("#moneyToSpendIn")
         this.ui.refreshTimeIn = document.querySelector('#refreshTimeIn')
@@ -243,6 +246,18 @@ class SpBot {
             }
         })
 
+        //deal margin
+        this.ui.dealMarginIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.dealMargin))
+        this.ui.dealMarginIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.dealMargin))
+        this.ui.dealMarginIn.addEventListener('keydown', (e) => {
+            if(e.keyCode == this.submitKeyCode) {
+                validateNumberInput(e.target, 0, this.currentPreset.deal)
+                this.currentPreset.dealMargin = parseInt(e.target.value)
+                e.target.value  = this.currentPreset.dealMargin
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
+            }
+        })
+
         //refresh time
         this.ui.refreshTimeIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.runDelay))
         this.ui.refreshTimeIn.addEventListener('input', e => this.inputOnInput(e, this.runDelay))
@@ -321,6 +336,7 @@ class SpBot {
     setupFilterInputs() {
         this.ui.hotDealIn.value = this.currentPreset.hotDeal
         this.ui.dealIn.value = this.currentPreset.deal
+        this.ui.dealMarginIn.value = this.currentPreset.dealMargin
         this.ui.minPriceItemIn.value = this.currentPreset.minPriceItem.toFixed(2)
         this.ui.moneyToSpendIn.value = this.currentPreset.moneyToSpend.toFixed(2)
         this.ui.refreshTimeIn.value = this.runDelay
@@ -337,7 +353,7 @@ class SpBot {
                 <img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">
             ${item.steam_market_hash_name}</a>
         </div>
-        <div class="processed-list-col processed-list-price">$ ${item.price} ${item.discount_real > 0 ? '<sup>-' + item.discount_real + '%</sup>': ''}</div>
+        <div class="processed-list-col processed-list-price">$ ${item.price} <sup>-${item.discount_real > 0 ? item.discount_real : ''}%</sup></div>
         <div class="processed-list-col processed-list-status">${item.state}</div>
         <div class="processed-list-col processed-list-date">${getFullDate(new Date(item.time_finished), 2)}</div>
         <div class="processed-list-col processed-list-seller">
@@ -470,7 +486,7 @@ class SpBot {
                                     const {data} = res
                                     if(data.success) {
                                         item.discount_real = getDiffAsPercentage(item.price_market, data.price_info.sell_price.replace(/,/g, '').substr(1))
-                                        if((item.discount_real >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || item.discount_real >= this.currentPreset.hotDeal) this.proceedBuy(item)
+                                        if((item.discount_real >= this.currentPreset.deal - this.currentPreset.dealMargin && item.price_market >= this.currentPreset.minPriceItem) || item.discount_real >= this.currentPreset.hotDeal - this.currentPreset.dealMargin) this.proceedBuy(item)
                                     }
                                 })
                             }
