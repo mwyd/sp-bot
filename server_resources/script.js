@@ -468,7 +468,7 @@ class SpBot {
                             let itemList = Array.from(data.items)
                 
                             itemList = itemList.filter(item => !item.is_my_item)
-                            //itemList = itemList.filter(item => this.pendingBuyItems.find(pendingBuyItem => pendingBuyItem.itemId == item.id) === undefined)
+                            itemList = itemList.filter(item => this.pendingBuyItems.find(pendingBuyItem => pendingBuyItem.itemId == item.id) === undefined)
                             itemList = itemList.filter(item => {
                                 return (item.discount >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || item.discount >= this.currentPreset.hotDeal
                             })
