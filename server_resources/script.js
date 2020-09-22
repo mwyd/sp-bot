@@ -6,7 +6,7 @@ const botHTML = `
             <h3>Options</h3>
             <div class="input-desc"><span>Hot deal %</span><input class="input__value-ok" id="hotDealIn" type="number" min="0" max="100"></div>
             <div class="input-desc"><span>Deal %</span><input class="input__value-ok" id="dealIn" type="number" min="0" max="100"></div>
-            <div class="input-desc"><span>Deal margin % p</span><input class="input__value-ok" id="dealMarginIn" type="number" min="0" max="100"></div>
+            <div class="input-desc"><span>Deal margin %</span><input class="input__value-ok" id="dealMarginIn" type="number" min="0" max="100"></div>
             <div class="input-desc"><span>Item min price $</span><input class="input__value-ok" id="minPriceItemIn" type="number" min="0" step="0.01"></div>
             <div class="input-desc"><span>Money to spend $</span><input class="input__value-ok" id="moneyToSpendIn" type="number" min="0" step="0.01"></div>
             <div class="input-desc"><span>Refresh time s</span><input class="input__value-ok" id="refreshTimeIn" type="number" min="0" step="1"></div>
@@ -23,9 +23,9 @@ const botHTML = `
                 <div class="processed-list-col processed-list-price">Price</div>
                 <div class="processed-list-col processed-list-status">Status</div>
                 <div class="processed-list-col processed-list-date">Date</div>
-                <div class="processed-list-col processed-list-seller">Seller</div>
             </div>
             <div id="processed-list">
+                <div id="processed-list__awaiting"></div>
                 <div id="processed-list__active"></div>
                 <div id="processed-list__finished"></div>
             </div>
@@ -106,6 +106,8 @@ class SpBot {
         this.submitKeyCode = 13
         this.moneyAlreadySpent = 0
         this.csrfCookie = getCookie('csrf_cookie')
+        this.itemList = []
+        this.awaitingBuyItems = []
         this.pendingBuyItems = []
         this.isRunning = false
         this.refreshMarketplace = false
@@ -165,6 +167,7 @@ class SpBot {
         this.ui.minPriceItemIn = document.querySelector("#minPriceItemIn")
         this.ui.moneyToSpendIn = document.querySelector("#moneyToSpendIn")
         this.ui.refreshTimeIn = document.querySelector('#refreshTimeIn')
+        this.ui.processedListAwaiting = document.querySelector('#processed-list__awaiting')
         this.ui.processedListActive = document.querySelector("#processed-list__active")
         this.ui.processedListFinished = document.querySelector("#processed-list__finished")
         this.ui.moneySpentContainer = document.querySelector('#money-spent')
@@ -263,7 +266,7 @@ class SpBot {
         this.ui.refreshTimeIn.addEventListener('input', e => this.inputOnInput(e, this.runDelay))
         this.ui.refreshTimeIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
-                validateNumberInput(e.target, 0, 10)
+                validateNumberInput(e.target, 1, 10)
                 this.runDelay = parseInt(e.target.value)
                 e.target.value = this.runDelay
                 e.target.classList.replace('input__value-not-ok', 'input__value-ok')
@@ -353,14 +356,9 @@ class SpBot {
                 <img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">
             ${item.steam_market_hash_name}</a>
         </div>
-        <div class="processed-list-col processed-list-price">$ ${item.price} <sup>-${item.discount_real > 0 ? item.discount_real : ''}%</sup></div>
+        <div class="processed-list-col processed-list-price">$ ${item.price} <sup>-${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>
         <div class="processed-list-col processed-list-status">${item.state}</div>
         <div class="processed-list-col processed-list-date">${getFullDate(new Date(item.time_finished), 2)}</div>
-        <div class="processed-list-col processed-list-seller">
-            <a target="_blank" href="https://steamcommunity.com/profiles/${item.steamid}">
-                <img height="20px" src="https://cdn2.iconfinder.com/data/icons/gaming-platforms-logo-shapes/250/steam_logo-24.png">
-            </a>
-        </div>
     </div>`
     }
 
@@ -377,6 +375,7 @@ class SpBot {
                             if(historyItem !== undefined) {
                                 historyItem.discount_real = this.pendingBuyItems[i].discount_real
                                 historyItem.current_run = this.pendingBuyItems[i].current_run
+                                historyItem.discount = this.pendingBuyItems[i].discount
 
                                 switch(historyItem.state) {
                                     case 'cancelled':
@@ -404,6 +403,37 @@ class SpBot {
         })
     }
 
+    buildAwaitingItemContainer(item) {
+        return `<div class="processed-list-row item-state-${item.state}">
+        <div class="processed-list-col processed-list-item-name">
+            <a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">
+                <img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.steam_icon_url_large}">
+            ${item.steam_market_hash_name}</a>
+        </div>
+        <div class="processed-list-col processed-list-price">$ ${item.price_market} <sup>-${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>
+        <div class="processed-list-col processed-list-status">${item.state}</div>
+        <div class="processed-list-col processed-list-date"><button data="${item.id}" class="sp-bot-buy-item-button button__green">Buy now</button></div>
+    </div>`
+    }
+
+    updateAwaitingItems() {
+        let processedListAwaitingHTML = ''
+        for(let i = 0; i < this.awaitingBuyItems.length; i++) {
+            if(this.itemList.find(item => item.id == this.awaitingBuyItems[i].id) === undefined) this.awaitingBuyItems.splice(i, 1) 
+            else processedListAwaitingHTML += this.buildAwaitingItemContainer(this.awaitingBuyItems[i])
+        }
+
+        this.ui.processedListAwaiting.innerHTML = processedListAwaitingHTML
+
+        for(let buyButton of document.querySelectorAll('.sp-bot-buy-item-button')) {
+            let awaitingItem = this.awaitingBuyItems.find(aItem => aItem.id == buyButton.getAttribute('data'))
+            if(awaitingItem !== undefined) buyButton.addEventListener('click', () => {
+                this.proceedBuy(awaitingItem)
+                buyButton.setAttribute('disabled', 'disabled')
+            })
+        }
+    }
+
     updateSearchItemParm() {
         let giURL = new URL(this.apiUrls.getItems)
         giURL.searchParams.set('search', this.currentPreset.searchItem)
@@ -427,6 +457,7 @@ class SpBot {
     }
 
     proceedBuy(item) {
+        if(this.pendingBuyItems.find(pendingItem => pendingItem.itemId == item.id) !== undefined) return
         if(parseFloat(item.price_market) + this.moneyAlreadySpent <= this.currentPreset.moneyToSpend) {
             fetchPOST(this.apiUrls.buyItem, `id=${item.id}&price=${item.price_market}&csrf_token=${this.csrfCookie}`, data => {
                 switch(data.status) {
@@ -443,6 +474,7 @@ class SpBot {
                         this.pendingBuyItems.push({
                             id: data.id,
                             itemId: item.id,
+                            discount: item.discount,
                             discount_real: item.discount_real,
                             current_run: true
                         })
@@ -459,37 +491,40 @@ class SpBot {
         while(true) {
             if(this.isRunning) {
                 this.updateGetItemsUrl()
+                this.itemList = []
                 if(Math.abs(this.moneyAlreadySpent - this.currentPreset.moneyToSpend) >= this.currentPreset.minPriceItem) {
                     try {    
                         const response = await fetch(this.apiUrls.getItems)
                         let data = await response.json()
 
                         if(data.status == "success") {
-                            let itemList = Array.from(data.items)
+                            this.itemList = Array.from(data.items)
                 
-                            itemList = itemList.filter(item => !item.is_my_item)
-                            itemList = itemList.filter(item => this.pendingBuyItems.find(pendingBuyItem => pendingBuyItem.itemId == item.id) === undefined)
-                            itemList = itemList.filter(item => {
+                            this.itemList = this.itemList.filter(item => !item.is_my_item)
+                            this.itemList = this.itemList.filter(item => {
                                 return (item.discount >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || item.discount >= this.currentPreset.hotDeal
                             })
                 
-                            itemList.sort((itemC, itemN) => { 
+                            this.itemList.sort((itemC, itemN) => { 
                                 let itemCPriceF = parseFloat(itemC.price_market)
                                 if(itemCPriceF < itemN.price_market) return 1
                                 if(itemCPriceF > itemN.price_market) return -1        
                                 return 0
                             })
                 
-                            if(itemList.length > 0) console.log('Filtered items', itemList)
-                            for(let item of itemList) {
+                            for(let item of this.itemList) {
                                 chrome.runtime.sendMessage({action: 'get_price', params: {hash_name: item.steam_market_hash_name}}, res => {
                                     const {data} = res
                                     if(data.success) {
                                         item.discount_real = getDiffAsPercentage(item.price_market, data.price_info.sell_price_num / 100)
                                         if((item.discount_real >= this.currentPreset.deal - this.currentPreset.dealMargin && item.price_market >= this.currentPreset.minPriceItem) || item.discount_real >= this.currentPreset.hotDeal - this.currentPreset.dealMargin) this.proceedBuy(item)
+                                        else if(this.awaitingBuyItems.find(aItem => aItem.id == item.id) === undefined) this.awaitingBuyItems.push(item)
                                     }
+                                    else if(this.awaitingBuyItems.find(aItem => aItem.id == item.id) === undefined) this.awaitingBuyItems.push(item)
                                 })
                             }
+
+                            if(this.itemList.length > 0) console.log('Filtered items', this.itemList)
                         }
                     }
                     catch(err) {
@@ -498,7 +533,8 @@ class SpBot {
                     }
                 }
                 //console.log(this)
-                if(this.pendingBuyItems.length != 0) this.updateBuyHistory()
+                if(this.pendingBuyItems.length > 0) this.updateBuyHistory()
+                if(this.awaitingBuyItems.length > 0 ) this.updateAwaitingItems()
                 this.ui.moneySpentContainer.innerHTML = `$ ${this.moneyAlreadySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`
             }
             await new Promise(r => setTimeout(r, this.runDelay * 1000))
