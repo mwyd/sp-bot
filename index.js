@@ -2,7 +2,7 @@ window.onload = () => {
     chrome.runtime.sendMessage({action: 'get_style', params: {}}, res => {
         const {data} = res
         if(data.success) {
-            console.log('[SP-BOT] style load success')
+            console.log('[' + new Date().toLocaleTimeString() + '] [SP-BOT] style load success')
             
             let styleElement = document.createElement('style')
             styleElement.type = 'text/css'
@@ -13,12 +13,12 @@ window.onload = () => {
             chrome.runtime.sendMessage({action: 'get_script', params: {}}, res => {
                 const {data} = res
                 if(data.success) {
-                    console.log('[SP-BOT] script load success')
+                    console.log('[' + new Date().toLocaleTimeString() + '] [SP-BOT] script load success')
                     eval(data.script)
                 }
-                else console.log('[SP-BOT] script load fail')
+                else console.log('[' + new Date().toLocaleTimeString() + '] [SP-BOT] script load fail')
             })
         }
-        else console.log(['[SP-BOT] style load fail'])
+        else console.log('[' + new Date().toLocaleTimeString() + '] [SP-BOT] style load fail')
     })
 }
