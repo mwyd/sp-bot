@@ -349,6 +349,10 @@ class SpBot {
         priceToFilter.dispatchEvent(new Event('change'))
     }
 
+    bLog(msg, data) {
+        console.log('[SP-BOT] ' + msg, data)
+    }
+
     buildBoughtItemContainer(item) {
         return `<div class="processed-list-row item-state-${item.state}">
         <div class="processed-list-col processed-list-item-name">
@@ -363,13 +367,17 @@ class SpBot {
     }
 
     updateBuyHistory() {
-        fetchPOST(this.apiUrls.getBuyHistory, `page=1&limit=1&sort_column=id&sort_dir=asc&custom_id=&date_start=${this.initDate}&date_end=&state=all`, data => {
-            fetchPOST(this.apiUrls.getBuyHistory, `page=1&limit=${data.total_items}&sort_column=time_finished&sort_dir=desc&custom_id=&date_start=${this.initDate}&date_end=&state=all`, data => {
+        chrome.runtime.sendMessage({action: 'get_bought_items_counter', params: {}}, res => {
+            fetchPOST(this.apiUrls.getBuyHistory, `page=1&limit=${res.data}&sort_column=time_finished&sort_dir=desc&custom_id=&date_start=${this.initDate}&date_end=&state=all`, data => {
                 let processedItemsActiveListHTML = ''
 
                 switch(data.status) {
                     case 'success':
                         for(let i = 0; i < this.pendingBuyItems.length; i++) {
+                            if(this.pendingBuyItems[i].status == 'error') {
+                                this.pendingBuyItems.splice(i, 1)
+                                continue
+                            }
                             let historyItem = data.items.find(item => item.id == this.pendingBuyItems[i].id)
 
                             if(historyItem !== undefined) {
@@ -459,6 +467,18 @@ class SpBot {
     proceedBuy(item) {
         if(this.pendingBuyItems.find(pendingItem => pendingItem.itemId == item.id) !== undefined) return
         if(parseFloat(item.price_market) + this.moneyAlreadySpent <= this.currentPreset.moneyToSpend) {
+            this.moneyAlreadySpent += parseFloat(item.price_market)
+
+            const pendingBuyItem = {
+                id: undefined,
+                itemId: item.id,
+                discount: item.discount,
+                discount_real: item.discount_real,
+                current_run: true,
+                status: 'pending'
+            }
+            this.pendingBuyItems.push(pendingBuyItem)
+
             fetchPOST(this.apiUrls.buyItem, `id=${item.id}&price=${item.price_market}&csrf_token=${this.csrfCookie}`, data => {
                 switch(data.status) {
                     case "error":
@@ -467,23 +487,19 @@ class SpBot {
                                 this.csrfCookie = data.token
                                 break
                         }
+                        pendingBuyItem.status = 'error'
                         this.moneyAlreadySpent -= parseFloat(item.price_market)
                         break
                         
                     case "success":
-                        this.pendingBuyItems.push({
-                            id: data.id,
-                            itemId: item.id,
-                            discount: item.discount,
-                            discount_real: item.discount_real,
-                            current_run: true
-                        })
+                        pendingBuyItem.id = data.id
+                        pendingBuyItem.status = 'success'
+                        chrome.runtime.sendMessage({action: 'buy_item', params: {}})
                         this.notifiSound.play()
                         break
                 }
-                console.log('Buy info', data)
+                this.bLog('Buy info', data)
             })
-            this.moneyAlreadySpent += parseFloat(item.price_market)
         }
     }
 
@@ -524,15 +540,15 @@ class SpBot {
                                 })
                             }
 
-                            if(this.itemList.length > 0) console.log('Filtered items', this.itemList)
+                            if(this.itemList.length > 0) this.bLog('Filtered items', this.itemList)
                         }
                     }
                     catch(err) {
                         this.ui.errorDot.setAttribute('class', 'button__red')
-                        console.log(new Error(err))
+                        this.bLog('', new Error(err))
                     }
                 }
-                //console.log(this)
+                //this.bLog('', this)
                 if(this.pendingBuyItems.length > 0) this.updateBuyHistory()
                 if(this.awaitingBuyItems.length > 0 ) this.updateAwaitingItems()
                 this.ui.moneySpentContainer.innerHTML = `$ ${this.moneyAlreadySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`
