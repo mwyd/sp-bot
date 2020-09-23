@@ -350,7 +350,7 @@ class SpBot {
     }
 
     bLog(msg, data) {
-        console.log('[SP-BOT] ' + msg, data)
+        console.log('[' + new Date().toLocaleTimeString() + '] [SP-BOT] ' + msg, data)
     }
 
     buildBoughtItemContainer(item) {
