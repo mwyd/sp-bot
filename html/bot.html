@@ -1,0 +1,33 @@
+<div class="sp-bot-header__wrapper"><div><h1>SP-BOT</h1><div id="sp-bot-error-dot" class="button__green"></div></div><h1 id="money-spent">$ 0.00 / 0.00</h1></div>
+<div id="sp-bot-content">
+    <div id="sp-bot-settings__wrapper">
+        <div id="sp-bot-settings">
+            <h3>Options</h3>
+            <div class="input-desc"><span>Hot deal %</span><input class="input__value-ok" id="hotDealIn" type="number" min="0" max="100"></div>
+            <div class="input-desc"><span>Deal %</span><input class="input__value-ok" id="dealIn" type="number" min="0" max="100"></div>
+            <div class="input-desc"><span>Deal margin %</span><input class="input__value-ok" id="dealMarginIn" type="number" min="0" max="100"></div>
+            <div class="input-desc"><span>Item min price $</span><input class="input__value-ok" id="minPriceItemIn" type="number" min="0" step="0.01"></div>
+            <div class="input-desc"><span>Money to spend $</span><input class="input__value-ok" id="moneyToSpendIn" type="number" min="0" step="0.01"></div>
+            <div class="input-desc"><span>Refresh time s</span><input class="input__value-ok" id="refreshTimeIn" type="number" min="0" step="1"></div>
+            <div class="input-desc"><span>Current preset</span><select class="input__value-ok" id="presets-select"></select></div>
+            <div class="input-desc"><span>Auto refresh items</span><input id="auto-items-refresh" type="checkbox"></div>
+            <button id="sp-bot-start-button" class="button__green">START</button>
+        </div>
+    </div>
+    <div id="sp-bot-processed__wrapper">
+        <div id="sp-bot-processed">
+            <h3>Buy history</h3>
+            <div id="processed-list-header">
+                <div class="processed-list-col processed-list-item-name">Item</div>
+                <div class="processed-list-col processed-list-price">Price</div>
+                <div class="processed-list-col processed-list-status">Status</div>
+                <div class="processed-list-col processed-list-date">Date</div>
+            </div>
+            <div id="processed-list">
+                <div id="processed-list__awaiting"></div>
+                <div id="processed-list__active"></div>
+                <div id="processed-list__finished"></div>
+            </div>
+        </div>
+    </div>
+</div>
