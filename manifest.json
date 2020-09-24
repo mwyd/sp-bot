@@ -4,7 +4,7 @@
     "description": "Bot that buys items",
     "content_scripts": [{
         "css": ["style.css"],
-        "js": ["index.js"],
+        "js": ["lib/func.js", "index.js"],
         "matches": ["https://shadowpay.com/*"],
         "run_at": "document_end"
       }],
@@ -13,6 +13,8 @@
     },
     "manifest_version": 2,
     "web_accessible_resources": [
-      "presets.json"
+      "/assets/audio/Jestem_zrujnowany.mp3",
+      "/user_data/presets.json",
+      "/html/bot.html"
     ]
 }
