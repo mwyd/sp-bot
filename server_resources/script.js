@@ -1,100 +1,3 @@
-const botHTML = `
-<div class="sp-bot-header__wrapper"><div><h1>SP-BOT</h1><div id="sp-bot-error-dot" class="button__green"></div></div><h1 id="money-spent">$ 0.00 / 0.00</h1></div>
-<div id="sp-bot-content">
-    <div id="sp-bot-settings__wrapper">
-        <div id="sp-bot-settings">
-            <h3>Options</h3>
-            <div class="input-desc"><span>Hot deal %</span><input class="input__value-ok" id="hotDealIn" type="number" min="0" max="100"></div>
-            <div class="input-desc"><span>Deal %</span><input class="input__value-ok" id="dealIn" type="number" min="0" max="100"></div>
-            <div class="input-desc"><span>Deal margin %</span><input class="input__value-ok" id="dealMarginIn" type="number" min="0" max="100"></div>
-            <div class="input-desc"><span>Item min price $</span><input class="input__value-ok" id="minPriceItemIn" type="number" min="0" step="0.01"></div>
-            <div class="input-desc"><span>Money to spend $</span><input class="input__value-ok" id="moneyToSpendIn" type="number" min="0" step="0.01"></div>
-            <div class="input-desc"><span>Refresh time s</span><input class="input__value-ok" id="refreshTimeIn" type="number" min="0" step="1"></div>
-            <div class="input-desc"><span>Current preset</span><select class="input__value-ok" id="presets-select"></select></div>
-            <div class="input-desc"><span>Auto refresh items</span><input id="auto-items-refresh" type="checkbox"></div>
-            <button id="sp-bot-start-button" class="button__green">START</button>
-        </div>
-    </div>
-    <div id="sp-bot-processed__wrapper">
-        <div id="sp-bot-processed">
-            <h3>Buy history</h3>
-            <div id="processed-list-header">
-                <div class="processed-list-col processed-list-item-name">Item</div>
-                <div class="processed-list-col processed-list-price">Price</div>
-                <div class="processed-list-col processed-list-status">Status</div>
-                <div class="processed-list-col processed-list-date">Date</div>
-            </div>
-            <div id="processed-list">
-                <div id="processed-list__awaiting"></div>
-                <div id="processed-list__active"></div>
-                <div id="processed-list__finished"></div>
-            </div>
-        </div>
-    </div>
-</div>
-`
-
-function getDiffAsPercentage(num1, num2) {
-    return Math.round((1 - (num1 / num2)) * 100)
-}
-
-function validateNumberInput(target, min, max) {
-    if(target.value < min && min !== null) target.value = min
-    if(target.value > max && max !== null) target.value = max
-}
-
-function getFullDate(dateObj, timeZoneDiff = 0) {
-    dateObj.setTime(dateObj.getTime() + dateObj.getTimezoneOffset() * 60 * 500 * -timeZoneDiff)
-
-    let day = String(dateObj.getDate()).padStart(2, '0')
-    let month = String(dateObj.getMonth() + 1).padStart(2, '0')
-    let year = dateObj.getFullYear()
-    let hour = dateObj.getHours()
-    let minutes = String(dateObj.getMinutes()).padStart(2, '0')
-    let seconds = String(dateObj.getSeconds()).padStart(2, '0')
-
-    return year + '-' + month + '-' + day + ' ' + hour + ':' + minutes + ':' + seconds
-} 
-
-function getCookie(cookieName) {
-    let cookies = document.cookie.split(';')
-    for(let cookie of cookies) {
-        let cookieNameVal = cookie.split('=')
-        cookieNameVal[0] = cookieNameVal[0].replace(/ /g,'')
-        if(cookieNameVal[0] == cookieName) return cookieNameVal[1]
-    }
-
-    return ""
-}
-
-function fetchPOST(url, _body, callback) {
-    fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'same-origin',
-        headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: _body
-    }).then(response => response.json())
-      .then(data => callback(data))
-      .catch(err => console.log(new Error(err)))
-}
-
-async function loadJsonFile(fileName) {
-    let _browser = undefined
-    let userAgent = navigator.userAgent
-
-    if(userAgent.includes("Firefox")) _browser = browser
-    else _browser = chrome
-
-    const data = await fetch(_browser.extension.getURL(fileName))
-    return data.json()
-}
-
 class SpBot {
     static allowedPaths = [
         '/en/',
@@ -102,20 +5,20 @@ class SpBot {
     ]
 
     constructor() {
-        this.runDelay = 4
-        this.submitKeyCode = 13
-        this.moneyAlreadySpent = 0
-        this.csrfCookie = getCookie('csrf_cookie')
-        this.itemList = []
-        this.awaitingBuyItems = []
-        this.pendingBuyItems = []
-        this.isRunning = false
-        this.refreshMarketplace = false
-        this.notifiSound = new Audio('https://cdn.discordapp.com/attachments/336603302592512004/742418059632967772/Jestem_zrujnowany.mp3')
-        this.initDate = getFullDate(new Date(), -2)
-        this.ui = {}
-        this.lastDocumentLoc = 'https://shadowpay.com/en'
-        this.presets = new Map()
+        this.runDelay = 4;
+        this.submitKeyCode = 13;
+        this.moneyAlreadySpent = 0;
+        this.csrfCookie = getCookie('csrf_cookie');
+        this.itemList = [];
+        this.awaitingBuyItems = [];
+        this.pendingBuyItems = [];
+        this.isRunning = false;
+        this.refreshMarketplace = false;
+        this.notifiSound = new Audio(chrome.extension.getURL('/assets/audio/Jestem_zrujnowany.mp3'));
+        this.initDate = getFullDate(new Date());
+        this.ui = {};
+        this.lastDocumentLoc = 'https://shadowpay.com/en';
+        this.presets = new Map();
 
         this.presets.set('default', {
             'name': 'default',
@@ -126,8 +29,8 @@ class SpBot {
             'moneyToSpend': 10.00,
             'searchItem': '',
             'priceTo': 12958.58
-        })
-        this.currentPreset = this.presets.get('default')
+        });
+        this.currentPreset = this.presets.get('default');
 
         this.apiUrls = {
             getItems: 'https://shadowpay.com/api/market/get_items?types=[]&exteriors=[]&rarities=[]&collections=[]&item_subcategories=[]&float=%7B%22from%22:0,%22to%22:1%7D&price_from=0&price_to=12958.58&game=csgo&stickers=[]&count_stickers=[]&short_name=&search=&stack=false&sort=desc&sort_column=price_rate&limit=50&offset=0',
@@ -135,222 +38,215 @@ class SpBot {
             getBuyHistory: 'https://shadowpay.com/en/profile/get_bought_history'
         }
 
-        this.initCsrfToken()
-        this.initUi()
-    }
-
-    initCsrfToken() {
-        if(this.csrfCookie == '') {
-            fetchPOST(this.apiUrls.buyItem, `id=0&price=0&csrf_token=${this.csrfCookie}`, data => {
-                if(data.status == "error")
-                    if(data.error_message == "wrong_token") this.csrfCookie = data.token
-            })
-        }
+        this.initUi();
     }
 
     async initUi() {
-        //create bot header
-        this.ui.botHeader = document.createElement('div')
-        this.ui.botHeader.setAttribute('class', 'sp-bot-header')
-        this.ui.botHeader.innerHTML = botHTML
+        //load data
+        const botHTML = await loadFile('/html/bot.html');
+        const presets = await loadFile('/user_data/presets.json', true);
 
-        document.querySelector('.justify-content-center.marketplace-header').before(this.ui.botHeader)
+        //create bot header
+        this.ui.botHeader = document.createElement('div');
+        this.ui.botHeader.setAttribute('class', 'sp-bot-header');
+        this.ui.botHeader.innerHTML = botHTML;
+
+        document.querySelector('.justify-content-center.marketplace-header').before(this.ui.botHeader);
 
         //set up bot ui
-        this.ui.marketplaceSearch = document.querySelector('div.marketplace-inventory-search').childNodes[0]
-        this.ui.toggleVisible = document.querySelector(".sp-bot-header__wrapper")
-        this.ui.autoRefreshItems = document.querySelector('#auto-items-refresh')
-        this.ui.startStopBtn = document.querySelector("#sp-bot-start-button")
-        this.ui.hotDealIn = document.querySelector("#hotDealIn")
-        this.ui.dealIn = document.querySelector("#dealIn")
-        this.ui.dealMarginIn = document.querySelector("#dealMarginIn")
-        this.ui.minPriceItemIn = document.querySelector("#minPriceItemIn")
-        this.ui.moneyToSpendIn = document.querySelector("#moneyToSpendIn")
-        this.ui.refreshTimeIn = document.querySelector('#refreshTimeIn')
-        this.ui.processedListAwaiting = document.querySelector('#processed-list__awaiting')
-        this.ui.processedListActive = document.querySelector("#processed-list__active")
-        this.ui.processedListFinished = document.querySelector("#processed-list__finished")
-        this.ui.moneySpentContainer = document.querySelector('#money-spent')
-        this.ui.marketplaceRefresher = document.querySelector('a.refresh, a.marketplace-clear')
-        this.ui.presetsSelect = document.querySelector('#presets-select')
-        this.ui.errorDot = document.querySelector('#sp-bot-error-dot')
+        this.ui.marketplaceSearch = document.querySelector('div.marketplace-inventory-search').childNodes[0];
+        this.ui.toggleVisible = document.querySelector(".sp-bot-header__wrapper");
+        this.ui.autoRefreshItems = document.querySelector('#auto-items-refresh');
+        this.ui.startStopBtn = document.querySelector("#sp-bot-start-button");
+        this.ui.hotDealIn = document.querySelector("#hotDealIn");
+        this.ui.dealIn = document.querySelector("#dealIn");
+        this.ui.dealMarginIn = document.querySelector("#dealMarginIn");
+        this.ui.minPriceItemIn = document.querySelector("#minPriceItemIn");
+        this.ui.moneyToSpendIn = document.querySelector("#moneyToSpendIn");
+        this.ui.refreshTimeIn = document.querySelector('#refreshTimeIn');
+        this.ui.processedListAwaiting = document.querySelector('#processed-list__awaiting');
+        this.ui.processedListActive = document.querySelector("#processed-list__active");
+        this.ui.processedListFinished = document.querySelector("#processed-list__finished");
+        this.ui.moneySpentContainer = document.querySelector('#money-spent');
+        this.ui.marketplaceRefresher = document.querySelector('a.refresh, a.marketplace-clear');
+        this.ui.presetsSelect = document.querySelector('#presets-select');
+        this.ui.errorDot = document.querySelector('#sp-bot-error-dot');
 
-        this.setupFilterInputs()
+        this.setupFilterInputs();
 
-        this.ui.marketplaceSearch.style.borderRadius = "5px"
-        this.ui.marketplaceSearch.classList.add('input__value-ok')
+        this.ui.marketplaceSearch.style.borderRadius = "5px";
+        this.ui.marketplaceSearch.classList.add('input__value-ok');
 
         //search btn events
-        this.ui.marketplaceSearch.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.searchItem))
+        this.ui.marketplaceSearch.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.searchItem));
         this.ui.marketplaceSearch.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
-                this.currentPreset.searchItem = e.target.value
-                this.updateSearchItemParm()
-                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
+                this.currentPreset.searchItem = e.target.value;
+                this.updateSearchItemParm();
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok');
             }
-        })
+        });
 
         //error dot
         this.ui.errorDot.addEventListener('click', e => {
-            if(e.target.getAttribute('class') == 'button__red') e.target.setAttribute('class', 'button__green')
-        })
+            if(e.target.getAttribute('class') == 'button__red') e.target.setAttribute('class', 'button__green');
+        });
 
         //startstop btn events
         this.ui.startStopBtn.addEventListener('click', (e) => {
             if(this.isRunning) {
-                this.isRunning = false
-                this.ui.startStopBtn.setAttribute('class', 'button__green')
-                e.target.innerHTML = "START"
-                for(let pendingBuyItem of this.pendingBuyItems) pendingBuyItem.current_run = false
+                this.isRunning = false;
+                this.ui.startStopBtn.setAttribute('class', 'button__green');
+                e.target.innerHTML = "START";
+                for(let pendingBuyItem of this.pendingBuyItems) pendingBuyItem.current_run = false;
             }
             else {
-                this.isRunning = true
-                this.ui.startStopBtn.setAttribute('class', 'button__red')
-                e.target.innerHTML = "STOP"
-                this.moneyAlreadySpent = 0
+                this.isRunning = true;
+                this.ui.startStopBtn.setAttribute('class', 'button__red');
+                e.target.innerHTML = "STOP";
+                this.moneyAlreadySpent = 0;
             }
-        })
+        });
 
         //togglevisible btn events
         this.ui.toggleVisible.addEventListener("click", () => {
-            let spBotContent = document.querySelector("#sp-bot-content")
-            if(spBotContent.style.display == "flex" || spBotContent.style.display == "") spBotContent.style.display = "none"
-            else spBotContent.style.display = "flex"
-        })
+            let spBotContent = document.querySelector("#sp-bot-content");
+            if(spBotContent.style.display == "flex" || spBotContent.style.display == "") spBotContent.style.display = "none";
+            else spBotContent.style.display = "flex";
+        });
 
         //auto refresh items checkbox events
         this.ui.autoRefreshItems.addEventListener('click', (e) => {
-            e.target.checked ? this.refreshMarketplace = true : this.refreshMarketplace = false
-        })
+            e.target.checked ? this.refreshMarketplace = true : this.refreshMarketplace = false;
+        });
 
         //input filters events
 
         //hotdeal
-        this.ui.hotDealIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.hotDeal))
-        this.ui.hotDealIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.hotDeal))
+        this.ui.hotDealIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.hotDeal));
+        this.ui.hotDealIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.hotDeal));
         this.ui.hotDealIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
-                validateNumberInput(e.target, 0, 100)
-                this.currentPreset.hotDeal = parseInt(e.target.value)
-                e.target.value = this.currentPreset.hotDeal
-                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
+                validateNumberInput(e.target, 0, 100);
+                this.currentPreset.hotDeal = parseInt(e.target.value);
+                e.target.value = this.currentPreset.hotDeal;
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok');
             }
-        })
+        });
 
         //deal
-        this.ui.dealIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.deal))
-        this.ui.dealIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.deal))
+        this.ui.dealIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.deal));
+        this.ui.dealIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.deal));
         this.ui.dealIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
-                validateNumberInput(e.target, 0, 100)
-                this.currentPreset.deal = parseInt(e.target.value)
-                e.target.value  = this.currentPreset.deal
-                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
+                validateNumberInput(e.target, 0, 100);
+                this.currentPreset.deal = parseInt(e.target.value);
+                e.target.value  = this.currentPreset.deal;
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok');
             }
-        })
+        });
 
         //deal margin
-        this.ui.dealMarginIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.dealMargin))
-        this.ui.dealMarginIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.dealMargin))
+        this.ui.dealMarginIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.dealMargin));
+        this.ui.dealMarginIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.dealMargin));
         this.ui.dealMarginIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
-                validateNumberInput(e.target, 0, this.currentPreset.deal)
-                this.currentPreset.dealMargin = parseInt(e.target.value)
-                e.target.value  = this.currentPreset.dealMargin
-                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
+                validateNumberInput(e.target, 0, this.currentPreset.deal);
+                this.currentPreset.dealMargin = parseInt(e.target.value);
+                e.target.value  = this.currentPreset.dealMargin;
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok');
             }
-        })
+        });
 
         //refresh time
-        this.ui.refreshTimeIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.runDelay))
-        this.ui.refreshTimeIn.addEventListener('input', e => this.inputOnInput(e, this.runDelay))
+        this.ui.refreshTimeIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.runDelay));
+        this.ui.refreshTimeIn.addEventListener('input', e => this.inputOnInput(e, this.runDelay));
         this.ui.refreshTimeIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
-                validateNumberInput(e.target, 1, 10)
-                this.runDelay = parseInt(e.target.value)
-                e.target.value = this.runDelay
-                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
+                validateNumberInput(e.target, 1, 10);
+                this.runDelay = parseInt(e.target.value);
+                e.target.value = this.runDelay;
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok');
             }
-        })        
+        });
 
         //min price item
-        this.ui.minPriceItemIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.minPriceItem.toFixed(2)))
-        this.ui.minPriceItemIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.minPriceItem))
+        this.ui.minPriceItemIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.minPriceItem.toFixed(2)));
+        this.ui.minPriceItemIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.minPriceItem));
         this.ui.minPriceItemIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
-                validateNumberInput(e.target, 0, null)
+                validateNumberInput(e.target, 0, null);
                 if(e.target.value < this.currentPreset.moneyToSpend) {
-                    this.currentPreset.minPriceItem = parseFloat(e.target.value)
+                    this.currentPreset.minPriceItem = parseFloat(e.target.value);
                 } 
                 else {
-                    this.currentPreset.minPriceItem = this.currentPreset.moneyToSpend
-                    e.target.value = this.currentPreset.moneyToSpend
+                    this.currentPreset.minPriceItem = this.currentPreset.moneyToSpend;
+                    e.target.value = this.currentPreset.moneyToSpend;
                 }
-                e.target.value = this.currentPreset.minPriceItem.toFixed(2)
-                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
+                e.target.value = this.currentPreset.minPriceItem.toFixed(2);
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok');
             }
-        })
+        });
 
         //money to spend
-        this.ui.moneyToSpendIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.moneyToSpend.toFixed(2)))
-        this.ui.moneyToSpendIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.moneyToSpend))
+        this.ui.moneyToSpendIn.addEventListener('focusout', e => this.inputOnFocusOut(e, this.currentPreset.moneyToSpend.toFixed(2)));
+        this.ui.moneyToSpendIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.moneyToSpend));
         this.ui.moneyToSpendIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
-                validateNumberInput(e.target, 0, null)
+                validateNumberInput(e.target, 0, null);
                 if(e.target.value > this.currentPreset.minPriceItem) {
-                    this.currentPreset.moneyToSpend = parseFloat(e.target.value)
+                    this.currentPreset.moneyToSpend = parseFloat(e.target.value);
                 }
                 else {
-                    this.currentPreset.moneyToSpend = this.currentPreset.minPriceItem
-                    e.target.value = this.currentPreset.minPriceItem
+                    this.currentPreset.moneyToSpend = this.currentPreset.minPriceItem;
+                    e.target.value = this.currentPreset.minPriceItem;
                 }
-                e.target.value = this.currentPreset.moneyToSpend.toFixed(2)
-                e.target.classList.replace('input__value-not-ok', 'input__value-ok')
+                e.target.value = this.currentPreset.moneyToSpend.toFixed(2);
+                e.target.classList.replace('input__value-not-ok', 'input__value-ok');
             }
-        })
+        });
 
         //set up presets select
-        let presets = await loadJsonFile('presets.json')
-        this.ui.presetsSelect.innerHTML = `<option name="${this.currentPreset.name}">${this.currentPreset.name}</option>`
+        this.ui.presetsSelect.innerHTML = `<option name="${this.currentPreset.name}">${this.currentPreset.name}</option>`;
         for(let preset of presets) {
-            this.presets.set(preset.name, preset)
-            this.ui.presetsSelect.innerHTML += `<option name="${preset.name}">${preset.name}</option>`
+            this.presets.set(preset.name, preset);
+            this.ui.presetsSelect.innerHTML += `<option name="${preset.name}">${preset.name}</option>`;
         }
         this.ui.presetsSelect.addEventListener('change', e => {
-            this.currentPreset = this.presets.get(e.target.value)
+            this.currentPreset = this.presets.get(e.target.value);
 
-            this.updateSearchItemParm()
-            this.setupFilterInputs()
-            this.ui.marketplaceSearch.value = this.currentPreset.searchItem
-            this.ui.marketplaceSearch.dispatchEvent(new KeyboardEvent('input'))
-            this.ui.marketplaceRefresher.click()
-        })
+            this.updateSearchItemParm();
+            this.setupFilterInputs();
+            this.ui.marketplaceSearch.value = this.currentPreset.searchItem;
+            this.ui.marketplaceSearch.dispatchEvent(new KeyboardEvent('input'));
+            this.ui.marketplaceRefresher.click();
+        });
     }
 
     inputOnFocusOut(e, botVar) {
-        e.target.value = botVar
-        e.target.classList.replace('input__value-not-ok', 'input__value-ok')
+        e.target.value = botVar;
+        e.target.classList.replace('input__value-not-ok', 'input__value-ok');
     }
 
     inputOnInput(e, botVar) {
-        botVar == e.target.value ? e.target.classList.replace('input__value-not-ok', 'input__value-ok') : e.target.classList.replace('input__value-ok', 'input__value-not-ok')
+        botVar == e.target.value ? e.target.classList.replace('input__value-not-ok', 'input__value-ok') : e.target.classList.replace('input__value-ok', 'input__value-not-ok');
     }
 
     setupFilterInputs() {
-        this.ui.hotDealIn.value = this.currentPreset.hotDeal
-        this.ui.dealIn.value = this.currentPreset.deal
-        this.ui.dealMarginIn.value = this.currentPreset.dealMargin
-        this.ui.minPriceItemIn.value = this.currentPreset.minPriceItem.toFixed(2)
-        this.ui.moneyToSpendIn.value = this.currentPreset.moneyToSpend.toFixed(2)
-        this.ui.refreshTimeIn.value = this.runDelay
+        this.ui.hotDealIn.value = this.currentPreset.hotDeal;
+        this.ui.dealIn.value = this.currentPreset.deal;
+        this.ui.dealMarginIn.value = this.currentPreset.dealMargin;
+        this.ui.minPriceItemIn.value = this.currentPreset.minPriceItem.toFixed(2);
+        this.ui.moneyToSpendIn.value = this.currentPreset.moneyToSpend.toFixed(2);
+        this.ui.refreshTimeIn.value = this.runDelay;
 
-        let priceToFilter = document.querySelectorAll('.marketplace-range-value__input')[1]
-        priceToFilter.value = this.currentPreset.priceTo.toFixed(2)
-        priceToFilter.dispatchEvent(new Event('change'))
+        let priceToFilter = document.querySelectorAll('.marketplace-range-value__input')[1];
+        priceToFilter.value = this.currentPreset.priceTo.toFixed(2);
+        priceToFilter.dispatchEvent(new Event('change'));
     }
 
     bLog(msg, data) {
-        console.log('[' + new Date().toLocaleTimeString() + '] [SP-BOT] ' + msg, data)
+        console.log('[' + new Date().toLocaleTimeString() + '] [SP-BOT] ' + msg, data);
     }
 
     buildBoughtItemContainer(item) {
@@ -363,52 +259,62 @@ class SpBot {
         <div class="processed-list-col processed-list-price">$ ${item.price} <sup>-${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>
         <div class="processed-list-col processed-list-status">${item.state}</div>
         <div class="processed-list-col processed-list-date">${getFullDate(new Date(item.time_finished), 2)}</div>
-    </div>`
+    </div>`;
     }
 
     updateBuyHistory() {
         chrome.runtime.sendMessage({action: 'get_bought_items_counter', params: {}}, res => {
-            fetchPOST(this.apiUrls.getBuyHistory, `page=1&limit=${res.data}&sort_column=time_finished&sort_dir=desc&custom_id=&date_start=${this.initDate}&date_end=&state=all`, data => {
-                let processedItemsActiveListHTML = ''
-
+            fetch(this.apiUrls.getBuyHistory, fetchPostConfig(`page=1&limit=${res.data}&sort_column=time_finished&sort_dir=desc&custom_id=&date_start=${getFullDate(new Date(this.initDate), -2)}&date_end=&state=all`))
+            .then(res => res.json())
+            .then(data => {
+                let processedItemsActiveListHTML = '';
                 switch(data.status) {
                     case 'success':
                         for(let i = 0; i < this.pendingBuyItems.length; i++) {
                             if(this.pendingBuyItems[i].status == 'error') {
-                                this.pendingBuyItems.splice(i, 1)
-                                continue
+                                this.pendingBuyItems.splice(i, 1);
+                                i--;
+                                continue;
                             }
-                            let historyItem = data.items.find(item => item.id == this.pendingBuyItems[i].id)
 
-                            if(historyItem !== undefined) {
-                                historyItem.discount_real = this.pendingBuyItems[i].discount_real
-                                historyItem.current_run = this.pendingBuyItems[i].current_run
-                                historyItem.discount = this.pendingBuyItems[i].discount
+                            let historyItem = data.items.find(item => item.id == this.pendingBuyItems[i].id);
+                            if(historyItem === undefined) continue;
 
-                                switch(historyItem.state) {
-                                    case 'cancelled':
-                                        this.pendingBuyItems.splice(i, 1)
-                                        if(historyItem.current_run) this.moneyAlreadySpent -= parseFloat(historyItem.price)
-                                        this.ui.processedListFinished.innerHTML = this.buildBoughtItemContainer(historyItem) + this.ui.processedListFinished.innerHTML
-                                        break
+                            historyItem.discount_real = this.pendingBuyItems[i].discount_real;
+                            historyItem.current_run = this.pendingBuyItems[i].current_run;
+                            historyItem.discount = this.pendingBuyItems[i].discount;
 
-                                    case 'finished':
-                                        this.pendingBuyItems.splice(i, 1)
-                                        this.ui.processedListFinished.innerHTML = this.buildBoughtItemContainer(historyItem) + this.ui.processedListFinished.innerHTML
-                                        if(this.pendingBuyItems.length == 0 && Math.abs(this.moneyAlreadySpent - this.currentPreset.moneyToSpend) < this.currentPreset.minPriceItem) this.ui.startStopBtn.click()
-                                        break
+                            switch(historyItem.state) {
+                                case 'cancelled':
+                                    this.pendingBuyItems.splice(i, 1);
+                                    i--;
 
-                                    case 'active':
-                                        processedItemsActiveListHTML += this.buildBoughtItemContainer(historyItem)
-                                        break
+                                    if(historyItem.current_run) this.moneyAlreadySpent -= parseFloat(historyItem.price);
+                                    this.ui.processedListFinished.innerHTML = this.buildBoughtItemContainer(historyItem) + this.ui.processedListFinished.innerHTML;
+                                    break;
+
+                                case 'finished':
+                                    this.pendingBuyItems.splice(i, 1);
+                                    i--;
+
+                                    this.ui.processedListFinished.innerHTML = this.buildBoughtItemContainer(historyItem) + this.ui.processedListFinished.innerHTML;
+                                    if(this.pendingBuyItems.length == 0 && Math.abs(this.moneyAlreadySpent - this.currentPreset.moneyToSpend) < this.currentPreset.minPriceItem) this.ui.startStopBtn.click();
+                                    break;
+
+                                case 'active':
+                                    processedItemsActiveListHTML += this.buildBoughtItemContainer(historyItem);
+                                    break;
                                 }
-                            }
                         }
-                        break
+                        break;
                 }
-                this.ui.processedListActive.innerHTML = processedItemsActiveListHTML
+                this.ui.processedListActive.innerHTML = processedItemsActiveListHTML;
             })
-        })
+            .catch(err => {
+                this.ui.errorDot.setAttribute('class', 'button__red');
+                this.bLog('\n', new Error(err))
+            });
+        });
     }
 
     buildAwaitingItemContainer(item) {
@@ -421,53 +327,56 @@ class SpBot {
         <div class="processed-list-col processed-list-price">$ ${item.price_market} <sup>-${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>
         <div class="processed-list-col processed-list-status">${item.state}</div>
         <div class="processed-list-col processed-list-date"><button data="${item.id}" class="sp-bot-buy-item-button button__green">Buy now</button></div>
-    </div>`
+        </div>`;
     }
 
     updateAwaitingItems() {
-        let processedListAwaitingHTML = ''
+        let processedListAwaitingHTML = '';
+        
         for(let i = 0; i < this.awaitingBuyItems.length; i++) {
-            if(this.itemList.find(item => item.id == this.awaitingBuyItems[i].id) === undefined) this.awaitingBuyItems.splice(i, 1) 
-            else processedListAwaitingHTML += this.buildAwaitingItemContainer(this.awaitingBuyItems[i])
+            if(this.itemList.find(item => item.id == this.awaitingBuyItems[i].id) === undefined) this.awaitingBuyItems.splice(i, 1);
+            else processedListAwaitingHTML += this.buildAwaitingItemContainer(this.awaitingBuyItems[i]);
         }
 
-        this.ui.processedListAwaiting.innerHTML = processedListAwaitingHTML
+        this.ui.processedListAwaiting.innerHTML = processedListAwaitingHTML;
 
         for(let buyButton of document.querySelectorAll('.sp-bot-buy-item-button')) {
-            let awaitingItem = this.awaitingBuyItems.find(aItem => aItem.id == buyButton.getAttribute('data'))
-            if(awaitingItem !== undefined) buyButton.addEventListener('click', () => {
-                this.proceedBuy(awaitingItem)
-                buyButton.setAttribute('disabled', 'disabled')
-            })
+            let awaitingItem = this.awaitingBuyItems.find(aItem => aItem.id == buyButton.getAttribute('data'));
+            if(awaitingItem === undefined) continue;
+
+            buyButton.addEventListener('click', () => {
+                this.proceedBuy(awaitingItem);
+                buyButton.setAttribute('disabled', 'disabled');
+            });
         }
     }
 
     updateSearchItemParm() {
-        let giURL = new URL(this.apiUrls.getItems)
-        giURL.searchParams.set('search', this.currentPreset.searchItem)
-        this.apiUrls.getItems = giURL.toString()
+        let giURL = new URL(this.apiUrls.getItems);
+        giURL.searchParams.set('search', this.currentPreset.searchItem);
+        this.apiUrls.getItems = giURL.toString();
     }
 
     updateGetItemsUrl() {
-        let dlhURL = new URL(document.location.href)
+        let dlhURL = new URL(document.location.href);
     
         if(SpBot.allowedPaths.includes(dlhURL.pathname)) {
             if(document.location.href != this.lastDocumentLoc) {
-                this.lastDocumentLoc = document.location.href
-                let giURL = new URL(this.apiUrls.getItems)
+                this.lastDocumentLoc = document.location.href;
+                let giURL = new URL(this.apiUrls.getItems);
         
-                dlhURL.searchParams.forEach((val, key) => giURL.searchParams.set(key, val))
-                this.apiUrls.getItems = giURL.toString()
+                dlhURL.searchParams.forEach((val, key) => giURL.searchParams.set(key, val));
+                this.apiUrls.getItems = giURL.toString();
             }
     
-            if(this.refreshMarketplace) this.ui.marketplaceRefresher.click()
+            if(this.refreshMarketplace) this.ui.marketplaceRefresher.click();
         }
     }
 
     proceedBuy(item) {
-        if(this.pendingBuyItems.find(pendingItem => pendingItem.itemId == item.id) !== undefined) return
+        if(this.pendingBuyItems.find(pendingItem => pendingItem.itemId == item.id) !== undefined) return;
         if(parseFloat(item.price_market) + this.moneyAlreadySpent <= this.currentPreset.moneyToSpend) {
-            this.moneyAlreadySpent += parseFloat(item.price_market)
+            this.moneyAlreadySpent += parseFloat(item.price_market);
 
             const pendingBuyItem = {
                 id: undefined,
@@ -477,90 +386,101 @@ class SpBot {
                 current_run: true,
                 status: 'pending'
             }
-            this.pendingBuyItems.push(pendingBuyItem)
+            this.pendingBuyItems.push(pendingBuyItem);
 
-            fetchPOST(this.apiUrls.buyItem, `id=${item.id}&price=${item.price_market}&csrf_token=${this.csrfCookie}`, data => {
+            fetch(this.apiUrls.buyItem, fetchPostConfig(`id=${item.id}&price=${item.price_market}&csrf_token=${this.csrfCookie}`))
+            .then(res => res.json())
+            .then(data => {
                 switch(data.status) {
                     case "error":
                         switch(data.error_message) {
                             case 'wrong_token':
-                                this.csrfCookie = data.token
-                                break
+                                this.csrfCookie = data.token;
+                                break;
                         }
-                        pendingBuyItem.status = 'error'
-                        this.moneyAlreadySpent -= parseFloat(item.price_market)
-                        break
+
+                        pendingBuyItem.status = 'error';
+                        this.moneyAlreadySpent -= parseFloat(item.price_market);
+                        break;
                         
                     case "success":
-                        pendingBuyItem.id = data.id
-                        pendingBuyItem.status = 'success'
-                        chrome.runtime.sendMessage({action: 'buy_item', params: {}})
-                        this.notifiSound.play()
-                        break
+                        pendingBuyItem.id = data.id;
+                        pendingBuyItem.status = 'success';
+                        
+                        chrome.runtime.sendMessage({action: 'buy_item', params: {}});
+                        this.notifiSound.play();
+                        break;
                 }
-                this.bLog('Buy info', data)
+                this.bLog('Buy info', data);
             })
+            .catch(err => {
+                pendingBuyItem.status = 'error';
+                this.moneyAlreadySpent -= parseFloat(item.price_market);
+
+                this.ui.errorDot.setAttribute('class', 'button__red');
+                this.bLog('\n', new Error(err))
+            });
         }
     }
 
     async run() {
         while(true) {
             if(this.isRunning) {
-                this.updateGetItemsUrl()
-                this.itemList = []
+                this.updateGetItemsUrl();
+                this.itemList = [];
                 if(Math.abs(this.moneyAlreadySpent - this.currentPreset.moneyToSpend) >= this.currentPreset.minPriceItem) {
                     try {    
-                        const response = await fetch(this.apiUrls.getItems)
-                        let data = await response.json()
+                        const response = await fetch(this.apiUrls.getItems);
+                        let data = await response.json();
 
                         if(data.status == "success") {
-                            this.itemList = Array.from(data.items)
+                            this.itemList = Array.from(data.items);
                 
-                            this.itemList = this.itemList.filter(item => !item.is_my_item)
+                            this.itemList = this.itemList.filter(item => !item.is_my_item);
                             this.itemList = this.itemList.filter(item => {
-                                return (item.discount >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || item.discount >= this.currentPreset.hotDeal
-                            })
+                                return (item.discount >= this.currentPreset.deal && item.price_market >= this.currentPreset.minPriceItem) || item.discount >= this.currentPreset.hotDeal;
+                            });
                 
                             this.itemList.sort((itemC, itemN) => { 
-                                let itemCPriceF = parseFloat(itemC.price_market)
-                                if(itemCPriceF < itemN.price_market) return 1
-                                if(itemCPriceF > itemN.price_market) return -1        
-                                return 0
-                            })
+                                let itemCPriceF = parseFloat(itemC.price_market);
+                                if(itemCPriceF < itemN.price_market) return 1;
+                                if(itemCPriceF > itemN.price_market) return -1;   
+                                return 0;
+                            });
                 
                             for(let item of this.itemList) {
                                 chrome.runtime.sendMessage({action: 'get_price', params: {hash_name: item.steam_market_hash_name}}, res => {
-                                    const {data} = res
+                                    const {data} = res;
                                     if(data.success) {
-                                        item.discount_real = getDiffAsPercentage(item.price_market, data.price_info.sell_price_num / 100)
-                                        if((item.discount_real >= this.currentPreset.deal - this.currentPreset.dealMargin && item.price_market >= this.currentPreset.minPriceItem) || item.discount_real >= this.currentPreset.hotDeal - this.currentPreset.dealMargin) this.proceedBuy(item)
-                                        else if(this.awaitingBuyItems.find(aItem => aItem.id == item.id) === undefined) this.awaitingBuyItems.push(item)
+                                        item.discount_real = getDiffAsPercentage(item.price_market, data.price_info.sell_price_num / 100);
+                                        if((item.discount_real >= this.currentPreset.deal - this.currentPreset.dealMargin && item.price_market >= this.currentPreset.minPriceItem) || item.discount_real >= this.currentPreset.hotDeal - this.currentPreset.dealMargin) this.proceedBuy(item);
+                                        else if(this.awaitingBuyItems.findIndex(aItem => aItem.id == item.id) == -1) this.awaitingBuyItems.push(item);
                                     }
-                                    else if(this.awaitingBuyItems.find(aItem => aItem.id == item.id) === undefined) this.awaitingBuyItems.push(item)
-                                })
+                                    else if(this.awaitingBuyItems.findIndex(aItem => aItem.id == item.id) == -1) this.awaitingBuyItems.push(item);
+                                });
                             }
 
-                            if(this.itemList.length > 0) this.bLog('Filtered items', this.itemList)
+                            if(this.itemList.length > 0) this.bLog('Filtered items', this.itemList);
                         }
                     }
                     catch(err) {
-                        this.ui.errorDot.setAttribute('class', 'button__red')
-                        this.bLog('', new Error(err))
+                        this.ui.errorDot.setAttribute('class', 'button__red');
+                        this.bLog('\n', new Error(err));
                     }
                 }
                 //this.bLog('', this)
-                if(this.pendingBuyItems.length > 0) this.updateBuyHistory()
-                if(this.awaitingBuyItems.length > 0 ) this.updateAwaitingItems()
-                this.ui.moneySpentContainer.innerHTML = `$ ${this.moneyAlreadySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`
+                if(this.pendingBuyItems.length > 0) this.updateBuyHistory();
+                if(this.awaitingBuyItems.length > 0 ) this.updateAwaitingItems();
+                this.ui.moneySpentContainer.innerHTML = `$ ${this.moneyAlreadySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`;
             }
-            await new Promise(r => setTimeout(r, this.runDelay * 1000))
+            await new Promise(r => setTimeout(r, this.runDelay * 1000));
         }
     }
 }
 
 
-let dlhURL = new URL(document.location.href)
+let dlhURL = new URL(document.location.href);
 if(SpBot.allowedPaths.includes(dlhURL.pathname)) {
-    const spBot = new SpBot()
-    spBot.run()
+    const spBot = new SpBot();
+    spBot.run();
 }
