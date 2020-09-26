@@ -334,7 +334,10 @@ class SpBot {
         let processedListAwaitingHTML = '';
         
         for(let i = 0; i < this.awaitingBuyItems.length; i++) {
-            if(this.itemList.find(item => item.id == this.awaitingBuyItems[i].id) === undefined) this.awaitingBuyItems.splice(i, 1);
+            if(this.itemList.findIndex(item => item.id == this.awaitingBuyItems[i].id) == -1) {
+                this.awaitingBuyItems.splice(i, 1);
+                i--;
+            }
             else processedListAwaitingHTML += this.buildAwaitingItemContainer(this.awaitingBuyItems[i]);
         }
 
@@ -374,7 +377,7 @@ class SpBot {
     }
 
     proceedBuy(item) {
-        if(this.pendingBuyItems.find(pendingItem => pendingItem.itemId == item.id) !== undefined) return;
+        if(this.pendingBuyItems.findIndex(pendingItem => pendingItem.itemId == item.id) != -1) return;
         if(parseFloat(item.price_market) + this.moneyAlreadySpent <= this.currentPreset.moneyToSpend) {
             this.moneyAlreadySpent += parseFloat(item.price_market);
 
