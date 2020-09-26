@@ -1,42 +1,22 @@
 [
     {
-        "name": "test preset",
+        "name": "Template",
         "hotDeal": 0,
         "deal": 0,
         "dealMargin": 0,
         "minPriceItem": 0.01,
         "moneyToSpend": 0.03,
-        "searchItem": "",
+        "searchItem": "Item name",
         "priceTo": 0.03
     },
     {
-        "name": "test preset2",
-        "hotDeal": 0,
-        "deal": 0,
-        "dealMargin": 0,
-        "minPriceItem": 0.01,
-        "moneyToSpend": 0.30,
-        "searchItem": "ump",
-        "priceTo": 0.03
-    },
-    {
-        "name": "test preset3",
-        "hotDeal": 0,
-        "deal": 0,
-        "dealMargin": 0,
-        "minPriceItem": 0.01,
-        "moneyToSpend": 0.48,
-        "searchItem": "gold web",
-        "priceTo": 0.24
-    },
-    {
-        "name": "test na syf",
-        "hotDeal": 0,
-        "deal": 0,
-        "dealMargin": 0,
-        "minPriceItem": 0.01,
-        "moneyToSpend": 0.48,
-        "searchItem": "",
-        "priceTo": 0.03
+        "name": "Template 2",
+        "hotDeal": 70,
+        "deal": 50,
+        "dealMargin": 2,
+        "minPriceItem": 1,
+        "moneyToSpend": 7,
+        "searchItem": "Awp",
+        "priceTo": 5
     }
 ]
