@@ -453,7 +453,7 @@ class SpBot {
                                     const {data} = res;
                                     if(data.success) {
                                         item.discount_real = getDiffAsPercentage(item.price_market, data.price_info.sell_price_num / 100);
-                                        if((item.discount_real >= this.currentPreset.deal - this.currentPreset.dealMargin && item.price_market >= this.currentPreset.minPriceItem) || item.discount_real >= this.currentPreset.hotDeal - this.currentPreset.dealMargin) this.proceedBuy(item);
+                                        if(item.discount_real >= this.currentPreset.deal - this.currentPreset.dealMargin) this.proceedBuy(item);
                                         else if(this.awaitingBuyItems.findIndex(aItem => aItem.id == item.id) == -1) this.awaitingBuyItems.push(item);
                                     }
                                     else if(this.awaitingBuyItems.findIndex(aItem => aItem.id == item.id) == -1) this.awaitingBuyItems.push(item);
