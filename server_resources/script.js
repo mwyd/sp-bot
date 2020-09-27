@@ -250,7 +250,7 @@ class SpBot {
     }
 
     buildBoughtItemContainer(item) {
-        return `<div class="processed-list-row item-state-${item.state}">
+        return `<div id="processed-bought-item-${item.id}" class="processed-list-row item-state-${item.state}">
         <div class="processed-list-col processed-list-item-name">
             <a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">
                 <img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">
@@ -259,6 +259,7 @@ class SpBot {
         <div class="processed-list-col processed-list-price">$ ${item.price} <sup>-${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>
         <div class="processed-list-col processed-list-status">${item.state}</div>
         <div class="processed-list-col processed-list-date">${getFullDate(new Date(item.time_finished), 2)}</div>
+        ${item.state == 'active' ? '<div class="processed-list-timebar"></div>' : ''}
     </div>`;
     }
 
@@ -267,7 +268,6 @@ class SpBot {
             fetch(this.apiUrls.getBuyHistory, fetchPostConfig(`page=1&limit=${res.data}&sort_column=time_finished&sort_dir=desc&custom_id=&date_start=${getFullDate(new Date(this.initDate), -2)}&date_end=&state=all`))
             .then(res => res.json())
             .then(data => {
-                let processedItemsActiveListHTML = '';
                 switch(data.status) {
                     case 'success':
                         for(let i = 0; i < this.pendingBuyItems.length; i++) {
@@ -286,6 +286,7 @@ class SpBot {
 
                             switch(historyItem.state) {
                                 case 'cancelled':
+                                    this.pendingBuyItems[i].DOMElement.remove();
                                     this.pendingBuyItems.splice(i, 1);
                                     i--;
 
@@ -294,6 +295,7 @@ class SpBot {
                                     break;
 
                                 case 'finished':
+                                    this.pendingBuyItems[i].DOMElement.remove();
                                     this.pendingBuyItems.splice(i, 1);
                                     i--;
 
@@ -302,13 +304,15 @@ class SpBot {
                                     break;
 
                                 case 'active':
-                                    processedItemsActiveListHTML += this.buildBoughtItemContainer(historyItem);
+                                    if(this.pendingBuyItems[i].DOMElement !== undefined) continue;
+                                    this.ui.processedListActive.innerHTML = this.buildBoughtItemContainer(historyItem) + this.ui.processedListActive.innerHTML;
+                                    this.pendingBuyItems[i].DOMElement = document.querySelector(`#processed-bought-item-${historyItem.id}`);
+                                    setTimeout(() => {this.pendingBuyItems[i].DOMElement.querySelector('.processed-list-timebar').style.width = '0%'}, 100);
                                     break;
                                 }
                         }
                         break;
                 }
-                this.ui.processedListActive.innerHTML = processedItemsActiveListHTML;
             })
             .catch(err => {
                 this.ui.errorDot.setAttribute('class', 'button__red');
@@ -387,6 +391,7 @@ class SpBot {
                 discount: item.discount,
                 discount_real: item.discount_real,
                 current_run: true,
+                DOMElement: undefined,
                 status: 'pending'
             }
             this.pendingBuyItems.push(pendingBuyItem);
