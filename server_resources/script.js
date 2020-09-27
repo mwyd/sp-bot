@@ -250,17 +250,21 @@ class SpBot {
     }
 
     buildBoughtItemContainer(item) {
-        return `<div id="processed-bought-item-${item.id}" class="processed-list-row item-state-${item.state}">
-        <div class="processed-list-col processed-list-item-name">
-            <a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">
-                <img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">
-            ${item.steam_market_hash_name}</a>
-        </div>
-        <div class="processed-list-col processed-list-price">$ ${item.price} <sup>-${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>
-        <div class="processed-list-col processed-list-status">${item.state}</div>
-        <div class="processed-list-col processed-list-date">${getFullDate(new Date(item.time_finished), 2)}</div>
-        ${item.state == 'active' ? '<div class="processed-list-timebar"></div>' : ''}
-    </div>`;
+        let DOMElement = document.createElement('div');
+        DOMElement.classList.add('processed-list-row', `item-state-${item.state}`);
+
+        DOMElement.innerHTML = `
+            <div class="processed-list-col processed-list-item-name">
+                <a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">
+                    <img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">
+                ${item.steam_market_hash_name}</a>
+            </div>
+            <div class="processed-list-col processed-list-price">$ ${item.price} <sup>-${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>
+            <div class="processed-list-col processed-list-status">${item.state}</div>
+            <div class="processed-list-col processed-list-date">${getFullDate(new Date(item.time_finished), 2)}</div>
+            ${item.state == 'active' ? '<div class="processed-list-timebar"></div>' : ''}`;
+
+        return DOMElement;
     }
 
     updateBuyHistory() {
@@ -291,7 +295,7 @@ class SpBot {
                                     i--;
 
                                     if(historyItem.current_run) this.moneyAlreadySpent -= parseFloat(historyItem.price);
-                                    this.ui.processedListFinished.innerHTML = this.buildBoughtItemContainer(historyItem) + this.ui.processedListFinished.innerHTML;
+                                    this.ui.processedListFinished.prepend(this.buildBoughtItemContainer(historyItem));
                                     break;
 
                                 case 'finished':
@@ -299,14 +303,14 @@ class SpBot {
                                     this.pendingBuyItems.splice(i, 1);
                                     i--;
 
-                                    this.ui.processedListFinished.innerHTML = this.buildBoughtItemContainer(historyItem) + this.ui.processedListFinished.innerHTML;
+                                    this.ui.processedListFinished.prepend(this.buildBoughtItemContainer(historyItem));
                                     if(this.pendingBuyItems.length == 0 && Math.abs(this.moneyAlreadySpent - this.currentPreset.moneyToSpend) < this.currentPreset.minPriceItem) this.ui.startStopBtn.click();
                                     break;
 
                                 case 'active':
                                     if(this.pendingBuyItems[i].DOMElement !== undefined) continue;
-                                    this.ui.processedListActive.innerHTML = this.buildBoughtItemContainer(historyItem) + this.ui.processedListActive.innerHTML;
-                                    this.pendingBuyItems[i].DOMElement = document.querySelector(`#processed-bought-item-${historyItem.id}`);
+                                    this.pendingBuyItems[i].DOMElement = this.buildBoughtItemContainer(historyItem);
+                                    this.ui.processedListActive.prepend(this.pendingBuyItems[i].DOMElement);
                                     setTimeout(() => {this.pendingBuyItems[i].DOMElement.querySelector('.processed-list-timebar').style.width = '0%'}, 100);
                                     break;
                                 }
