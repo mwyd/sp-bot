@@ -253,13 +253,13 @@ class SpBot {
         let DOMElement = document.createElement('div');
         DOMElement.classList.add('processed-list-row', `item-state-${item.state}`);
 
-        DOMElement.innerHTML = `
-            <div class="processed-list-col processed-list-item-name">
+        DOMElement.innerHTML = '' +
+            `<div class="processed-list-col processed-list-item-name">
                 <a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">
                     <img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">
                 ${item.steam_market_hash_name}</a>
             </div>
-            <div class="processed-list-col processed-list-price">$ ${item.price} <sup>-${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>
+            <div class="processed-list-col processed-list-price">$ ${item.price} <sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>
             <div class="processed-list-col processed-list-status">${item.state}</div>
             <div class="processed-list-col processed-list-date">${getFullDate(new Date(item.time_finished), 2)}</div>
             ${item.state == 'active' ? '<div class="processed-list-timebar"></div>' : ''}`;
@@ -326,39 +326,39 @@ class SpBot {
     }
 
     buildAwaitingItemContainer(item) {
-        return `<div class="processed-list-row item-state-${item.state}">
-        <div class="processed-list-col processed-list-item-name">
-            <a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">
-                <img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.steam_icon_url_large}">
-            ${item.steam_market_hash_name}</a>
-        </div>
-        <div class="processed-list-col processed-list-price">$ ${item.price_market} <sup>-${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>
-        <div class="processed-list-col processed-list-status">${item.state}</div>
-        <div class="processed-list-col processed-list-date"><button data="${item.id}" class="sp-bot-buy-item-button button__green">Buy now</button></div>
-        </div>`;
+        let DOMElement = document.createElement('div');
+        DOMElement.classList.add('processed-list-row', `item-state-${item.state}`);
+
+        DOMElement.innerHTML = '' +
+            `<div class="processed-list-col processed-list-item-name">
+                <a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">
+                    <img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.steam_icon_url_large}">
+                ${item.steam_market_hash_name}</a>
+            </div>
+            <div class="processed-list-col processed-list-price">$ ${item.price_market} <sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>
+            <div class="processed-list-col processed-list-status">${item.state}</div>
+            <div class="processed-list-col processed-list-date"><button class="sp-bot-buy-item-button button__green">Buy now</button></div>`;
+
+        return DOMElement;
     }
 
-    updateAwaitingItems() {
-        let processedListAwaitingHTML = '';
-        
+    addAwaitingItem(item) {
+        if(this.awaitingBuyItems.findIndex(aItem => aItem.id == item.id) != -1) return;
+
+        item.DOMElement = this.buildAwaitingItemContainer(item);
+        item.DOMElement.querySelector('.sp-bot-buy-item-button').addEventListener('click', () => this.proceedBuy(item));
+
+        this.ui.processedListAwaiting.prepend(item.DOMElement);
+        this.awaitingBuyItems.push(item);
+    }
+
+    updateAwaitingItems() {        
         for(let i = 0; i < this.awaitingBuyItems.length; i++) {
             if(this.itemList.findIndex(item => item.id == this.awaitingBuyItems[i].id) == -1) {
+                this.awaitingBuyItems[i].DOMElement.remove();
                 this.awaitingBuyItems.splice(i, 1);
                 i--;
             }
-            else processedListAwaitingHTML += this.buildAwaitingItemContainer(this.awaitingBuyItems[i]);
-        }
-
-        this.ui.processedListAwaiting.innerHTML = processedListAwaitingHTML;
-
-        for(let buyButton of document.querySelectorAll('.sp-bot-buy-item-button')) {
-            let awaitingItem = this.awaitingBuyItems.find(aItem => aItem.id == buyButton.getAttribute('data'));
-            if(awaitingItem === undefined) continue;
-
-            buyButton.addEventListener('click', () => {
-                this.proceedBuy(awaitingItem);
-                buyButton.setAttribute('disabled', 'disabled');
-            });
         }
     }
 
@@ -466,9 +466,9 @@ class SpBot {
                                     if(data.success) {
                                         item.discount_real = getDiffAsPercentage(item.price_market, data.price_info.sell_price_num / 100);
                                         if(item.discount_real >= this.currentPreset.deal - this.currentPreset.dealMargin) this.proceedBuy(item);
-                                        else if(this.awaitingBuyItems.findIndex(aItem => aItem.id == item.id) == -1) this.awaitingBuyItems.push(item);
+                                        else this.addAwaitingItem(item);
                                     }
-                                    else if(this.awaitingBuyItems.findIndex(aItem => aItem.id == item.id) == -1) this.awaitingBuyItems.push(item);
+                                    else this.addAwaitingItem(item);
                                 });
                             }
 
@@ -489,7 +489,6 @@ class SpBot {
         }
     }
 }
-
 
 let dlhURL = new URL(document.location.href);
 if(SpBot.allowedPaths.includes(dlhURL.pathname)) {
