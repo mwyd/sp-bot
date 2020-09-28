@@ -179,7 +179,7 @@
     width: 100%;
     height: 2px;
     background: rgb(87 152 233);
-    transition: 600s linear;
+    transition: width 600s linear;
 }
 
 #processed-list-header {
