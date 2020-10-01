@@ -311,7 +311,6 @@ class SpBot {
                                     if(this.pendingBuyItems[i].DOMElement !== undefined) continue;
                                     this.pendingBuyItems[i].DOMElement = this.buildBoughtItemContainer(historyItem);
                                     this.ui.processedListActive.prepend(this.pendingBuyItems[i].DOMElement);
-                                    setTimeout(() => {this.pendingBuyItems[i].DOMElement.querySelector('.processed-list-timebar').style.width = '0%'}, 100);
                                     break;
                                 }
                         }
@@ -354,10 +353,18 @@ class SpBot {
 
     updateAwaitingItems() {        
         for(let i = 0; i < this.awaitingBuyItems.length; i++) {
-            if(this.itemList.findIndex(item => item.id == this.awaitingBuyItems[i].id) == -1) {
+            let item = this.itemList.find(item => item.id == this.awaitingBuyItems[i].id);
+            
+            if(item === undefined) {
                 this.awaitingBuyItems[i].DOMElement.remove();
                 this.awaitingBuyItems.splice(i, 1);
                 i--;
+
+                continue;
+            }
+
+            if(item.price_market != this.awaitingBuyItems[i].price_market ) {
+                this.awaitingBuyItems[i].DOMElement.querySelector('.processed-list-price').innerHTML = `$ ${item.price_market} <sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup>`;
             }
         }
     }
