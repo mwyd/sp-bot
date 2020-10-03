@@ -364,7 +364,10 @@ class SpBot {
             }
 
             if(item.price_market != this.awaitingBuyItems[i].price_market ) {
-                this.awaitingBuyItems[i].DOMElement.querySelector('.processed-list-price').innerHTML = `$ ${item.price_market} <sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup>`;
+                this.awaitingBuyItems[i].price = item.price;
+                this.awaitingBuyItems[i].price_market = item.price_market;
+                this.awaitingBuyItems[i].discount = item.discount;
+                this.awaitingBuyItems[i].DOMElement.querySelector('.processed-list-price').innerHTML = `$ ${this.awaitingBuyItems[i].price_market} <sup>${this.awaitingBuyItems[i].discount_real !== undefined ? this.awaitingBuyItems[i].discount_real + '% |': ''} ${this.awaitingBuyItems[i].discount}%</sup>`;
             }
         }
     }
