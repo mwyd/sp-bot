@@ -478,7 +478,7 @@ class SpBot {
                                         item.sp_bot_steam_price = data.price_info.sell_price_num;
                                         item.discount_real = getDiffAsPercentage(item.price_market, data.price_info.sell_price_num / 100);
                                         item.sp_bot_steam_price = data.price_info.sell_price_num;
-                                        if(item.discount_real >= this.currentPreset.deal - this.currentPreset.dealMargin && data.price_info.sell_offers_amount > 100000) this.proceedBuy(item);
+                                        if(item.discount_real >= this.currentPreset.deal - this.currentPreset.dealMargin) this.proceedBuy(item);
                                         else this.addAwaitingItem(item);
                                     }
                                     else this.addAwaitingItem(item);
