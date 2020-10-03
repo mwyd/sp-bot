@@ -367,6 +367,7 @@ class SpBot {
                 this.awaitingBuyItems[i].price = item.price;
                 this.awaitingBuyItems[i].price_market = item.price_market;
                 this.awaitingBuyItems[i].discount = item.discount;
+                this.awaitingBuyItems[i].discount_real = getDiffAsPercentage(item.price_market, this.awaitingBuyItems[i].sp_bot_steam_price / 100);
                 this.awaitingBuyItems[i].DOMElement.querySelector('.processed-list-price').innerHTML = `$ ${this.awaitingBuyItems[i].price_market} <sup>${this.awaitingBuyItems[i].discount_real !== undefined ? this.awaitingBuyItems[i].discount_real + '% |': ''} ${this.awaitingBuyItems[i].discount}%</sup>`;
             }
         }
@@ -474,8 +475,10 @@ class SpBot {
                                 chrome.runtime.sendMessage({action: 'get_price', params: {hash_name: item.steam_market_hash_name}}, res => {
                                     const {data} = res;
                                     if(data.success) {
+                                        item.sp_bot_steam_price = data.price_info.sell_price_num;
                                         item.discount_real = getDiffAsPercentage(item.price_market, data.price_info.sell_price_num / 100);
-                                        if(item.discount_real >= this.currentPreset.deal - this.currentPreset.dealMargin) this.proceedBuy(item);
+                                        item.sp_bot_steam_price = data.price_info.sell_price_num;
+                                        if(item.discount_real >= this.currentPreset.deal - this.currentPreset.dealMargin && data.price_info.sell_offers_amount > 100000) this.proceedBuy(item);
                                         else this.addAwaitingItem(item);
                                     }
                                     else this.addAwaitingItem(item);
