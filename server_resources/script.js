@@ -51,7 +51,7 @@ class SpBot {
         this.ui.botHeader.setAttribute('class', 'sp-bot-header');
         this.ui.botHeader.innerHTML = botHTML;
 
-        document.querySelector('.justify-content-center.marketplace-header').before(this.ui.botHeader);
+        document.querySelector('.justify-content-center.marketplace-header').prepend(this.ui.botHeader);
 
         //set up bot ui
         this.ui.marketplaceSearch = document.querySelector('div.marketplace-inventory-search').childNodes[0];
