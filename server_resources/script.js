@@ -33,9 +33,9 @@ class SpBot {
         this.currentPreset = this.presets.get('default');
 
         this.apiUrls = {
-            getItems: 'https://shadowpay.com/api/market/get_items?types=[]&exteriors=[]&rarities=[]&collections=[]&item_subcategories=[]&float=%7B%22from%22:0,%22to%22:1%7D&price_from=0&price_to=12958.58&game=csgo&stickers=[]&count_stickers=[]&short_name=&search=&stack=false&sort=desc&sort_column=price_rate&limit=50&offset=0',
-            buyItem: 'https://shadowpay.com/api/market/buy_item',
-            getBuyHistory: 'https://shadowpay.com/en/profile/get_bought_history'
+            getItems: 'https://api.shadowpay.com/api/market/get_items?types=[]&exteriors=[]&rarities=[]&collections=[]&item_subcategories=[]&float=%7B%22from%22:0,%22to%22:1%7D&price_from=0&price_to=12558.58&game=csgo&stickers=[]&count_stickers=[]&short_name=&search=&stack=false&sort=desc&sort_column=price_rate&limit=50&offset=0',
+            buyItem: 'https://api.shadowpay.com/api/market/buy_item',
+            getBuyHistory: 'https://api.shadowpay.com/en/profile/get_bought_history'
         }
 
         this.initUi();
@@ -453,7 +453,7 @@ class SpBot {
                 this.itemList = [];
                 if(Math.abs(this.moneyAlreadySpent - this.currentPreset.moneyToSpend) >= this.currentPreset.minPriceItem) {
                     try {    
-                        const response = await fetch(this.apiUrls.getItems);
+                        const response = await fetch(this.apiUrls.getItems, {credentials: 'include'});
                         let data = await response.json();
 
                         if(data.status == "success") {
@@ -502,8 +502,15 @@ class SpBot {
     }
 }
 
-let dlhURL = new URL(document.location.href);
-if(SpBot.allowedPaths.includes(dlhURL.pathname)) {
-    const spBot = new SpBot();
-    spBot.run();
+function initBot() {
+    if(document.readyState == 'complete') {
+        let dlhURL = new URL(document.location.href);
+        if(SpBot.allowedPaths.includes(dlhURL.pathname)) {
+            const spBot = new SpBot();
+            spBot.run();
+        }
+    }
+    else setTimeout(initBot, 1000);
 }
+
+initBot();
