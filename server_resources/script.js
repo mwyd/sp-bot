@@ -2,7 +2,7 @@ class SpBot {
     static allowedPaths = [
         '/en/',
         '/en'
-    ]
+    ];
 
     constructor() {
         this.runDelay = 4;
@@ -254,15 +254,15 @@ class SpBot {
         DOMElement.classList.add('processed-list-row', `item-state-${item.state}`);
 
         DOMElement.innerHTML = '' +
-            `<div class="processed-list-col processed-list-item-name">
-                <a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">
-                    <img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">
-                ${item.steam_market_hash_name}</a>
-            </div>
-            <div class="processed-list-col processed-list-price">$ ${item.price} <sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>
-            <div class="processed-list-col processed-list-status">${item.state}</div>
-            <div class="processed-list-col processed-list-date">${getFullDate(new Date(item.time_finished), 2)}</div>
-            ${item.state == 'active' ? '<div class="processed-list-timebar"></div>' : ''}`;
+            `<div class="processed-list-col processed-list-item-name">` +
+                `<a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">` +
+                    `<img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">` +
+                `${item.steam_market_hash_name}</a>` +
+            `</div>` +
+            `<div class="processed-list-col processed-list-price">$ ${item.price} <sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>` +
+            `<div class="processed-list-col processed-list-status">${item.state}</div>` +
+            `<div class="processed-list-col processed-list-date">${getFullDate(new Date(item.time_finished), 2)}</div>` +
+            `${item.state == 'active' ? '<div class="processed-list-timebar"></div>' : ''}`;
 
         return DOMElement;
     }
@@ -336,14 +336,14 @@ class SpBot {
         DOMElement.classList.add('processed-list-row', `item-state-${item.state}`);
 
         DOMElement.innerHTML = '' +
-            `<div class="processed-list-col processed-list-item-name">
-                <a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">
-                    <img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.steam_icon_url_large}">
-                ${item.steam_market_hash_name}</a>
-            </div>
-            <div class="processed-list-col processed-list-price">$ ${item.price_market} <sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>
-            <div class="processed-list-col processed-list-status">${item.state}</div>
-            <div class="processed-list-col processed-list-date"><button class="sp-bot-buy-item-button button__green">Buy now</button></div>`;
+            `<div class="processed-list-col processed-list-item-name">` +
+                `<a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">` +
+                    `<img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.steam_icon_url_large}">` +
+                `${item.steam_market_hash_name}</a>` +
+            `</div>` +
+            `<div class="processed-list-col processed-list-price">$ ${item.price_market} <sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>` +
+            `<div class="processed-list-col processed-list-status">${item.state}</div>` +
+            `<div class="processed-list-col processed-list-date"><button class="sp-bot-buy-item-button button__green">Buy now</button></div>`;
 
         return DOMElement;
     }
