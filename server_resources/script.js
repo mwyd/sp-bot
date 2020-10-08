@@ -269,7 +269,14 @@ class SpBot {
 
     updateBuyHistory() {
         chrome.runtime.sendMessage({action: 'get_bought_items_counter', params: {}}, res => {
-            fetch(this.apiUrls.getBuyHistory, fetchPostConfig(`page=1&limit=${res.data}&sort_column=time_finished&sort_dir=desc&custom_id=&date_start=${getFullDate(new Date(this.initDate), -2)}&date_end=&state=all`))
+            fetch(this.apiUrls.getBuyHistory, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `page=1&limit=${res.data}&sort_column=time_finished&sort_dir=desc&custom_id=&date_start=${getFullDate(new Date(this.initDate), -2)}&date_end=&state=all`
+            })
             .then(res => res.json())
             .then(data => {
                 switch(data.status) {
@@ -411,7 +418,14 @@ class SpBot {
             }
             this.pendingBuyItems.push(pendingBuyItem);
 
-            fetch(this.apiUrls.buyItem, fetchPostConfig(`id=${item.id}&price=${item.price_market}&csrf_token=${this.csrfCookie}`))
+            fetch(this.apiUrls.buyItem, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `id=${item.id}&price=${item.price_market}&csrf_token=${this.csrfCookie}`
+            })
             .then(res => res.json())
             .then(data => {
                 switch(data.status) {
