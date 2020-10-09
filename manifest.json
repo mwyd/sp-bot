@@ -1,9 +1,8 @@
 {
-    "name": "SP-BOT dev local",
+    "name": "SP-BOT",
     "version": "1.0",
     "description": "Bot that buys items",
     "content_scripts": [{
-        "css": ["style.css"],
         "js": ["lib/func.js", "index.js"],
         "matches": ["https://shadowpay.com/*"]
       }],
