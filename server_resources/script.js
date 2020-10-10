@@ -402,9 +402,9 @@ class SpBot {
         }
     }
 
-    proceedBuy(item) {
-        if(this.pendingBuyItems.findIndex(pendingItem => pendingItem.itemId == item.id) != -1) return;
-        if(parseFloat(item.price_market) + this.moneyAlreadySpent <= this.currentPreset.moneyToSpend) {
+    proceedBuy(item, rePurchase = false) {
+        if(rePurchase == false && this.pendingBuyItems.findIndex(pendingItem => pendingItem.itemId == item.id) != -1) return;
+        if(rePurchase == true || parseFloat(item.price_market) + this.moneyAlreadySpent <= this.currentPreset.moneyToSpend) {
             this.moneyAlreadySpent += parseFloat(item.price_market);
 
             const pendingBuyItem = {
@@ -433,6 +433,7 @@ class SpBot {
                         switch(data.error_message) {
                             case 'wrong_token':
                                 this.csrfCookie = data.token;
+                                this.proceedBuy(item, true);
                                 break;
                         }
 
@@ -506,7 +507,7 @@ class SpBot {
                         this.bLog('\n', new Error(err));
                     }
                 }
-                //this.bLog('', this)
+                this.bLog('', this)
                 if(this.pendingBuyItems.length > 0) this.updateBuyHistory();
                 if(this.awaitingBuyItems.length > 0 ) this.updateAwaitingItems();
                 this.ui.moneySpentContainer.innerHTML = `$ ${this.moneyAlreadySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`;
