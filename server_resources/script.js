@@ -507,7 +507,7 @@ class SpBot {
                         this.bLog('\n', new Error(err));
                     }
                 }
-                this.bLog('', this)
+                //this.bLog('', this)
                 if(this.pendingBuyItems.length > 0) this.updateBuyHistory();
                 if(this.awaitingBuyItems.length > 0 ) this.updateAwaitingItems();
                 this.ui.moneySpentContainer.innerHTML = `$ ${this.moneyAlreadySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`;
