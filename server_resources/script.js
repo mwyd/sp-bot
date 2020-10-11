@@ -151,7 +151,7 @@ class SpBot {
         this.ui.dealMarginIn.addEventListener('input', e => this.inputOnInput(e, this.currentPreset.dealMargin));
         this.ui.dealMarginIn.addEventListener('keydown', (e) => {
             if(e.keyCode == this.submitKeyCode) {
-                validateNumberInput(e.target, -(100 - this.currentPreset.deal), this.currentPreset.deal);
+                validateNumberInput(e.target, -this.currentPreset.deal, (100 - this.currentPreset.deal));
                 this.currentPreset.dealMargin = parseInt(e.target.value);
                 e.target.value  = this.currentPreset.dealMargin;
                 e.target.classList.replace('input__value-not-ok', 'input__value-ok');
@@ -492,7 +492,7 @@ class SpBot {
                                     if(data.success) {
                                         item.sp_bot_steam_price = data.price_info.sell_price / 100;
                                         item.discount_real = getDiffAsPercentage(item.price_market, item.sp_bot_steam_price);
-                                        if(item.discount_real >= this.currentPreset.deal - (this.currentPreset.dealMargin) && data.price_info.volume > 1) this.proceedBuy(item);
+                                        if(item.discount_real >= this.currentPreset.deal + (this.currentPreset.dealMargin) && data.price_info.volume > 1) this.proceedBuy(item);
                                         else this.addAwaitingItem(item);
                                     }
                                     else this.addAwaitingItem(item);
