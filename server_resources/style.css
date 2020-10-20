@@ -32,6 +32,7 @@
 
 #sp-bot-content {
     height: auto;
+    visibility: visible;
     width: 100%;
     display: flex;
     background-color: var(--main-page-color);
@@ -138,7 +139,7 @@
     background-color: var(--header-color);
     color: var(--subname-text-color);
     border: none;
-    transition: .5s ease;
+    transition: border 0.5s ease;
 }
 
 .input__value-ok {
