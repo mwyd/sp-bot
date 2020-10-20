@@ -111,8 +111,14 @@ class SpBot {
         //togglevisible btn events
         this.ui.toggleVisible.addEventListener("click", () => {
             let spBotContent = document.querySelector("#sp-bot-content");
-            if(spBotContent.style.display == "flex" || spBotContent.style.display == "") spBotContent.style.display = "none";
-            else spBotContent.style.display = "flex";
+            if(spBotContent.style.visibility == "visible" || spBotContent.style.visibility == "") {
+                spBotContent.style.visibility = "hidden";
+                spBotContent.style.height = "0";
+            }
+            else {
+                spBotContent.style.visibility = "visible";
+                spBotContent.style.height = "auto";
+            }
         });
 
         //auto refresh items checkbox events
@@ -281,10 +287,9 @@ class SpBot {
             .then(data => {
                 switch(data.status) {
                     case 'success':
-                        for(let i = 0; i < this.pendingBuyItems.length; i++) {
+                        for(let i = this.pendingBuyItems.length - 1; i >= 0 ; i--) {
                             if(this.pendingBuyItems[i].status == 'error') {
                                 this.pendingBuyItems.splice(i, 1);
-                                i--;
                                 continue;
                             }
 
@@ -299,25 +304,23 @@ class SpBot {
                                 case 'cancelled':
                                     this.pendingBuyItems[i].DOMElement.remove();
                                     this.pendingBuyItems.splice(i, 1);
-                                    i--;
 
                                     if(historyItem.current_run) this.moneyAlreadySpent -= parseFloat(historyItem.price);
-                                    this.ui.processedListFinished.prepend(this.buildBoughtItemContainer(historyItem));
+                                    this.ui.processedListFinished.appendChild(this.buildBoughtItemContainer(historyItem));
                                     break;
 
                                 case 'finished':
                                     this.pendingBuyItems[i].DOMElement.remove();
                                     this.pendingBuyItems.splice(i, 1);
-                                    i--;
 
-                                    this.ui.processedListFinished.prepend(this.buildBoughtItemContainer(historyItem));
+                                    this.ui.processedListFinished.appendChild(this.buildBoughtItemContainer(historyItem));
                                     if(this.pendingBuyItems.length == 0 && Math.abs(this.moneyAlreadySpent - this.currentPreset.moneyToSpend) < this.currentPreset.minPriceItem) this.ui.startStopBtn.click();
                                     break;
 
                                 case 'active':
                                     if(this.pendingBuyItems[i].DOMElement !== undefined) continue;
                                     this.pendingBuyItems[i].DOMElement = this.buildBoughtItemContainer(historyItem);
-                                    this.ui.processedListActive.prepend(this.pendingBuyItems[i].DOMElement);
+                                    this.ui.processedListActive.appendChild(this.pendingBuyItems[i].DOMElement);
                                     break;
                                 }
                         }
@@ -359,14 +362,12 @@ class SpBot {
     }
 
     updateAwaitingItems() {        
-        for(let i = 0; i < this.awaitingBuyItems.length; i++) {
+        for(let i = this.awaitingBuyItems.length - 1; i >= 0; i--) {
             let item = this.itemList.find(item => item.id == this.awaitingBuyItems[i].id);
             
             if(item === undefined) {
                 this.awaitingBuyItems[i].DOMElement.remove();
                 this.awaitingBuyItems.splice(i, 1);
-                i--;
-
                 continue;
             }
 
