@@ -306,21 +306,21 @@ class SpBot {
                                     this.pendingBuyItems.splice(i, 1);
 
                                     if(historyItem.current_run) this.moneyAlreadySpent -= parseFloat(historyItem.price);
-                                    this.ui.processedListFinished.appendChild(this.buildBoughtItemContainer(historyItem));
+                                    this.ui.processedListFinished.prepend(this.buildBoughtItemContainer(historyItem));
                                     break;
 
                                 case 'finished':
                                     this.pendingBuyItems[i].DOMElement.remove();
                                     this.pendingBuyItems.splice(i, 1);
 
-                                    this.ui.processedListFinished.appendChild(this.buildBoughtItemContainer(historyItem));
+                                    this.ui.processedListFinished.prepend(this.buildBoughtItemContainer(historyItem));
                                     if(this.pendingBuyItems.length == 0 && Math.abs(this.moneyAlreadySpent - this.currentPreset.moneyToSpend) < this.currentPreset.minPriceItem) this.ui.startStopBtn.click();
                                     break;
 
                                 case 'active':
                                     if(this.pendingBuyItems[i].DOMElement !== undefined) continue;
                                     this.pendingBuyItems[i].DOMElement = this.buildBoughtItemContainer(historyItem);
-                                    this.ui.processedListActive.appendChild(this.pendingBuyItems[i].DOMElement);
+                                    this.ui.processedListActive.prepend(this.pendingBuyItems[i].DOMElement);
                                     break;
                                 }
                         }
