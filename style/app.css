@@ -1,0 +1,15 @@
+.spb-flex {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#spb-root {
+    height: 100vh;
+    width: 50px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    flex-direction: column;
+    z-index: 100;
+}

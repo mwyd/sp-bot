@@ -3,7 +3,15 @@
     "version": "2.0",
     "description": "",
     "content_scripts": [{
-        "js": ["content/func.js", "index.js"],
+        "js": [
+          "/content/Vue.js",
+          "/content/Tab.js",
+          "index.js"
+        ],
+        "css": [
+          "/style/app.css",
+          "/style/tab.css"
+        ],
         "matches": ["https://shadowpay.com/*"]
       }],
     "background": {
@@ -11,8 +19,6 @@
     },
     "manifest_version": 2,
     "web_accessible_resources": [
-      "/assets/audio/Jestem_zrujnowany.mp3",
-      "/user_data/presets.json",
-      "/html/bot.html"
+      "/assets/audio/Jestem_zrujnowany.mp3"
     ]
 }
