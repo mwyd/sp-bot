@@ -4,6 +4,13 @@
     justify-content: center;
 }
 
+.spb-header-3 {
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 27px;
+    white-space: nowrap;
+}
+
 #spb-root {
     height: 100vh;
     width: 50px;

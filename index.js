@@ -5,12 +5,26 @@ function initRoot() {
     root.classList.add('spb-flex')
 
     root.innerHTML = `
-        <tab-btn 
-            v-for="tab in activeTabs" 
+        <tab 
+            v-for="(tab, index) in staticTabs" 
             v-bind:ico="tab.ico" 
-            v-bind:window="tab.window" 
-            v-bind:key="tab.id">
-        </tab-btn>
+            v-bind:static="true" 
+            v-bind:index="index"  
+            v-bind:child="index == 0 ? 'home' : 'settings'" 
+            v-bind:key="'static-tab-' + index">
+        </tab>
+        <div class="spb-tab">
+            <div v-on:click="addTab" class="spb-tab-btn spb-flex">+</div>
+        </div>
+        <tab 
+            v-for="(tab, index) in dynamicTabs" 
+            v-bind:ico="tab.ico" 
+            v-bind:static="false" 
+            v-bind:index="index" 
+            v-bind:child="'bot-settings'" 
+            v-on:close="closeTab" 
+            v-bind:key="'dynamic-tab-' + index">
+        </tab>
     `
 
     return root
@@ -23,22 +37,28 @@ window.onload = () => {
     const app = new Vue({
         el: root,
         data: {
-            activeTabs: [
-                {id: 0, name: 'Home', ico: 'H', window: true},
-                {id: 1, name: 'Settings', ico: 'S', window: true},
-                {id: 2, name: 'New bot', ico: '+', window: false}
-            ]
+            staticTabs: [
+                {name: 'Home', ico: 'H'},
+                {name: 'Settings', ico: 'S'}
+            ],
+            dynamicTabs: [],
+            dynmaicTabsLimit: 10
         },
         methods: {
-            addTab: function() {
-                vue = this
+            addTab() {
+                vm = this
+
+                id = vm.dynamicTabs.length
+                if(id >= this.dynmaicTabsLimit) return
+
                 let tab = {
-                    id: vue.activeTabs.length,
-                    name: `Bot${id}`,
-                    ico: `$B{id}`,
-                    window: true
+                    name: `Bot-${id}`,
+                    ico: `B`,
                 }
-                vue.activeTabs.push(tab)
+                vm.dynamicTabs = [tab, ...vm.dynamicTabs]
+            },
+            closeTab(index) {
+                this.dynamicTabs.splice(index, 1)
             }
         }
     })

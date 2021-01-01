@@ -1,0 +1,32 @@
+.spb-home {
+    width: 700px;
+}
+
+.spb-history__col {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 4px;
+}
+
+.spb-item-name {
+    width: 50%;
+}
+
+.spb-item-price {
+    width: 15%;
+}
+
+.spb-item-price sup {
+    vertical-align: sub;
+    font-size: 1em;
+    color: #ff9200;
+}
+
+.spb-item-status {
+    width: 15%;
+}
+
+.spb-item-date {
+    width: 20%;
+}

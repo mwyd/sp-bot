@@ -1,31 +1,43 @@
-.tab-btn--wrapper {
+.spb-tab {
     height: 50px;
     width: 50px;
     padding: 5px;
     position: relative;
 }
 
-.tab-btn {
+.spb-tab-btn {
     height: 100%;
     width: 100%;
     border-radius: 10px;
+    font-size: 16px;
     cursor: pointer;
     background-color: lightgray;
 }
 
-.tab-window {
+.spb-tab-window {
     position: absolute;
+    padding: 10px;
     top: 5px;
-    height: 200px;
-    width: 200px;
+    min-height: 40px;
+    min-width: 40px;
     border-radius: 10px;
     background-color: lightgray;
 }
 
-.active {
+.spb-tab-close {
+    position: absolute;
+    height: 12px;
+    width: 12px;
+    background: red;
+    right: 0px;
+    top: 0px;
+    border-radius: 100%;
+}
+
+.spb-active {
     left: 50px;
 }
 
-.hidden {
+.spb-hidden {
     left: -1000px;
 }

@@ -5,10 +5,15 @@
     "content_scripts": [{
         "js": [
           "/content/Vue.js",
+          "/content/BotSettings.js",
+          "/content/Settings.js",
+          "/content/Home.js",
           "/content/Tab.js",
           "index.js"
         ],
         "css": [
+          "/style/botSettings.css",
+          "/style/home.css",
           "/style/app.css",
           "/style/tab.css"
         ],
