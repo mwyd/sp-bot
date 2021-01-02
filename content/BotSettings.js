@@ -17,6 +17,7 @@ Vue.component('bot-settings', {
             awaitingBuyItems: [],
             pendingBuyItems: [],
             isRunning: false,
+            updateUrl: false,
             notifiSound: new Audio(chrome.extension.getURL('/assets/audio/Jestem_zrujnowany.mp3')),
             initDate: new Date(),
             apiUrls: {
@@ -128,10 +129,131 @@ Vue.component('bot-settings', {
                 this.moneyAlreadySpent = 0
             }
         },
+        updateGetItemsUrl() {
+            if(this.updateUrl) {
+                let getItemsURL = new URL(this.apiUrls.getItems)
+
+                getItemsURL.searchParams.set('price_from', this.settings.minPrice)
+                getItemsURL.searchParams.set('price_to', this.settings.maxPrice)
+                getItemsURL.searchParams.set('search', this.settings.search)
+
+                this.apiUrls.getItems = getItemsURL.toString()
+                this.updateUrl = false
+            }
+        },
+        proceedBuy(item, rePurchase = false) {
+            if(rePurchase == false && this.pendingBuyItems.findIndex(pendingItem => pendingItem.itemId == item.id) != -1) return
+            if(rePurchase == true || parseFloat(item.price_market) + this.moneyAlreadySpent <= this.currentPreset.moneyToSpend) {
+                this.moneyAlreadySpent += parseFloat(item.price_market)
+    
+                const pendingBuyItem = {
+                    id: undefined,
+                    itemId: item.id,
+                    discount: item.discount,
+                    discount_real: item.discount_real,
+                    current_run: true,
+                    DOMElement: undefined,
+                    status: 'pending'
+                }
+                this.pendingBuyItems.push(pendingBuyItem)
+    
+                fetch(this.apiUrls.buyItem, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `id=${item.id}&price=${item.price_market}&csrf_token=${this.csrfCookie}`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    switch(data.status) {
+                        case "error":
+                            switch(data.error_message) {
+                                case 'wrong_token':
+                                    this.csrfCookie = data.token
+                                    this.proceedBuy(item, true)
+                                    break
+                            }
+    
+                            pendingBuyItem.status = 'error'
+                            this.moneyAlreadySpent -= parseFloat(item.price_market)
+                            break
+                            
+                        case "success":
+                            pendingBuyItem.id = data.id
+                            pendingBuyItem.status = 'success'
+                            
+                            chrome.runtime.sendMessage({action: 'buy_item', params: {}})
+                            this.notifiSound.play()
+                            break;
+                    }
+                    //this.bLog('Buy info', data)
+                    console.log(data)
+                })
+                .catch(err => {
+                    pendingBuyItem.status = 'error'
+                    this.moneyAlreadySpent -= parseFloat(item.price_market)
+    
+                    /*this.ui.errorDot.setAttribute('class', 'button__red');*/
+                    //this.bLog('\n', new Error(err))
+                    console.log(err)
+                })
+            }
+        },
         async run() {
             this.toggleStart()
             while(this.isRunning) {
-                console.log(1)
+                this.updateGetItemsUrl()
+                this.itemList = []
+                if(Math.abs(this.moneyAlreadySpent - this.settings.toSpend) >= this.settings.minPrice) {
+                    try {    
+                        const response = await fetch(this.apiUrls.getItems, {credentials: 'include'})
+                        let data = await response.json()
+
+                        if(data.status == "success") {
+                            this.itemList = Array.from(data.items)
+                
+                            this.itemList = this.itemList.filter(item => !item.is_my_item)
+                            this.itemList = this.itemList.filter(item => {
+                                return (item.discount >= this.settings.deal && item.price_market >= this.settings.minPrice) || item.discount >= this.settings.hotDeal
+                            })
+                
+                            this.itemList.sort((itemC, itemN) => { 
+                                let itemCPriceF = parseFloat(itemC.price_market)
+                                if(itemCPriceF < itemN.price_market) return 1
+                                if(itemCPriceF > itemN.price_market) return -1
+                                return 0
+                            })
+
+                            for(let item of this.itemList) {
+                                chrome.runtime.sendMessage({action: 'get_price', params: {hash_name: item.steam_market_hash_name}}, res => {
+                                    const {data} = res
+                                    if(data.success) {
+                                        item.sp_bot_steam_price = data.price_info.sell_price / 100
+                                        console.log(item.sp_bot_steam_price)
+                                        item.discount_real = getDiffAsPercentage(item.price_market, item.sp_bot_steam_price)
+                                        if(item.discount_real >= this.currentPreset.deal + (this.currentPreset.dealMargin) && data.price_info.volume > 1) this.proceedBuy(item)
+                                        else this.addAwaitingItem(item)
+                                    }
+                                    else this.addAwaitingItem(item)
+                                })
+                            }
+
+                            if(this.itemList.length > 0) console.log(this.itemList)
+                        }
+                    }
+                    catch(err) {
+                        /*this.ui.errorDot.setAttribute('class', 'button__red');
+                        this.bLog('\n', new Error(err));*/
+                        console.log(err)
+                    }
+                }
+                //this.bLog('', this)
+                /*if(this.pendingBuyItems.length > 0) this.updateBuyHistory();
+                if(this.awaitingBuyItems.length > 0 ) this.updateAwaitingItems();
+                this.ui.moneySpentContainer.innerHTML = `$ ${this.moneyAlreadySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`;
+                    */
                 await new Promise(r => setTimeout(r, 1000 * this.settings.runDelay))
             }
         },
@@ -212,6 +334,7 @@ Vue.component('bot-settings', {
 
                 case 'minPrice':
                     if(this.validate(e.target.value, 0, null)) {
+                        this.updateUrl = true
                         this.settings.minPrice = parseFloat(e.target.value)
                         e.target.classList.replace('input--val-wrong', 'input--val-ok')
                     }
@@ -220,6 +343,7 @@ Vue.component('bot-settings', {
 
                 case 'maxPrice':
                     if(this.validate(e.target.value, 0, null)) {
+                        this.updateUrl = true
                         this.settings.maxPrice = parseFloat(e.target.value)
                         e.target.classList.replace('input--val-wrong', 'input--val-ok')
                     }
@@ -235,6 +359,7 @@ Vue.component('bot-settings', {
                     break
 
                 case 'search':
+                    this.updateUrl = true
                     this.settings.search = e.target.value
                     e.target.classList.replace('input--val-wrong', 'input--val-ok')
                     break
@@ -248,6 +373,9 @@ Vue.component('bot-settings', {
                     break
             }
         }
+    },
+    beforeMount() {
+        this.csrfCookie = getCookie('csrf_cookie')
     },
     beforeDestroy() {
         this.isRunning = false

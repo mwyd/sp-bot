@@ -4,6 +4,7 @@
     "description": "",
     "content_scripts": [{
         "js": [
+          "/content/functions.js",
           "/content/Vue.js",
           "/content/BotSettings.js",
           "/content/Settings.js",
