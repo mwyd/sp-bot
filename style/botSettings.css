@@ -2,19 +2,19 @@
     flex-direction: column;
 }
 
-.button--green {
+.spb-button--green {
     background: linear-gradient(45deg, #4ddf9a, #2fbc90);
 }
 
-.button--green:hover {
+.spb-button--green:hover {
     background: linear-gradient(45deg, #2fbc90, #4ddf9a);
 }
 
-.button--red {
+.spb-button--red {
     background: linear-gradient(45deg, rgb(233 87 87), rgb(140 50 50))
 }
 
-.button--red:hover {
+.spb-button--red:hover {
     background: linear-gradient(45deg, rgb(140 50 50), rgb(233 87 87))
 }
 
@@ -23,6 +23,7 @@
     height: 32px;
     font-size: 14px;
     border-radius: 5px;
+    padding-left: 10px;
     box-shadow: none;
     outline: none;
     border: none;
