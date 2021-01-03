@@ -17,6 +17,12 @@ function getCookie(cname) {
     return ""
 }
 
+function getFullDate(dateObj, timeZoneDiff = 0) {
+    dateObj.setTime(dateObj.getTime() - dateObj.getTimezoneOffset() * 60 * 500 * timeZoneDiff);
+    let dmy = dateObj.toLocaleDateString().split('.');
+    return `${dmy[2]}-${dmy[1].padStart(2, '0')}-${dmy[0].padStart(2, '0')} ${dateObj.toLocaleTimeString()}`
+}
+
 function getDiffAsPercentage(num1, num2) {
     return Math.round((1 - (num1 / num2)) * 100);
 }

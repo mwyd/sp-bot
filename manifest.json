@@ -6,14 +6,14 @@
         "js": [
           "/content/functions.js",
           "/content/Vue.js",
-          "/content/BotSettings.js",
+          "/content/Bot.js",
           "/content/Settings.js",
           "/content/Home.js",
           "/content/Tab.js",
           "index.js"
         ],
         "css": [
-          "/style/botSettings.css",
+          "/style/bot.css",
           "/style/home.css",
           "/style/app.css",
           "/style/tab.css"

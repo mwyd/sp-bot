@@ -1,4 +1,4 @@
-Vue.component('bot-settings', {
+Vue.component('bot', {
     data: function() {
         return {
             settings: {
@@ -17,13 +17,18 @@ Vue.component('bot-settings', {
             awaitingBuyItems: [],
             pendingBuyItems: [],
             isRunning: false,
-            updateUrl: false,
+            updateUrl: true,
             notifiSound: new Audio(chrome.extension.getURL('/assets/audio/Jestem_zrujnowany.mp3')),
             initDate: new Date(),
             apiUrls: {
                 getItems: 'https://api.shadowpay.com/api/market/get_items?types=[]&exteriors=[]&rarities=[]&collections=[]&item_subcategories=[]&float=%7B%22from%22:0,%22to%22:1%7D&price_from=0&price_to=12558.58&game=csgo&stickers=[]&count_stickers=[]&short_name=&search=&stack=false&sort=desc&sort_column=price_rate&limit=50&offset=0',
                 buyItem: 'https://api.shadowpay.com/api/market/buy_item',
                 getBuyHistory: 'https://api.shadowpay.com/en/profile/get_bought_history'
+            },
+            DOM: {
+                awaitingContainer: document.querySelector('.spb-history__awaiting'),
+                activeContainer: document.querySelector('.spb-history__active'),
+                finishedContainer: document.querySelector('.spb-history__finished')
             }
         }
     },
@@ -141,9 +146,54 @@ Vue.component('bot-settings', {
                 this.updateUrl = false
             }
         },
+        buildAwaitingItemContainer(item) {
+            let DOMElement = document.createElement('div')
+            DOMElement.classList.add('spb-history-row', `spb-item-state-${item.state}`, 'spb-flex')
+    
+            DOMElement.innerHTML = '' +
+                `<div class="spb-history__col spb-item-name">` +
+                    `<a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">` +
+                        `<img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.steam_icon_url_large}">` +
+                    `${item.steam_market_hash_name}</a>` +
+                `</div>` +
+                `<div class="spb-history__col spb-item-price">$ ${item.price_market} <sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>` +
+                `<div class="spb-history__col spb-item-status">${item.state}</div>` +
+                `<div class="spb-history__col spb-item-date"><button class="spb-buy-button spb-button--green">Buy now</button></div>`
+    
+            return DOMElement
+        },
+        addAwaitingItem(item) {
+            if(this.awaitingBuyItems.findIndex(aItem => aItem.id == item.id) != -1) return
+    
+            item.DOMElement = this.buildAwaitingItemContainer(item)
+            item.DOMElement.querySelector('.spb-buy-button').addEventListener('click', () => {this.proceedBuy(item)})
+    
+            this.DOM.awaitingContainer.prepend(item.DOMElement)
+            this.awaitingBuyItems.push(item)
+        },
+        updateAwaitingItems() {        
+            for(let i = this.awaitingBuyItems.length - 1; i >= 0; i--) {
+                let item = this.itemList.find(item => item.id == this.awaitingBuyItems[i].id)
+                
+                if(item === undefined) {
+                    this.awaitingBuyItems[i].DOMElement.remove()
+                    this.awaitingBuyItems.splice(i, 1)
+                    continue
+                }
+    
+                if(item.price_market != this.awaitingBuyItems[i].price_market ) {
+                    this.awaitingBuyItems[i].price = item.price
+                    this.awaitingBuyItems[i].price_market = item.price_market
+                    this.awaitingBuyItems[i].discount = item.discount
+                    this.awaitingBuyItems[i].discount_real = getDiffAsPercentage(item.price_market, this.awaitingBuyItems[i].sp_bot_steam_price)
+                    this.awaitingBuyItems[i].DOMElement.querySelector('.spb-item-price').innerHTML = `
+                        $ ${this.awaitingBuyItems[i].price_market} <sup>${this.awaitingBuyItems[i].discount_real !== undefined ? this.awaitingBuyItems[i].discount_real + '% |': ''} ${this.awaitingBuyItems[i].discount}%</sup>`
+                }
+            }
+        },
         proceedBuy(item, rePurchase = false) {
             if(rePurchase == false && this.pendingBuyItems.findIndex(pendingItem => pendingItem.itemId == item.id) != -1) return
-            if(rePurchase == true || parseFloat(item.price_market) + this.moneyAlreadySpent <= this.currentPreset.moneyToSpend) {
+            if(rePurchase == true || parseFloat(item.price_market) + this.moneyAlreadySpent <= this.settings.toSpend) {
                 this.moneyAlreadySpent += parseFloat(item.price_market)
     
                 const pendingBuyItem = {
@@ -201,6 +251,84 @@ Vue.component('bot-settings', {
                 })
             }
         },
+        buildBoughtItemContainer(item) {
+            let DOMElement = document.createElement('div')
+            DOMElement.classList.add('spb-history-row', `spb-item-state-${item.state}`, 'spb-flex')
+    
+            DOMElement.innerHTML = '' +
+                `<div class="spb-history__col spb-item-name">` +
+                    `<a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">` +
+                        `<img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">` +
+                    `${item.steam_market_hash_name}</a>` +
+                `</div>` +
+                `<div class="spb-history__col spb-item-price">$ ${item.price} <sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>` +
+                `<div class="spb-history__col spb-item-status">${item.state}</div>` +
+                `<div class="spb-history__col spb-item-date">${getFullDate(new Date(item.time_finished), -2)}</div>` +
+                `${item.state == 'active' ? '<div class="spb-item-timebar"></div>' : ''}`
+    
+            return DOMElement
+        },
+        updateBuyHistory() {
+            chrome.runtime.sendMessage({action: 'get_bought_items_counter', params: {}}, res => {
+                fetch(this.apiUrls.getBuyHistory, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `page=1&limit=${res.data}&sort_column=time_finished&sort_dir=desc&custom_id=&date_start=${getFullDate(new Date(this.initDate), -2)}&date_end=&state=all`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    switch(data.status) {
+                        case 'success':
+                            for(let i = this.pendingBuyItems.length - 1; i >= 0 ; i--) {
+                                if(this.pendingBuyItems[i].status == 'error') {
+                                    this.pendingBuyItems.splice(i, 1)
+                                    continue
+                                }
+    
+                                let historyItem = data.items.find(item => item.id == this.pendingBuyItems[i].id)
+                                if(historyItem === undefined) continue
+    
+                                historyItem.discount_real = this.pendingBuyItems[i].discount_real
+                                historyItem.current_run = this.pendingBuyItems[i].current_run
+                                historyItem.discount = this.pendingBuyItems[i].discount
+    
+                                switch(historyItem.state) {
+                                    case 'cancelled':
+                                        this.pendingBuyItems[i].DOMElement.remove()
+                                        this.pendingBuyItems.splice(i, 1)
+    
+                                        if(historyItem.current_run) this.moneyAlreadySpent -= parseFloat(historyItem.price)
+                                        this.DOM.finishedContainer.prepend(this.buildBoughtItemContainer(historyItem))
+                                        break
+    
+                                    case 'finished':
+                                        this.pendingBuyItems[i].DOMElement.remove()
+                                        this.pendingBuyItems.splice(i, 1)
+    
+                                        this.DOM.finishedContainer.prepend(this.buildBoughtItemContainer(historyItem))
+                                        if(this.pendingBuyItems.length == 0 && Math.abs(this.moneyAlreadySpent - this.settings.toSpend) < this.settings.minPrice) this.toggleStart()
+                                        break
+    
+                                    case 'active':
+                                        if(this.pendingBuyItems[i].DOMElement !== undefined) continue
+                                        this.pendingBuyItems[i].DOMElement = this.buildBoughtItemContainer(historyItem)
+                                        this.DOM.activeContainer.prepend(this.pendingBuyItems[i].DOMElement)
+                                        break
+                                    }
+                            }
+                            break
+                    }
+                })
+                .catch(err => {
+                    //this.ui.errorDot.setAttribute('class', 'button__red');
+                    //this.bLog('\n', new Error(err))
+                    console.log(err)
+                })
+            })
+        },
         async run() {
             this.toggleStart()
             while(this.isRunning) {
@@ -231,9 +359,8 @@ Vue.component('bot-settings', {
                                     const {data} = res
                                     if(data.success) {
                                         item.sp_bot_steam_price = data.price_info.sell_price / 100
-                                        console.log(item.sp_bot_steam_price)
                                         item.discount_real = getDiffAsPercentage(item.price_market, item.sp_bot_steam_price)
-                                        if(item.discount_real >= this.currentPreset.deal + (this.currentPreset.dealMargin) && data.price_info.volume > 1) this.proceedBuy(item)
+                                        if(item.discount_real >= this.settings.deal + (this.settings.dealMargin) && data.price_info.volume > 1) this.proceedBuy(item)
                                         else this.addAwaitingItem(item)
                                     }
                                     else this.addAwaitingItem(item)
@@ -250,10 +377,10 @@ Vue.component('bot-settings', {
                     }
                 }
                 //this.bLog('', this)
-                /*if(this.pendingBuyItems.length > 0) this.updateBuyHistory();
-                if(this.awaitingBuyItems.length > 0 ) this.updateAwaitingItems();
-                this.ui.moneySpentContainer.innerHTML = `$ ${this.moneyAlreadySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`;
-                    */
+                if(this.pendingBuyItems.length > 0) this.updateBuyHistory()
+                if(this.awaitingBuyItems.length > 0 ) this.updateAwaitingItems()
+                //this.ui.moneySpentContainer.innerHTML = `$ ${this.moneyAlreadySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`;
+                    
                 await new Promise(r => setTimeout(r, 1000 * this.settings.runDelay))
             }
         },
@@ -333,7 +460,7 @@ Vue.component('bot-settings', {
                     break
 
                 case 'minPrice':
-                    if(this.validate(e.target.value, 0, null)) {
+                    if(this.validate(e.target.value, 0, this.settings.maxPrice)) {
                         this.updateUrl = true
                         this.settings.minPrice = parseFloat(e.target.value)
                         e.target.classList.replace('input--val-wrong', 'input--val-ok')
@@ -342,7 +469,7 @@ Vue.component('bot-settings', {
                     break
 
                 case 'maxPrice':
-                    if(this.validate(e.target.value, 0, null)) {
+                    if(this.validate(e.target.value, this.settings.minPrice, null)) {
                         this.updateUrl = true
                         this.settings.maxPrice = parseFloat(e.target.value)
                         e.target.classList.replace('input--val-wrong', 'input--val-ok')
@@ -378,6 +505,8 @@ Vue.component('bot-settings', {
         this.csrfCookie = getCookie('csrf_cookie')
     },
     beforeDestroy() {
+        //for(let awaitingItem of this.awaitingBuyItems) awaitingItem.DOMElement.remove()
+        //this.awaitingBuyItems = []
         this.isRunning = false
     }
 })

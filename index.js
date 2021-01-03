@@ -21,9 +21,9 @@ function initRoot() {
             v-bind:ico="tab.ico" 
             v-bind:static="false" 
             v-bind:index="index" 
-            v-bind:child="'bot-settings'" 
+            v-bind:child="'bot'" 
             v-on:close="closeTab" 
-            v-bind:key="'dynamic-tab-' + index">
+            v-bind:key="'dynamic-tab-' + tab.id">
         </tab>
     `
 
@@ -42,20 +42,23 @@ window.onload = () => {
                 {name: 'Settings', ico: 'S'}
             ],
             dynamicTabs: [],
+            tabsCreated: 2,
             dynmaicTabsLimit: 10
         },
         methods: {
             addTab() {
-                vm = this
+                if(this.dynamicTabs.length >= this.dynmaicTabsLimit) return
 
-                id = vm.dynamicTabs.length
-                if(id >= this.dynmaicTabsLimit) return
+                this.tabsCreated++
+                id = this.tabsCreated
 
                 let tab = {
+                    id: id,
                     name: `Bot-${id}`,
                     ico: `B`,
                 }
-                vm.dynamicTabs = [tab, ...vm.dynamicTabs]
+                
+                this.dynamicTabs.push(tab)
             },
             closeTab(index) {
                 this.dynamicTabs.splice(index, 1)
