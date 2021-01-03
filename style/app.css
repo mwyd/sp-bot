@@ -29,3 +29,10 @@
 .spb-tab-bar:hover {
     overflow-y: auto;
 }
+
+.theme-dark {
+    --main-bg-color: #3a4048;
+    --secondary-bg-color: #323940;
+    --main-txt-color: #eef0f2;
+    --alt-txt-color: rgb(50, 191, 145);
+}

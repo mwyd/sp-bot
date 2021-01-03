@@ -28,6 +28,8 @@
     box-shadow: none;
     outline: none;
     border: none;
+    background-color: var(--secondary-bg-color);
+    color: inherit;
 }
 
 .input--val-ok {
@@ -46,6 +48,7 @@
 
 .spb-bs__desc {
     display: block;
+    padding-bottom: 8px;
 }
 
 .spb-bs__start-button {
@@ -55,4 +58,5 @@
     font-weight: 600;
     font-size: 14px;
     height: 32px;
+    color: inherit;
 }

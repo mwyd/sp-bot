@@ -126,8 +126,10 @@ Vue.component('bot', {
     methods: {
         toggleStart() {
             if(this.isRunning) {
-                this.isRunning = false
+                for(let awaitingBuyItem of this.awaitingBuyItems) awaitingBuyItem.DOMElement.remove()
                 for(let pendingBuyItem of this.pendingBuyItems) pendingBuyItem.current_run = false
+                this.awaitingBuyItems = []
+                this.isRunning = false
             }
             else {
                 this.isRunning = true
@@ -148,7 +150,7 @@ Vue.component('bot', {
         },
         buildAwaitingItemContainer(item) {
             let DOMElement = document.createElement('div')
-            DOMElement.classList.add('spb-history-row', `spb-item-state-${item.state}`, 'spb-flex')
+            DOMElement.classList.add('spb-history-row', 'spb-flex')
     
             DOMElement.innerHTML = '' +
                 `<div class="spb-history__col spb-item-name">` +
@@ -505,8 +507,8 @@ Vue.component('bot', {
         this.csrfCookie = getCookie('csrf_cookie')
     },
     beforeDestroy() {
-        //for(let awaitingItem of this.awaitingBuyItems) awaitingItem.DOMElement.remove()
-        //this.awaitingBuyItems = []
+        for(let awaitingBuyItem of this.awaitingBuyItems) awaitingBuyItem.DOMElement.remove()
+        this.awaitingBuyItems = []
         this.isRunning = false
     }
 })

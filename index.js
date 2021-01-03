@@ -5,7 +5,7 @@ function initRoot() {
     root.classList.add('spb-flex')
 
     root.innerHTML = `
-    <div class="spb-tab-bar">
+    <div class="spb-tab-bar theme-dark">
         <tab 
             v-for="(tab, index) in staticTabs" 
             :ico="tab.ico" 
