@@ -1,5 +1,6 @@
 .spb-bot-settings {
     flex-direction: column;
+    width: 365px;
 }
 
 .spb-button--green {
@@ -38,7 +39,7 @@
 }
 
 .spb-bs__option {
-    width: 200px;
+    width: 185px;
     font-size: 16px;
     padding: 4px;
 }

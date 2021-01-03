@@ -5,26 +5,28 @@ function initRoot() {
     root.classList.add('spb-flex')
 
     root.innerHTML = `
+    <div class="spb-tab-bar">
         <tab 
             v-for="(tab, index) in staticTabs" 
-            v-bind:ico="tab.ico" 
-            v-bind:static="true" 
-            v-bind:index="index"  
-            v-bind:child="index == 0 ? 'home' : 'settings'" 
-            v-bind:key="'static-tab-' + index">
+            :ico="tab.ico" 
+            :static="true" 
+            :index="index"  
+            :child="index == 0 ? 'home' : 'settings'" 
+            :key="'static-tab-' + index">
         </tab>
         <div class="spb-tab">
             <div v-on:click="addTab" class="spb-tab-btn spb-flex">+</div>
         </div>
         <tab 
             v-for="(tab, index) in dynamicTabs" 
-            v-bind:ico="tab.ico" 
-            v-bind:static="false" 
-            v-bind:index="index" 
-            v-bind:child="'bot'" 
             v-on:close="closeTab" 
-            v-bind:key="'dynamic-tab-' + tab.id">
+            :ico="tab.ico" 
+            :static="false" 
+            :index="index" 
+            :child="'bot'" 
+            :key="'dynamic-tab-' + tab.id">
         </tab>
+    </div>
     `
 
     return root

@@ -18,5 +18,14 @@
     top: 0;
     left: 0;
     flex-direction: column;
+    align-items: unset;
     z-index: 100;
+}
+
+.spb-tab-bar {
+    overflow: hidden;
+}
+
+.spb-tab-bar:hover {
+    overflow-y: auto;
 }

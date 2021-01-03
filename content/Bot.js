@@ -41,7 +41,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">% Hot deal</span>
                             <input 
-                            v-bind:value="settings.hotDeal" 
+                            :value="settings.hotDeal" 
                             v-on:focusout="inFocusOut($event, 'hotDeal')" 
                             v-on:input="inInput($event, 'hotDeal')" 
                             v-on:keydown.enter="inEnter($event, 'hotDeal')" 
@@ -50,7 +50,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">$ Item min price</span>
                             <input 
-                            v-bind:value="settings.minPrice" 
+                            :value="settings.minPrice" 
                             v-on:focusout="inFocusOut($event, 'minPrice')" 
                             v-on:input="inInput($event, 'minPrice')" 
                             v-on:keydown.enter="inEnter($event, 'minPrice')" 
@@ -59,7 +59,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">% Deal margin</span>
                             <input 
-                            v-bind:value="settings.dealMargin" 
+                            :value="settings.dealMargin" 
                             v-on:focusout="inFocusOut($event, 'dealMargin')" 
                             v-on:input="inInput($event, 'dealMargin')" 
                             v-on:keydown.enter="inEnter($event, 'dealMargin')" 
@@ -68,7 +68,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">Search</span>
                             <input 
-                            v-bind:value="settings.search" 
+                            :value="settings.search" 
                             v-on:focusout="inFocusOut($event, 'search')" 
                             v-on:input="inInput($event, 'search')" 
                             v-on:keydown.enter="inEnter($event, 'search')" 
@@ -80,7 +80,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">% Deal</span>
                             <input 
-                            v-bind:value="settings.deal" 
+                            :value="settings.deal" 
                             v-on:focusout="inFocusOut($event, 'deal')" 
                             v-on:input="inInput($event, 'deal')" 
                             v-on:keydown.enter="inEnter($event, 'deal')" 
@@ -89,7 +89,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">$ Item max price</span>
                             <input 
-                            v-bind:value="settings.maxPrice" 
+                            :value="settings.maxPrice" 
                             v-on:focusout="inFocusOut($event, 'maxPrice')" 
                             v-on:input="inInput($event, 'maxPrice')" 
                             v-on:keydown.enter="inEnter($event, 'maxPrice')" 
@@ -98,7 +98,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">$ Money to spend</span>
                             <input 
-                            v-bind:value="settings.toSpend" 
+                            :value="settings.toSpend" 
                             v-on:focusout="inFocusOut($event, 'toSpend')" 
                             v-on:input="inInput($event, 'toSpend')" 
                             v-on:keydown.enter="inEnter($event, 'toSpend')" 
@@ -107,7 +107,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">Refresh time</span>
                             <input 
-                            v-bind:value="settings.runDelay" 
+                            :value="settings.runDelay" 
                             v-on:input="inInput($event, 'runDelay')" 
                             v-on:focusout="inFocusOut($event, 'runDelay')" 
                             v-on:keydown.enter="inEnter($event, 'runDelay')" 
@@ -118,7 +118,7 @@ Vue.component('bot', {
 
             <button 
                 v-on:click="run" 
-                v-bind:class="'spb-bs__start-button ' + (isRunning ? 'spb-button--red' : 'spb-button--green')">
+                :class="'spb-bs__start-button ' + (isRunning ? 'spb-button--red' : 'spb-button--green')">
                 {{ isRunning ? 'STOP' : 'START' }}
             </button>
         </div>
