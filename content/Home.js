@@ -7,6 +7,7 @@ Vue.component('home', {
                 <div class="spb-history__col spb-item-price">Price</div>
                 <div class="spb-history__col spb-item-status">Status</div>
                 <div class="spb-history__col spb-item-date">Date</div>
+                <div class="spb-history__col spb-item-info">Info</div>
             </div>
             <div class="spb-history flex">
                 <div class="spb-history__awaiting"></div>

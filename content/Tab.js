@@ -1,9 +1,15 @@
 Vue.component('tab-window', {
-    props: ['child'],
+    props: ['child', 'index'],
     template: `
         <div class="spb-tab-window">
-            <component :is="child"></component>
-        </div>`
+            <component :index="index" @statusupdate="updateStatus" :is="child"></component>
+        </div>
+    `,
+    methods: {
+        updateStatus(newStatus) {
+            this.$emit('statusupdate', newStatus)
+        }
+    }
 })
 
 Vue.component('tab', {
@@ -12,26 +18,47 @@ Vue.component('tab', {
         return {
             isActive: false,
             bound: false,
-            displayClose: false 
+            displayClose: false,
+            status: 'idle' 
         }
     },
     template: `
         <div 
-            v-on:mouseenter="mEnter" 
-            v-on:mouseleave="mLeave" 
+            @mouseenter="mEnter" 
+            @mouseleave="mLeave" 
             class="spb-tab">
             <div 
-                v-on:click="show"  
-                class="spb-tab-btn spb-flex">
-                <div v-if="!static && displayClose" v-on:click="close" class="spb-tab-close"></div>
-                {{ ico }}
+                @click="show"  
+                :class="{'spb-tab-btn': 1, 'spb-flex': 1, 'spb-tab-btn--bound': bound}">
+                <div v-if="!static && displayClose" @click="close" class="spb-tab-close spb-tab-ico"></div>
+                <div v-if="!static" :class="getStatusClass" class="spb-tab-ico"></div>
+                {{ getTabName }}
             </div>
             <tab-window 
+                @statusupdate="updateStatus" 
                 :child="child"  
+                :index="index" 
                 :class="{'spb-active': isActive, 'spb-hidden': !isActive}"> 
             </tab-window>
         </div>`,
+    computed: {
+        getTabName() {
+            return this.child == 'bot' ? this.ico + this.index : this.ico 
+        },
+        getStatusClass() {
+            switch(this.status) {
+                case 'idle':
+                    return 'spb-status-idle'
+
+                case 'running':
+                    return 'spb-status-ok'
+            }
+        }
+    },
     methods: {
+        updateStatus(newStatus) {
+            this.status = newStatus
+        },
         show() {
             this.bound = !this.bound
         },

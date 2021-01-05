@@ -1,13 +1,14 @@
 Vue.component('bot', {
+    props: ['index'],
     data: function() {
         return {
             settings: {
-                runDelay: 4,
+                runDelay: 4.0,
                 hotDeal: 70,
                 deal: 50,
                 dealMargin: 0,
                 minPrice: 1.00,
-                maxPrice: 100,
+                maxPrice: 100.00,
                 toSpend: 10.00,
                 search: ''
             },
@@ -34,7 +35,7 @@ Vue.component('bot', {
     },
     template: `
         <div class="spb-bot-settings flex">
-            <h3 class="spb-header-3">Options</h3>
+            <h3 class="spb-header-3">Options - Bot {{ index }}</h3>
 
             <div class="spb-flex">
                 <div>
@@ -130,10 +131,12 @@ Vue.component('bot', {
                 for(let pendingBuyItem of this.pendingBuyItems) pendingBuyItem.current_run = false
                 this.awaitingBuyItems = []
                 this.isRunning = false
+                this.$emit('statusupdate', 'idle')
             }
             else {
                 this.isRunning = true
                 this.moneyAlreadySpent = 0
+                this.$emit('statusupdate', 'running')
             }
         },
         updateGetItemsUrl() {
@@ -158,9 +161,11 @@ Vue.component('bot', {
                         `<img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.steam_icon_url_large}">` +
                     `${item.steam_market_hash_name}</a>` +
                 `</div>` +
-                `<div class="spb-history__col spb-item-price">$ ${item.price_market} <sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>` +
+                `<div class="spb-history__col spb-item-price">$ ${item.price_market} ` + 
+                    `<sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>` +
                 `<div class="spb-history__col spb-item-status">${item.state}</div>` +
-                `<div class="spb-history__col spb-item-date"><button class="spb-buy-button spb-button--green">Buy now</button></div>`
+                `<div class="spb-history__col spb-item-date"><button class="spb-buy-button spb-button--green">Buy now</button></div>` +
+                `<div class="spb-history__col spb-item-info spb-info-ico"></div>`
     
             return DOMElement
         },
@@ -263,10 +268,12 @@ Vue.component('bot', {
                         `<img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">` +
                     `${item.steam_market_hash_name}</a>` +
                 `</div>` +
-                `<div class="spb-history__col spb-item-price">$ ${item.price} <sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>` +
+                `<div class="spb-history__col spb-item-price">$ ${item.price} ` +
+                    `<sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>` +
                 `<div class="spb-history__col spb-item-status">${item.state}</div>` +
                 `<div class="spb-history__col spb-item-date">${getFullDate(new Date(item.time_finished), -2)}</div>` +
-                `${item.state == 'active' ? '<div class="spb-item-timebar"></div>' : ''}`
+                `${item.state == 'active' ? '<div class="spb-item-timebar"></div>' : ''}` +
+                `<div class="spb-history__col spb-item-info spb-info-ico"></div>`
     
             return DOMElement
         },
@@ -360,9 +367,10 @@ Vue.component('bot', {
                                 chrome.runtime.sendMessage({action: 'get_price', params: {hash_name: item.steam_market_hash_name}}, res => {
                                     const {data} = res
                                     if(data.success) {
-                                        item.sp_bot_steam_price = data.price_info.sell_price / 100
+                                        item.sp_bot_steam_price = data.data.steam.price
                                         item.discount_real = getDiffAsPercentage(item.price_market, item.sp_bot_steam_price)
-                                        if(item.discount_real >= this.settings.deal + (this.settings.dealMargin) && data.price_info.volume > 1) this.proceedBuy(item)
+                                        item.discount = Math.round(item.discount)
+                                        if(item.discount_real >= this.settings.deal + (this.settings.dealMargin) && data.data.steam.volume > 1) this.proceedBuy(item)
                                         else this.addAwaitingItem(item)
                                     }
                                     else this.addAwaitingItem(item)
@@ -464,7 +472,7 @@ Vue.component('bot', {
                 case 'minPrice':
                     if(this.validate(e.target.value, 0, this.settings.maxPrice)) {
                         this.updateUrl = true
-                        this.settings.minPrice = parseFloat(e.target.value)
+                        this.settings.minPrice = parseFloat(e.target.value).toFixed(2)
                         e.target.classList.replace('input--val-wrong', 'input--val-ok')
                     }
                     else this.inFocusOut(e, name)
@@ -473,7 +481,7 @@ Vue.component('bot', {
                 case 'maxPrice':
                     if(this.validate(e.target.value, this.settings.minPrice, null)) {
                         this.updateUrl = true
-                        this.settings.maxPrice = parseFloat(e.target.value)
+                        this.settings.maxPrice = parseFloat(e.target.value).toFixed(2)
                         e.target.classList.replace('input--val-wrong', 'input--val-ok')
                     }
                     else this.inFocusOut(e, name)
@@ -481,7 +489,7 @@ Vue.component('bot', {
 
                 case 'toSpend':
                     if(this.validate(e.target.value, 0, null)) {
-                        this.settings.toSpend = parseFloat(e.target.value)
+                        this.settings.toSpend = parseFloat(e.target.value).toFixed(2)
                         e.target.classList.replace('input--val-wrong', 'input--val-ok')
                     }
                     else this.inFocusOut(e, name)
@@ -495,7 +503,7 @@ Vue.component('bot', {
 
                 case 'runDelay':
                     if(this.validate(e.target.value, 0.5, null)) {
-                        this.settings.runDelay = parseFloat(e.target.value)
+                        this.settings.runDelay = parseFloat(e.target.value).toFixed(1)
                         e.target.classList.replace('input--val-wrong', 'input--val-ok')
                     }
                     else this.inFocusOut(e, name)

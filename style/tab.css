@@ -15,8 +15,12 @@
     background-color: var(--main-bg-color);
 }
 
-.spb-tab-btn:hover {
-    color: rgb(50, 191, 145);
+.spb-tab:hover .spb-tab-btn{
+    background-color: var(--active-tab-bg-color);
+}
+
+.spb-tab-btn--bound {
+    background-color: var(--active-tab-bg-color);
 }
 
 .spb-tab-window {
@@ -29,13 +33,25 @@
 }
 
 .spb-tab-close {
+    background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/close.svg');
+    right: 2px;
+}
+
+.spb-status-idle {
+    background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/idle.svg');
+    left: 2px;
+}
+
+.spb-status-ok {
+    background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/ok.svg');
+    left: 2px;
+}
+
+.spb-tab-ico {
     position: absolute;
     height: 12px;
     width: 12px;
-    background: red;
-    right: 0px;
-    top: 0px;
-    border-radius: 100%;
+    top: 2px;
 }
 
 .spb-active {

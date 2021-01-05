@@ -24,7 +24,10 @@
       "scripts": ["background/background.js"]
     },
     "manifest_version": 2,
+    "permissions": [
+      "storage"
+    ],
     "web_accessible_resources": [
-      "/assets/audio/Jestem_zrujnowany.mp3"
+      "/assets/*"
     ]
 }

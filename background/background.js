@@ -1,5 +1,9 @@
-const apiKey = 'fmntq9bjg7-srnhfbqnsg'
-const apiUrl = 'https://conduitpower.fun'
+const apiUrl = 'https://conduitpower.fun/api/'
+let apiKey = ''
+
+chrome.storage.sync.get(['apiKey'], (items) => {
+    apiKey = items.apiKey
+})
 
 let boughtItemsCounter = 0
 
@@ -18,7 +22,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     sendResponse({data: boughtItemsCounter})
                     break
 
-                case 'get_script':
+                /*case 'get_script':
                     fetch(`${apiUrl}/bot/get_script?api_key=${apiKey}`)
                     .then(res => res.json()).then(data => sendResponse({data: data}))
                     break
@@ -26,10 +30,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 case 'get_style':
                     fetch(`${apiUrl}/bot/get_style?api_key=${apiKey}`)
                     .then(res => res.json()).then(data => sendResponse({data: data}))
-                    break
+                    break*/
 
                 case 'get_price':
-                    fetch(`${apiUrl}/get_price.php?api_key=${apiKey}&hash_name=${params.hash_name}`)
+                    fetch(`${apiUrl}/item/stats/?hash_name=${params.hash_name}`, {
+                        'headers' : {
+                            'X-Auth': apiKey
+                        }
+                    })
                     .then(res => res.json()).then(data => sendResponse({data: data}))
                     break
             }
