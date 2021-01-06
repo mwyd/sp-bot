@@ -6,6 +6,8 @@
         "js": [
           "/content/functions.js",
           "/content/Vue.js",
+          "/content/Vuex.js",
+          "/content/Item.js",
           "/content/Bot.js",
           "/content/Settings.js",
           "/content/Home.js",

@@ -13,14 +13,14 @@ Vue.component('settings', {
     methods: {
         getApiKey() {
             chrome.storage.sync.get(['apiKey'], (items) => {
-                this.$refs.apiKeyInput.value = items.apiKey
-            })
+                this.$refs.apiKeyInput.value = items.apiKey;
+            });
         },
         setApiKey() {
-            chrome.storage.sync.set({'apiKey': this.$refs.apiKeyInput.value})
+            chrome.storage.sync.set({'apiKey': this.$refs.apiKeyInput.value});
         }
     },
     mounted() {
-        this.getApiKey()
+        this.getApiKey();
     }
-})
+});

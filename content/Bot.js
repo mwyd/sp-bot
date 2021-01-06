@@ -14,29 +14,26 @@ Vue.component('bot', {
             },
             moneyAlreadySpent: 0,
             csrfCookie: '',
-            itemList: [],
-            awaitingBuyItems: [],
-            pendingBuyItems: [],
             isRunning: false,
             updateUrl: true,
             notifiSound: new Audio(chrome.extension.getURL('/assets/audio/Jestem_zrujnowany.mp3')),
-            initDate: new Date(),
+            initDate: getFullDate(new Date()),
             apiUrls: {
                 getItems: 'https://api.shadowpay.com/api/market/get_items?types=[]&exteriors=[]&rarities=[]&collections=[]&item_subcategories=[]&float=%7B%22from%22:0,%22to%22:1%7D&price_from=0&price_to=12558.58&game=csgo&stickers=[]&count_stickers=[]&short_name=&search=&stack=false&sort=desc&sort_column=price_rate&limit=50&offset=0',
                 buyItem: 'https://api.shadowpay.com/api/market/buy_item',
                 getBuyHistory: 'https://api.shadowpay.com/en/profile/get_bought_history'
             },
-            DOM: {
-                awaitingContainer: document.querySelector('.spb-history__awaiting'),
-                activeContainer: document.querySelector('.spb-history__active'),
-                finishedContainer: document.querySelector('.spb-history__finished')
+            items: {
+                filtered: [],
+                toConfirm: [],
+                pending: [],
+                finished: []
             }
         }
     },
     template: `
         <div class="spb-bot-settings flex">
             <h3 class="spb-header-3">Options - Bot {{ index }}</h3>
-
             <div class="spb-flex">
                 <div>
                     <div class="spb-bs__option">
@@ -76,7 +73,6 @@ Vue.component('bot', {
                             class="spb-bs__input input--val-ok" type="text" min="0" step="0.01">
                     </div>  
                 </div>
-
                 <div>
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">% Deal</span>
@@ -116,7 +112,6 @@ Vue.component('bot', {
                     </div>
                 </div>
             </div>
-
             <button 
                 v-on:click="run" 
                 :class="'spb-bs__start-button ' + (isRunning ? 'spb-button--red' : 'spb-button--green')">
@@ -127,92 +122,72 @@ Vue.component('bot', {
     methods: {
         toggleStart() {
             if(this.isRunning) {
-                for(let awaitingBuyItem of this.awaitingBuyItems) awaitingBuyItem.DOMElement.remove()
-                for(let pendingBuyItem of this.pendingBuyItems) pendingBuyItem.current_run = false
-                this.awaitingBuyItems = []
-                this.isRunning = false
-                this.$emit('statusupdate', 'idle')
+                for(let pendingItem of this.items.pending) pendingItem.current_run = false;
+                this.items.toConfirm = [];
+                this.isRunning = false;
+                this.$emit('statusupdate', 'idle');
             }
             else {
-                this.isRunning = true
-                this.moneyAlreadySpent = 0
-                this.$emit('statusupdate', 'running')
+                this.isRunning = true;
+                this.moneyAlreadySpent = 0;
+                this.$emit('statusupdate', 'running');
             }
         },
         updateGetItemsUrl() {
             if(this.updateUrl) {
-                let getItemsURL = new URL(this.apiUrls.getItems)
+                let getItemsURL = new URL(this.apiUrls.getItems);
 
-                getItemsURL.searchParams.set('price_from', this.settings.minPrice)
-                getItemsURL.searchParams.set('price_to', this.settings.maxPrice)
-                getItemsURL.searchParams.set('search', this.settings.search)
+                getItemsURL.searchParams.set('price_from', this.settings.minPrice);
+                getItemsURL.searchParams.set('price_to', this.settings.maxPrice);
+                getItemsURL.searchParams.set('search', this.settings.search);
 
-                this.apiUrls.getItems = getItemsURL.toString()
-                this.updateUrl = false
+                this.apiUrls.getItems = getItemsURL.toString();
+                this.updateUrl = false;
             }
-        },
-        buildAwaitingItemContainer(item) {
-            let DOMElement = document.createElement('div')
-            DOMElement.classList.add('spb-history-row', 'spb-flex')
-    
-            DOMElement.innerHTML = '' +
-                `<div class="spb-history__col spb-item-name">` +
-                    `<a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">` +
-                        `<img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.steam_icon_url_large}">` +
-                    `${item.steam_market_hash_name}</a>` +
-                `</div>` +
-                `<div class="spb-history__col spb-item-price">$ ${item.price_market} ` + 
-                    `<sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>` +
-                `<div class="spb-history__col spb-item-status">${item.state}</div>` +
-                `<div class="spb-history__col spb-item-date"><button class="spb-buy-button spb-button--green">Buy now</button></div>` +
-                `<div class="spb-history__col spb-item-info spb-info-ico"></div>`
-    
-            return DOMElement
         },
         addAwaitingItem(item) {
-            if(this.awaitingBuyItems.findIndex(aItem => aItem.id == item.id) != -1) return
+            if(this.items.toConfirm.findIndex(_item => _item.id == item.id) != -1) return;
     
-            item.DOMElement = this.buildAwaitingItemContainer(item)
-            item.DOMElement.querySelector('.spb-buy-button').addEventListener('click', () => {this.proceedBuy(item)})
-    
-            this.DOM.awaitingContainer.prepend(item.DOMElement)
-            this.awaitingBuyItems.push(item)
+            item.onclick = () => {this.proceedBuy(item)};
+            this.items.toConfirm.push(item);
+            this.$store.commit('updateItems', {type: 'toConfirm', spb_index: this.index, items: this.items.toConfirm});
         },
-        updateAwaitingItems() {        
-            for(let i = this.awaitingBuyItems.length - 1; i >= 0; i--) {
-                let item = this.itemList.find(item => item.id == this.awaitingBuyItems[i].id)
+        updateAwaitingItems() {
+            let updated = 0;        
+            for(let i = this.items.toConfirm.length - 1; i >= 0; i--) {
+                let item = this.items.filtered.find(_item => _item.id == this.items.toConfirm[i].id);
                 
                 if(item === undefined) {
-                    this.awaitingBuyItems[i].DOMElement.remove()
-                    this.awaitingBuyItems.splice(i, 1)
-                    continue
+                    this.items.toConfirm.splice(i, 1);
+                    continue;
                 }
     
-                if(item.price_market != this.awaitingBuyItems[i].price_market ) {
-                    this.awaitingBuyItems[i].price = item.price
-                    this.awaitingBuyItems[i].price_market = item.price_market
-                    this.awaitingBuyItems[i].discount = item.discount
-                    this.awaitingBuyItems[i].discount_real = getDiffAsPercentage(item.price_market, this.awaitingBuyItems[i].sp_bot_steam_price)
-                    this.awaitingBuyItems[i].DOMElement.querySelector('.spb-item-price').innerHTML = `
-                        $ ${this.awaitingBuyItems[i].price_market} <sup>${this.awaitingBuyItems[i].discount_real !== undefined ? this.awaitingBuyItems[i].discount_real + '% |': ''} ${this.awaitingBuyItems[i].discount}%</sup>`
+                if(item.price_market != this.items.toConfirm[i].price_market ) {
+                    this.items.toConfirm[i].price = item.price;
+                    this.items.toConfirm[i].price_market = item.price_market;
+                    this.items.toConfirm[i].discount = item.discount;
+                    this.items.toConfirm[i].discount_real = getDiffAsPercentage(item.price_market, this.items.toConfirm[i].sp_bot_steam_price);
+                    updated++;
                 }
             }
+
+            if(updated > 0) this.$store.commit('updateItems', {type: 'toConfirm', spb_index: this.index, items: this.items.toConfirm});
         },
         proceedBuy(item, rePurchase = false) {
-            if(rePurchase == false && this.pendingBuyItems.findIndex(pendingItem => pendingItem.itemId == item.id) != -1) return
+            if(rePurchase == false && this.items.pending.findIndex(_item => _item.itemId == item.id) != -1) return;
             if(rePurchase == true || parseFloat(item.price_market) + this.moneyAlreadySpent <= this.settings.toSpend) {
-                this.moneyAlreadySpent += parseFloat(item.price_market)
+                this.moneyAlreadySpent += parseFloat(item.price_market);
     
-                const pendingBuyItem = {
+                const pendingItem = {
                     id: undefined,
                     itemId: item.id,
                     discount: item.discount,
                     discount_real: item.discount_real,
                     current_run: true,
-                    DOMElement: undefined,
                     status: 'pending'
                 }
-                this.pendingBuyItems.push(pendingBuyItem)
+
+                this.items.pending.push(pendingItem);
     
                 fetch(this.apiUrls.buyItem, {
                     method: 'POST',
@@ -228,54 +203,35 @@ Vue.component('bot', {
                         case "error":
                             switch(data.error_message) {
                                 case 'wrong_token':
-                                    this.csrfCookie = data.token
-                                    this.proceedBuy(item, true)
-                                    break
+                                    this.csrfCookie = data.token;
+                                    this.proceedBuy(item, true);
+                                    break;
                             }
     
-                            pendingBuyItem.status = 'error'
-                            this.moneyAlreadySpent -= parseFloat(item.price_market)
+                            pendingItem.status = 'error';
+                            this.moneyAlreadySpent -= parseFloat(item.price_market);
                             break
                             
                         case "success":
-                            pendingBuyItem.id = data.id
-                            pendingBuyItem.status = 'success'
+                            pendingItem.id = data.id;
+                            pendingItem.status = 'success';
                             
-                            chrome.runtime.sendMessage({action: 'buy_item', params: {}})
-                            this.notifiSound.play()
+                            chrome.runtime.sendMessage({action: 'buy_item', params: {}});
+                            this.notifiSound.play();
                             break;
                     }
                     //this.bLog('Buy info', data)
                     console.log(data)
                 })
                 .catch(err => {
-                    pendingBuyItem.status = 'error'
-                    this.moneyAlreadySpent -= parseFloat(item.price_market)
+                    pendingItem.status = 'error';
+                    this.moneyAlreadySpent -= parseFloat(item.price_market);
     
                     /*this.ui.errorDot.setAttribute('class', 'button__red');*/
                     //this.bLog('\n', new Error(err))
-                    console.log(err)
+                    console.log(err);
                 })
             }
-        },
-        buildBoughtItemContainer(item) {
-            let DOMElement = document.createElement('div')
-            DOMElement.classList.add('spb-history-row', `spb-item-state-${item.state}`, 'spb-flex')
-    
-            DOMElement.innerHTML = '' +
-                `<div class="spb-history__col spb-item-name">` +
-                    `<a target="_blank" href="https://steamcommunity.com/market/listings/730/${item.steam_market_hash_name}">` +
-                        `<img style="padding-right: 10px;" height="50px" src="https://community.cloudflare.steamstatic.com/economy/image/${item.item.icon_url}">` +
-                    `${item.steam_market_hash_name}</a>` +
-                `</div>` +
-                `<div class="spb-history__col spb-item-price">$ ${item.price} ` +
-                    `<sup>${item.discount_real !== undefined ? item.discount_real + '% |': ''} ${item.discount}%</sup></div>` +
-                `<div class="spb-history__col spb-item-status">${item.state}</div>` +
-                `<div class="spb-history__col spb-item-date">${getFullDate(new Date(item.time_finished), -2)}</div>` +
-                `${item.state == 'active' ? '<div class="spb-item-timebar"></div>' : ''}` +
-                `<div class="spb-history__col spb-item-info spb-info-ico"></div>`
-    
-            return DOMElement
         },
         updateBuyHistory() {
             chrome.runtime.sendMessage({action: 'get_bought_items_counter', params: {}}, res => {
@@ -291,232 +247,228 @@ Vue.component('bot', {
                 .then(data => {
                     switch(data.status) {
                         case 'success':
-                            for(let i = this.pendingBuyItems.length - 1; i >= 0 ; i--) {
-                                if(this.pendingBuyItems[i].status == 'error') {
-                                    this.pendingBuyItems.splice(i, 1)
-                                    continue
+                            for(let i = this.items.pending.length - 1; i >= 0 ; i--) {
+                                if(this.items.pending[i].status == 'error') {
+                                    this.items.pending.splice(i, 1);
+                                    continue;
                                 }
     
-                                let historyItem = data.items.find(item => item.id == this.pendingBuyItems[i].id)
-                                if(historyItem === undefined) continue
+                                let historyItem = data.items.find(_item => _item.id == this.items.pending[i].id)
+                                if(historyItem === undefined) continue;
     
-                                historyItem.discount_real = this.pendingBuyItems[i].discount_real
-                                historyItem.current_run = this.pendingBuyItems[i].current_run
-                                historyItem.discount = this.pendingBuyItems[i].discount
+                                historyItem.discount_real = this.items.pending[i].discount_real;
+                                historyItem.current_run = this.items.pending[i].current_run;
+                                historyItem.discount = this.items.pending[i].discount;
     
                                 switch(historyItem.state) {
                                     case 'cancelled':
-                                        this.pendingBuyItems[i].DOMElement.remove()
-                                        this.pendingBuyItems.splice(i, 1)
+                                        this.items.pending.splice(i, 1);
+                                        this.finished.push(historyItem);
     
-                                        if(historyItem.current_run) this.moneyAlreadySpent -= parseFloat(historyItem.price)
-                                        this.DOM.finishedContainer.prepend(this.buildBoughtItemContainer(historyItem))
-                                        break
+                                        if(historyItem.current_run) this.moneyAlreadySpent -= parseFloat(historyItem.price);
+                                        this.$store.commit('updateItems', {type: 'finished', spb_index: this.index, items: this.finished});
+                                        break;
     
                                     case 'finished':
-                                        this.pendingBuyItems[i].DOMElement.remove()
-                                        this.pendingBuyItems.splice(i, 1)
+                                        this.items.pending.splice(i, 1);
+                                        this.finished.push(historyItem);
     
-                                        this.DOM.finishedContainer.prepend(this.buildBoughtItemContainer(historyItem))
-                                        if(this.pendingBuyItems.length == 0 && Math.abs(this.moneyAlreadySpent - this.settings.toSpend) < this.settings.minPrice) this.toggleStart()
-                                        break
+                                        if(this.items.pending.length == 0 && Math.abs(this.moneyAlreadySpent - this.settings.toSpend) < this.settings.minPrice) this.toggleStart();
+                                        this.$store.commit('updateItems', {type: 'finished', spb_index: this.index, items: this.finished});
+                                        break;
     
                                     case 'active':
-                                        if(this.pendingBuyItems[i].DOMElement !== undefined) continue
-                                        this.pendingBuyItems[i].DOMElement = this.buildBoughtItemContainer(historyItem)
-                                        this.DOM.activeContainer.prepend(this.pendingBuyItems[i].DOMElement)
-                                        break
+                                        this.$store.commit('updateItems', {type: 'active', spb_index: this.index, items: [historyItem]});
+                                        break;
                                     }
                             }
-                            break
+                            break;
                     }
                 })
                 .catch(err => {
                     //this.ui.errorDot.setAttribute('class', 'button__red');
                     //this.bLog('\n', new Error(err))
-                    console.log(err)
+                    console.log(err);
                 })
             })
         },
         async run() {
-            this.toggleStart()
+            this.toggleStart();
             while(this.isRunning) {
-                this.updateGetItemsUrl()
-                this.itemList = []
+                this.updateGetItemsUrl();
+                this.items.filtered = [];
                 if(Math.abs(this.moneyAlreadySpent - this.settings.toSpend) >= this.settings.minPrice) {
                     try {    
-                        const response = await fetch(this.apiUrls.getItems, {credentials: 'include'})
-                        let data = await response.json()
+                        const response = await fetch(this.apiUrls.getItems, {credentials: 'include'});
+                        let data = await response.json();
 
                         if(data.status == "success") {
-                            this.itemList = Array.from(data.items)
+                            this.items.filtered = Array.from(data.items);
                 
-                            this.itemList = this.itemList.filter(item => !item.is_my_item)
-                            this.itemList = this.itemList.filter(item => {
-                                return (item.discount >= this.settings.deal && item.price_market >= this.settings.minPrice) || item.discount >= this.settings.hotDeal
+                            this.items.filtered = this.items.filtered.filter(item => !item.is_my_item);
+                            this.items.filtered = this.items.filtered.filter(item => {
+                                return (item.discount >= this.settings.deal && item.price_market >= this.settings.minPrice) || item.discount >= this.settings.hotDeal;
                             })
                 
-                            this.itemList.sort((itemC, itemN) => { 
-                                let itemCPriceF = parseFloat(itemC.price_market)
-                                if(itemCPriceF < itemN.price_market) return 1
-                                if(itemCPriceF > itemN.price_market) return -1
-                                return 0
+                            this.items.filtered.sort((itemC, itemN) => { 
+                                let itemCPriceF = parseFloat(itemC.price_market);
+                                if(itemCPriceF < itemN.price_market) return 1;
+                                if(itemCPriceF > itemN.price_market) return -1;
+                                return 0;
                             })
 
-                            for(let item of this.itemList) {
+                            for(let item of this.items.filtered) {
                                 chrome.runtime.sendMessage({action: 'get_price', params: {hash_name: item.steam_market_hash_name}}, res => {
-                                    const {data} = res
+                                    const {data} = res;
+                                    item.discount = Math.round(item.discount);
                                     if(data.success) {
-                                        item.sp_bot_steam_price = data.data.steam.price
-                                        item.discount_real = getDiffAsPercentage(item.price_market, item.sp_bot_steam_price)
-                                        item.discount = Math.round(item.discount)
-                                        if(item.discount_real >= this.settings.deal + (this.settings.dealMargin) && data.data.steam.volume > 1) this.proceedBuy(item)
-                                        else this.addAwaitingItem(item)
+                                        item.sp_bot_steam_price = data.data.steam.price;
+                                        item.discount_real = getDiffAsPercentage(item.price_market, item.sp_bot_steam_price);
+                                        if(item.discount_real >= this.settings.deal + (this.settings.dealMargin) && data.data.steam.volume > 1) this.proceedBuy(item);
+                                        else this.addAwaitingItem(item);
                                     }
-                                    else this.addAwaitingItem(item)
-                                })
+                                    else this.addAwaitingItem(item);
+                                });
                             }
 
-                            if(this.itemList.length > 0) console.log(this.itemList)
+                            if(this.items.filtered.length > 0) console.log(this.items.filtered);
                         }
                     }
                     catch(err) {
                         /*this.ui.errorDot.setAttribute('class', 'button__red');
                         this.bLog('\n', new Error(err));*/
-                        console.log(err)
+                        console.log(err);
                     }
                 }
                 //this.bLog('', this)
-                if(this.pendingBuyItems.length > 0) this.updateBuyHistory()
-                if(this.awaitingBuyItems.length > 0 ) this.updateAwaitingItems()
+                if(this.items.pending.length > 0) this.updateBuyHistory();
+                if(this.items.toConfirm.length > 0 ) this.updateAwaitingItems();
                 //this.ui.moneySpentContainer.innerHTML = `$ ${this.moneyAlreadySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`;
                     
-                await new Promise(r => setTimeout(r, 1000 * this.settings.runDelay))
+                await new Promise(r => setTimeout(r, 1000 * this.settings.runDelay));
             }
         },
         validate(target, min, max) {
-            if(max == null) return target >= min
-            if(min == null) return target <= max
+            if(max == null) return target >= min;
+            if(min == null) return target <= max;
             
-            return target <= max && target >= min
+            return target <= max && target >= min;
         },
         getOptionByName(name) {
             switch(name) {
                 case 'hotDeal':
-                    return this.settings.hotDeal
+                    return this.settings.hotDeal;
 
                 case 'deal':
-                    return this.settings.deal
+                    return this.settings.deal;
 
                 case 'dealMargin':
-                    return this.settings.dealMargin
+                    return this.settings.dealMargin;
 
                 case 'minPrice':
-                    return this.settings.minPrice
+                    return this.settings.minPrice;
 
                 case 'maxPrice':
-                    return this.settings.maxPrice
+                    return this.settings.maxPrice;
 
                 case 'toSpend':
-                    return this.settings.toSpend
+                    return this.settings.toSpend;
 
                 case 'search':
-                    return this.settings.search
+                    return this.settings.search;
 
                 case 'runDelay':
-                    return this.settings.runDelay
+                    return this.settings.runDelay;
 
                 default:
-                    return null
+                    return null;
             }
         },
         inFocusOut(e, name) {
-            let option = this.getOptionByName(name)
-            if(option == null) return
+            let option = this.getOptionByName(name);
+            if(option == null) return;
 
-            e.target.value = option
-            e.target.classList.replace('input--val-wrong', 'input--val-ok') 
+            e.target.value = option;
+            e.target.classList.replace('input--val-wrong', 'input--val-ok'); 
         },
         inInput(e, name) {
-            let option = this.getOptionByName(name)
-            if(option == null) return
+            let option = this.getOptionByName(name);
+            if(option == null) return;
 
-            option == e.target.value ? e.target.classList.replace('input--val-wrong', 'input--val-ok') : e.target.classList.replace('input--val-ok', 'input--val-wrong')
+            option == e.target.value ? e.target.classList.replace('input--val-wrong', 'input--val-ok') : e.target.classList.replace('input--val-ok', 'input--val-wrong');
         },
         inEnter(e, name) {
             switch(name) {
                 case 'hotDeal':
                     if(this.validate(e.target.value, 0, 100)) {
-                        this.settings.hotDeal = parseInt(e.target.value)
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok')
+                        this.settings.hotDeal = parseInt(e.target.value);
+                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
-                    else this.inFocusOut(e, name)
+                    else this.inFocusOut(e, name);
                     break
 
                 case 'deal':
                     if(this.validate(e.target.value, 0, 100)) {
-                        this.settings.deal = parseInt(e.target.value)
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok')
+                        this.settings.deal = parseInt(e.target.value);
+                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
-                    else this.inFocusOut(e, name)
-                    break
+                    else this.inFocusOut(e, name);
+                    break;
 
                 case 'dealMargin':
                     if(this.validate(e.target.value, -this.settings.deal, (100 - this.settings.deal))) {
-                        this.settings.dealMargin = parseInt(e.target.value)
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok')
+                        this.settings.dealMargin = parseInt(e.target.value);
+                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
-                    else this.inFocusOut(e, name)
-                    break
+                    else this.inFocusOut(e, name);
+                    break;
 
                 case 'minPrice':
                     if(this.validate(e.target.value, 0, this.settings.maxPrice)) {
-                        this.updateUrl = true
-                        this.settings.minPrice = parseFloat(e.target.value).toFixed(2)
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok')
+                        this.updateUrl = true;
+                        this.settings.minPrice = parseFloat(e.target.value).toFixed(2);
+                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
-                    else this.inFocusOut(e, name)
-                    break
+                    else this.inFocusOut(e, name);
+                    break;
 
                 case 'maxPrice':
                     if(this.validate(e.target.value, this.settings.minPrice, null)) {
-                        this.updateUrl = true
-                        this.settings.maxPrice = parseFloat(e.target.value).toFixed(2)
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok')
+                        this.updateUrl = true;
+                        this.settings.maxPrice = parseFloat(e.target.value).toFixed(2);
+                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
-                    else this.inFocusOut(e, name)
-                    break
+                    else this.inFocusOut(e, name);
+                    break;
 
                 case 'toSpend':
                     if(this.validate(e.target.value, 0, null)) {
-                        this.settings.toSpend = parseFloat(e.target.value).toFixed(2)
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok')
+                        this.settings.toSpend = parseFloat(e.target.value).toFixed(2);
+                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
-                    else this.inFocusOut(e, name)
-                    break
+                    else this.inFocusOut(e, name);
+                    break;
 
                 case 'search':
-                    this.updateUrl = true
-                    this.settings.search = e.target.value
-                    e.target.classList.replace('input--val-wrong', 'input--val-ok')
-                    break
+                    this.updateUrl = true;
+                    this.settings.search = e.target.value;
+                    e.target.classList.replace('input--val-wrong', 'input--val-ok');
+                    break;
 
                 case 'runDelay':
                     if(this.validate(e.target.value, 0.5, null)) {
-                        this.settings.runDelay = parseFloat(e.target.value).toFixed(1)
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok')
+                        this.settings.runDelay = parseFloat(e.target.value).toFixed(1);
+                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
-                    else this.inFocusOut(e, name)
-                    break
+                    else this.inFocusOut(e, name);
+                    break;
             }
         }
     },
     beforeMount() {
-        this.csrfCookie = getCookie('csrf_cookie')
+        this.csrfCookie = getCookie('csrf_cookie');
     },
     beforeDestroy() {
-        for(let awaitingBuyItem of this.awaitingBuyItems) awaitingBuyItem.DOMElement.remove()
-        this.awaitingBuyItems = []
-        this.isRunning = false
+        this.isRunning = false;
     }
-})
+});

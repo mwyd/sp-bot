@@ -30,7 +30,7 @@
     overflow-y: auto;
 }
 
-.theme-dark {
+.spb-theme-dark {
     --main-bg-color: #3a4048;
     --secondary-bg-color: #323940;
     --main-txt-color: #eef0f2;

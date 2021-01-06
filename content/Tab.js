@@ -7,10 +7,10 @@ Vue.component('tab-window', {
     `,
     methods: {
         updateStatus(newStatus) {
-            this.$emit('statusupdate', newStatus)
+            this.$emit('statusupdate', newStatus);
         }
     }
-})
+});
 
 Vue.component('tab', {
     props: ['ico', 'static', 'index', 'child'],
@@ -35,56 +35,58 @@ Vue.component('tab', {
                 {{ getTabName }}
             </div>
             <tab-window 
+                ref="tabWindow" 
                 @statusupdate="updateStatus" 
                 :child="child"  
                 :index="index" 
                 :class="{'spb-active': isActive, 'spb-hidden': !isActive}"> 
             </tab-window>
-        </div>`,
+        </div>
+    `,
     computed: {
         getTabName() {
-            return this.child == 'bot' ? this.ico + this.index : this.ico 
+            return this.child == 'bot' ? this.ico + this.index : this.ico;
         },
         getStatusClass() {
             switch(this.status) {
                 case 'idle':
-                    return 'spb-status-idle'
+                    return 'spb-status-idle';
 
                 case 'running':
-                    return 'spb-status-ok'
+                    return 'spb-status-ok';
             }
         }
     },
     methods: {
         updateStatus(newStatus) {
-            this.status = newStatus
+            this.status = newStatus;
         },
         show() {
-            this.bound = !this.bound
+            this.bound = !this.bound;
         },
         mEnter() {
-            let barScrollPos = this.$el.parentNode.scrollTop
-            let tabWindow = this.$el.querySelector('.spb-tab-window')
-            let toBottom = window.innerHeight - this.$el.offsetTop - tabWindow.offsetHeight
+            let barScrollPos = this.$el.parentNode.scrollTop;
+            let tabWindow = this.$refs.tabWindow.$el;
+            let toBottom = window.innerHeight - this.$el.offsetTop - tabWindow.offsetHeight;
 
             if(toBottom + barScrollPos < 0) {
-                tabWindow.style.top = `${this.$el.offsetTop + toBottom - 5}px`
+                tabWindow.style.top = `${this.$el.offsetTop + toBottom - 5}px`;
             } else if (this.$el.offsetTop < barScrollPos) {
-                tabWindow.style.top = '5px'
+                tabWindow.style.top = '5px';
             } else {
-                tabWindow.style.top =  `${this.$el.offsetTop - barScrollPos + 5}px`
+                tabWindow.style.top =  `${this.$el.offsetTop - barScrollPos + 5}px`;
             }
 
-            if(!this.bound) this.isActive = true
-            this.displayClose = true
+            if(!this.bound) this.isActive = true;
+            this.displayClose = true;
         },
         mLeave() {
-            if(!this.bound) this.isActive = false
-            this.displayClose = false
+            if(!this.bound) this.isActive = false;
+            this.displayClose = false;
         },
         close() {
-            this.$emit('close', this.index)
+            this.$emit('close', this.index);
         }
     }
-})
+});
 
