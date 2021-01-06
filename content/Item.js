@@ -8,11 +8,11 @@ Vue.component('item', {
                 {{ item.steam_market_hash_name }}</a>
             </div>
             <div class="spb-history__col spb-item-price">$ {{ item.price_market }}
-                <sup>{{ (item.discount_real !== undefined ? item.discount_real + '% | ': '') + item.discount }}%</sup>
+                <sup>{{ (item._real_discount !== undefined ? item._real_discount + '% | ': '') + item.discount }}%</sup>
             </div>
             <div class="spb-history__col spb-item-status"> {{ item.state }}</div>
             <div class="spb-history__col spb-item-date">
-                <button v-if="type == 'toConfirm'" @click="item.onclick" class="spb-buy-button spb-button--green">Buy now</button>
+                <button v-if="type == 'toConfirm'" @click="item._onclick" class="spb-buy-button spb-button--green">Buy now</button>
             </div>
             <div class="spb-history__col spb-item-info spb-info-ico"></div>
             <div v-if="(item.state == 'active' && type != 'toConfirm')" class="spb-item-timebar"></div>
@@ -20,7 +20,7 @@ Vue.component('item', {
     `,
     computed: {
         getDate() {
-            return getFullDate(new Date(item.time_finished), -2);
+            return this.type != 'toConfirm' ? getFullDate(new Date(item._time_finished), -2) : '';
         }
     }
 });

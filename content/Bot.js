@@ -2,19 +2,17 @@ Vue.component('bot', {
     props: ['index'],
     data: function() {
         return {
-            settings: {
-                runDelay: 4.0,
-                hotDeal: 70,
-                deal: 50,
-                dealMargin: 0,
-                minPrice: 1.00,
-                maxPrice: 100.00,
-                toSpend: 10.00,
-                search: ''
-            },
-            moneyAlreadySpent: 0,
-            csrfCookie: '',
             isRunning: false,
+            runDelay: 4.0,
+            hotDeal: 70,
+            deal: 50,
+            dealMargin: 0,
+            minPrice: 1.00,
+            maxPrice: 100.00,
+            toSpend: 10.00,
+            search: '',
+            moneySpent: 0,
+            csrfCookie: '',
             updateUrl: true,
             notifiSound: new Audio(chrome.extension.getURL('/assets/audio/Jestem_zrujnowany.mp3')),
             initDate: getFullDate(new Date()),
@@ -26,7 +24,7 @@ Vue.component('bot', {
             items: {
                 filtered: [],
                 toConfirm: [],
-                pending: [],
+                active: [],
                 finished: []
             }
         }
@@ -39,7 +37,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">% Hot deal</span>
                             <input 
-                            :value="settings.hotDeal" 
+                            :value="hotDeal" 
                             v-on:focusout="inFocusOut($event, 'hotDeal')" 
                             v-on:input="inInput($event, 'hotDeal')" 
                             v-on:keydown.enter="inEnter($event, 'hotDeal')" 
@@ -48,7 +46,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">$ Item min price</span>
                             <input 
-                            :value="settings.minPrice" 
+                            :value="minPrice" 
                             v-on:focusout="inFocusOut($event, 'minPrice')" 
                             v-on:input="inInput($event, 'minPrice')" 
                             v-on:keydown.enter="inEnter($event, 'minPrice')" 
@@ -57,7 +55,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">% Deal margin</span>
                             <input 
-                            :value="settings.dealMargin" 
+                            :value="dealMargin" 
                             v-on:focusout="inFocusOut($event, 'dealMargin')" 
                             v-on:input="inInput($event, 'dealMargin')" 
                             v-on:keydown.enter="inEnter($event, 'dealMargin')" 
@@ -66,7 +64,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">Search</span>
                             <input 
-                            :value="settings.search" 
+                            :value="search" 
                             v-on:focusout="inFocusOut($event, 'search')" 
                             v-on:input="inInput($event, 'search')" 
                             v-on:keydown.enter="inEnter($event, 'search')" 
@@ -77,7 +75,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">% Deal</span>
                             <input 
-                            :value="settings.deal" 
+                            :value="deal" 
                             v-on:focusout="inFocusOut($event, 'deal')" 
                             v-on:input="inInput($event, 'deal')" 
                             v-on:keydown.enter="inEnter($event, 'deal')" 
@@ -86,7 +84,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">$ Item max price</span>
                             <input 
-                            :value="settings.maxPrice" 
+                            :value="maxPrice" 
                             v-on:focusout="inFocusOut($event, 'maxPrice')" 
                             v-on:input="inInput($event, 'maxPrice')" 
                             v-on:keydown.enter="inEnter($event, 'maxPrice')" 
@@ -95,7 +93,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">$ Money to spend</span>
                             <input 
-                            :value="settings.toSpend" 
+                            :value="toSpend" 
                             v-on:focusout="inFocusOut($event, 'toSpend')" 
                             v-on:input="inInput($event, 'toSpend')" 
                             v-on:keydown.enter="inEnter($event, 'toSpend')" 
@@ -104,7 +102,7 @@ Vue.component('bot', {
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">Refresh time</span>
                             <input 
-                            :value="settings.runDelay" 
+                            :value="runDelay" 
                             v-on:input="inInput($event, 'runDelay')" 
                             v-on:focusout="inFocusOut($event, 'runDelay')" 
                             v-on:keydown.enter="inEnter($event, 'runDelay')" 
@@ -122,14 +120,14 @@ Vue.component('bot', {
     methods: {
         toggleStart() {
             if(this.isRunning) {
-                for(let pendingItem of this.items.pending) pendingItem.current_run = false;
+                for(let pendingItem of this.items.active) pendingItem._current_run = false;
                 this.items.toConfirm = [];
                 this.isRunning = false;
                 this.$emit('statusupdate', 'idle');
             }
             else {
                 this.isRunning = true;
-                this.moneyAlreadySpent = 0;
+                this.moneySpent = 0;
                 this.$emit('statusupdate', 'running');
             }
         },
@@ -137,22 +135,22 @@ Vue.component('bot', {
             if(this.updateUrl) {
                 let getItemsURL = new URL(this.apiUrls.getItems);
 
-                getItemsURL.searchParams.set('price_from', this.settings.minPrice);
-                getItemsURL.searchParams.set('price_to', this.settings.maxPrice);
-                getItemsURL.searchParams.set('search', this.settings.search);
+                getItemsURL.searchParams.set('price_from', this.minPrice);
+                getItemsURL.searchParams.set('price_to', this.maxPrice);
+                getItemsURL.searchParams.set('search', this.search);
 
                 this.apiUrls.getItems = getItemsURL.toString();
                 this.updateUrl = false;
             }
         },
-        addAwaitingItem(item) {
+        addToConfirm(item) {
             if(this.items.toConfirm.findIndex(_item => _item.id == item.id) != -1) return;
-    
-            item.onclick = () => {this.proceedBuy(item)};
+            
+            item._onclick = () => {this.buyItem(item)};
             this.items.toConfirm.push(item);
             this.$store.commit('updateItems', {type: 'toConfirm', spb_index: this.index, items: this.items.toConfirm});
         },
-        updateAwaitingItems() {
+        updateToConfirm() {
             let updated = 0;        
             for(let i = this.items.toConfirm.length - 1; i >= 0; i--) {
                 let item = this.items.filtered.find(_item => _item.id == this.items.toConfirm[i].id);
@@ -166,28 +164,23 @@ Vue.component('bot', {
                     this.items.toConfirm[i].price = item.price;
                     this.items.toConfirm[i].price_market = item.price_market;
                     this.items.toConfirm[i].discount = item.discount;
-                    this.items.toConfirm[i].discount_real = getDiffAsPercentage(item.price_market, this.items.toConfirm[i].sp_bot_steam_price);
+                    this.items.toConfirm[i]._real_discount = getDiffAsPercentage(item.price_market, this.items.toConfirm[i]._steam_price);
                     updated++;
                 }
             }
-
+            
             if(updated > 0) this.$store.commit('updateItems', {type: 'toConfirm', spb_index: this.index, items: this.items.toConfirm});
         },
-        proceedBuy(item, rePurchase = false) {
-            if(rePurchase == false && this.items.pending.findIndex(_item => _item.itemId == item.id) != -1) return;
-            if(rePurchase == true || parseFloat(item.price_market) + this.moneyAlreadySpent <= this.settings.toSpend) {
-                this.moneyAlreadySpent += parseFloat(item.price_market);
+        buyItem(item, rePurchase = false) {
+            if(rePurchase == false && this.items.active.findIndex(_item => _item.id == item.id) != -1) return;
+            if(rePurchase == true || parseFloat(item.price_market) + this.moneySpent <= this.toSpend) {
+                this.moneySpent += parseFloat(item.price_market);
     
-                const pendingItem = {
-                    id: undefined,
-                    itemId: item.id,
-                    discount: item.discount,
-                    discount_real: item.discount_real,
-                    current_run: true,
-                    status: 'pending'
-                }
+                item._status = 'pending';
+                item._current_run = true;
+                item._transaction_id = null;
 
-                this.items.pending.push(pendingItem);
+                this.items.active.push(item);
     
                 fetch(this.apiUrls.buyItem, {
                     method: 'POST',
@@ -204,17 +197,17 @@ Vue.component('bot', {
                             switch(data.error_message) {
                                 case 'wrong_token':
                                     this.csrfCookie = data.token;
-                                    this.proceedBuy(item, true);
+                                    this.buyItem(item, true);
                                     break;
                             }
     
-                            pendingItem.status = 'error';
-                            this.moneyAlreadySpent -= parseFloat(item.price_market);
+                            item._status = 'error';
+                            this.moneySpent -= parseFloat(item.price_market);
                             break
                             
                         case "success":
-                            pendingItem.id = data.id;
-                            pendingItem.status = 'success';
+                            item._transaction_id = data.id;
+                            item._status = 'success';
                             
                             chrome.runtime.sendMessage({action: 'buy_item', params: {}});
                             this.notifiSound.play();
@@ -224,8 +217,8 @@ Vue.component('bot', {
                     console.log(data)
                 })
                 .catch(err => {
-                    pendingItem.status = 'error';
-                    this.moneyAlreadySpent -= parseFloat(item.price_market);
+                    item._status = 'error';
+                    this.moneySpent -= parseFloat(item.price_market);
     
                     /*this.ui.errorDot.setAttribute('class', 'button__red');*/
                     //this.bLog('\n', new Error(err))
@@ -233,7 +226,7 @@ Vue.component('bot', {
                 })
             }
         },
-        updateBuyHistory() {
+        updatePending() {
             chrome.runtime.sendMessage({action: 'get_bought_items_counter', params: {}}, res => {
                 fetch(this.apiUrls.getBuyHistory, {
                     method: 'POST',
@@ -247,38 +240,39 @@ Vue.component('bot', {
                 .then(data => {
                     switch(data.status) {
                         case 'success':
-                            for(let i = this.items.pending.length - 1; i >= 0 ; i--) {
-                                if(this.items.pending[i].status == 'error') {
-                                    this.items.pending.splice(i, 1);
+                            for(let i = this.items.active.length - 1; i >= 0 ; i--) {
+                                let item = this.items.active[i];
+
+                                if(item._status == 'error') {
+                                    this.items.active.splice(i, 1);
                                     continue;
                                 }
     
-                                let historyItem = data.items.find(_item => _item.id == this.items.pending[i].id)
+                                let historyItem = data.items.find(_item => _item.id == item._transaction_id)
                                 if(historyItem === undefined) continue;
+
+                                item.state = historyItem.state;
+                                item._time_finished = historyItem.time_finished;
     
-                                historyItem.discount_real = this.items.pending[i].discount_real;
-                                historyItem.current_run = this.items.pending[i].current_run;
-                                historyItem.discount = this.items.pending[i].discount;
-    
-                                switch(historyItem.state) {
+                                switch(item.state) {
                                     case 'cancelled':
-                                        this.items.pending.splice(i, 1);
-                                        this.finished.push(historyItem);
+                                        this.items.active.splice(i, 1);
+                                        this.items.finished.push(item);
     
-                                        if(historyItem.current_run) this.moneyAlreadySpent -= parseFloat(historyItem.price);
-                                        this.$store.commit('updateItems', {type: 'finished', spb_index: this.index, items: this.finished});
+                                        if(item._current_run) this.moneySpent -= parseFloat(item.price_market);
+                                        this.$store.commit('updateItems', {type: 'finished', spb_index: this.index, items: this.items.finished});
                                         break;
     
                                     case 'finished':
-                                        this.items.pending.splice(i, 1);
-                                        this.finished.push(historyItem);
+                                        this.items.active.splice(i, 1);
+                                        this.items.finished.push(item);
     
-                                        if(this.items.pending.length == 0 && Math.abs(this.moneyAlreadySpent - this.settings.toSpend) < this.settings.minPrice) this.toggleStart();
-                                        this.$store.commit('updateItems', {type: 'finished', spb_index: this.index, items: this.finished});
+                                        if(this.items.active.length == 0 && Math.abs(this.moneySpent - this.toSpend) < this.minPrice) this.toggleStart();
+                                        this.$store.commit('updateItems', {type: 'finished', spb_index: this.index, items: this.items.finished});
                                         break;
     
                                     case 'active':
-                                        this.$store.commit('updateItems', {type: 'active', spb_index: this.index, items: [historyItem]});
+                                        this.$store.commit('updateItems', {type: 'active', spb_index: this.index, items: this.items.active});
                                         break;
                                     }
                             }
@@ -294,10 +288,12 @@ Vue.component('bot', {
         },
         async run() {
             this.toggleStart();
+
             while(this.isRunning) {
                 this.updateGetItemsUrl();
                 this.items.filtered = [];
-                if(Math.abs(this.moneyAlreadySpent - this.settings.toSpend) >= this.settings.minPrice) {
+
+                if(Math.abs(this.moneySpent - this.toSpend) >= this.minPrice) {
                     try {    
                         const response = await fetch(this.apiUrls.getItems, {credentials: 'include'});
                         let data = await response.json();
@@ -307,7 +303,7 @@ Vue.component('bot', {
                 
                             this.items.filtered = this.items.filtered.filter(item => !item.is_my_item);
                             this.items.filtered = this.items.filtered.filter(item => {
-                                return (item.discount >= this.settings.deal && item.price_market >= this.settings.minPrice) || item.discount >= this.settings.hotDeal;
+                                return (item.discount >= this.deal && item.price_market >= this.minPrice) || item.discount >= this.hotDeal;
                             })
                 
                             this.items.filtered.sort((itemC, itemN) => { 
@@ -321,13 +317,16 @@ Vue.component('bot', {
                                 chrome.runtime.sendMessage({action: 'get_price', params: {hash_name: item.steam_market_hash_name}}, res => {
                                     const {data} = res;
                                     item.discount = Math.round(item.discount);
+
                                     if(data.success) {
-                                        item.sp_bot_steam_price = data.data.steam.price;
-                                        item.discount_real = getDiffAsPercentage(item.price_market, item.sp_bot_steam_price);
-                                        if(item.discount_real >= this.settings.deal + (this.settings.dealMargin) && data.data.steam.volume > 1) this.proceedBuy(item);
-                                        else this.addAwaitingItem(item);
+                                        item._steam_price = data.data.steam.price;
+                                        item._steam_volume = data.data.steam.volume;
+                                        item._real_discount = getDiffAsPercentage(item.price_market, item._steam_price);
+
+                                        if(item._real_discount >= this.deal + (this.dealMargin) && item._steam_volume > 1) this.buyItem(item);
+                                        else this.addToConfirm(item);
                                     }
-                                    else this.addAwaitingItem(item);
+                                    else this.addToConfirm(item);
                                 });
                             }
 
@@ -340,12 +339,12 @@ Vue.component('bot', {
                         console.log(err);
                     }
                 }
-                //this.bLog('', this)
-                if(this.items.pending.length > 0) this.updateBuyHistory();
-                if(this.items.toConfirm.length > 0 ) this.updateAwaitingItems();
-                //this.ui.moneySpentContainer.innerHTML = `$ ${this.moneyAlreadySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`;
+
+                if(this.items.active.length > 0) this.updatePending();
+                if(this.items.toConfirm.length > 0 ) this.updateToConfirm();
+                //this.ui.moneySpentContainer.innerHTML = `$ ${this.moneySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`;
                     
-                await new Promise(r => setTimeout(r, 1000 * this.settings.runDelay));
+                await new Promise(r => setTimeout(r, 1000 * this.runDelay));
             }
         },
         validate(target, min, max) {
@@ -357,28 +356,28 @@ Vue.component('bot', {
         getOptionByName(name) {
             switch(name) {
                 case 'hotDeal':
-                    return this.settings.hotDeal;
+                    return this.hotDeal;
 
                 case 'deal':
-                    return this.settings.deal;
+                    return this.deal;
 
                 case 'dealMargin':
-                    return this.settings.dealMargin;
+                    return this.dealMargin;
 
                 case 'minPrice':
-                    return this.settings.minPrice;
+                    return this.minPrice;
 
                 case 'maxPrice':
-                    return this.settings.maxPrice;
+                    return this.maxPrice;
 
                 case 'toSpend':
-                    return this.settings.toSpend;
+                    return this.toSpend;
 
                 case 'search':
-                    return this.settings.search;
+                    return this.search;
 
                 case 'runDelay':
-                    return this.settings.runDelay;
+                    return this.runDelay;
 
                 default:
                     return null;
@@ -401,7 +400,7 @@ Vue.component('bot', {
             switch(name) {
                 case 'hotDeal':
                     if(this.validate(e.target.value, 0, 100)) {
-                        this.settings.hotDeal = parseInt(e.target.value);
+                        this.hotDeal = parseInt(e.target.value);
                         e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
                     else this.inFocusOut(e, name);
@@ -409,33 +408,33 @@ Vue.component('bot', {
 
                 case 'deal':
                     if(this.validate(e.target.value, 0, 100)) {
-                        this.settings.deal = parseInt(e.target.value);
+                        this.deal = parseInt(e.target.value);
                         e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
                     else this.inFocusOut(e, name);
                     break;
 
                 case 'dealMargin':
-                    if(this.validate(e.target.value, -this.settings.deal, (100 - this.settings.deal))) {
-                        this.settings.dealMargin = parseInt(e.target.value);
+                    if(this.validate(e.target.value, -this.deal, (100 - this.deal))) {
+                        this.dealMargin = parseInt(e.target.value);
                         e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
                     else this.inFocusOut(e, name);
                     break;
 
                 case 'minPrice':
-                    if(this.validate(e.target.value, 0, this.settings.maxPrice)) {
+                    if(this.validate(e.target.value, 0, this.maxPrice)) {
                         this.updateUrl = true;
-                        this.settings.minPrice = parseFloat(e.target.value).toFixed(2);
+                        this.minPrice = parseFloat(e.target.value).toFixed(2);
                         e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
                     else this.inFocusOut(e, name);
                     break;
 
                 case 'maxPrice':
-                    if(this.validate(e.target.value, this.settings.minPrice, null)) {
+                    if(this.validate(e.target.value, this.minPrice, null)) {
                         this.updateUrl = true;
-                        this.settings.maxPrice = parseFloat(e.target.value).toFixed(2);
+                        this.maxPrice = parseFloat(e.target.value).toFixed(2);
                         e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
                     else this.inFocusOut(e, name);
@@ -443,7 +442,7 @@ Vue.component('bot', {
 
                 case 'toSpend':
                     if(this.validate(e.target.value, 0, null)) {
-                        this.settings.toSpend = parseFloat(e.target.value).toFixed(2);
+                        this.toSpend = parseFloat(e.target.value).toFixed(2);
                         e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
                     else this.inFocusOut(e, name);
@@ -451,13 +450,13 @@ Vue.component('bot', {
 
                 case 'search':
                     this.updateUrl = true;
-                    this.settings.search = e.target.value;
+                    this.search = e.target.value;
                     e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     break;
 
                 case 'runDelay':
                     if(this.validate(e.target.value, 0.5, null)) {
-                        this.settings.runDelay = parseFloat(e.target.value).toFixed(1);
+                        this.runDelay = parseFloat(e.target.value).toFixed(1);
                         e.target.classList.replace('input--val-wrong', 'input--val-ok');
                     }
                     else this.inFocusOut(e, name);

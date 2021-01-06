@@ -122,13 +122,7 @@ window.onload = () => {
                 if(this.dynamicTabs.length >= this.dynmaicTabsLimit) return;
 
                 id = this.tabsCreated;
-
-                let tab = {
-                    id: id,
-                    name: `Bot-${id}`,
-                    ico: `B`,
-                    child: 'bot'
-                }
+                let tab = {id: id, name: `Bot-${id}`, ico: `B`, child: 'bot'}
                 
                 this.dynamicTabs.push(tab);
                 this.tabsCreated++;
