@@ -40,6 +40,11 @@ window.onload = () => {
 
     const store = new Vuex.Store({
         state: {
+            auth: {
+                user: '',
+                apiKey: '',
+                pass: false
+            },
             moneySpent: 0,
             items: {
                 toConfirm: [],
@@ -101,6 +106,25 @@ window.onload = () => {
                         else set.items = data.items;
                         break;
                 }
+            },
+        },
+        actions: {
+            setAuth(context, data) {
+                context.state.auth.user = data.user;
+                context.state.auth.apiKey = data.apiKey;
+
+                chrome.runtime.sendMessage({action: 'auth', params: {apiKey: data.apiKey}}, res => {
+                    const {user, success} = res.data;
+    
+                    if(success) {
+                        context.state.auth.user = user;
+                        context.state.auth.apiKey = data.apiKey;
+                        context.state.auth.pass = true;
+                    }
+                    else context.state.auth.pass = false;
+
+                    chrome.storage.sync.set({user: context.state.auth.user, apiKey: context.state.auth.apiKey});
+                });
             }
         }
     });
@@ -130,6 +154,14 @@ window.onload = () => {
             closeTab(index) {
                 this.dynamicTabs.splice(index, 1);
             }
+        },
+        beforeMount() {
+            chrome.storage.sync.get(['apiKey', 'user'], (items) => {
+                let user = items.user;
+                let apiKey = items.apiKey;
+
+                this.$store.dispatch('setAuth', {user: user, apiKey: apiKey});
+            });
         }
     });
 }

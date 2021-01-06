@@ -14,7 +14,7 @@ Vue.component('tab-window', {
 
 Vue.component('tab', {
     props: ['ico', 'static', 'index', 'child'],
-    data: function() {
+    data() {
         return {
             isActive: false,
             bound: false,

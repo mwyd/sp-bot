@@ -1,6 +1,6 @@
 Vue.component('bot', {
     props: ['index'],
-    data: function() {
+    data() {
         return {
             isRunning: false,
             runDelay: 4.0,
@@ -213,16 +213,13 @@ Vue.component('bot', {
                             this.notifiSound.play();
                             break;
                     }
-                    //this.bLog('Buy info', data)
-                    console.log(data)
+
+                    this.log('Buy info', data);
                 })
                 .catch(err => {
                     item._status = 'error';
                     this.moneySpent -= parseFloat(item.price_market);
-    
-                    /*this.ui.errorDot.setAttribute('class', 'button__red');*/
-                    //this.bLog('\n', new Error(err))
-                    console.log(err);
+                    this.log('\n', new Error(err))
                 })
             }
         },
@@ -280,11 +277,9 @@ Vue.component('bot', {
                     }
                 })
                 .catch(err => {
-                    //this.ui.errorDot.setAttribute('class', 'button__red');
-                    //this.bLog('\n', new Error(err))
-                    console.log(err);
+                    this.log('\n', new Error(err))
                 })
-            })
+            });
         },
         async run() {
             this.toggleStart();
@@ -314,13 +309,22 @@ Vue.component('bot', {
                             })
 
                             for(let item of this.items.filtered) {
-                                chrome.runtime.sendMessage({action: 'get_price', params: {hash_name: item.steam_market_hash_name}}, res => {
-                                    const {data} = res;
+                                chrome.runtime.sendMessage({
+                                    action: 'get_price', 
+                                    params: {
+                                        hash_name: item.steam_market_hash_name, 
+                                        apiKey: this.$store.state.auth.apiKey}}, 
+                                    res => {
+                                    const {stats, success} = res.data;
                                     item.discount = Math.round(item.discount);
 
-                                    if(data.success) {
-                                        item._steam_price = data.data.steam.price;
-                                        item._steam_volume = data.data.steam.volume;
+                                    if(success) {
+                                        item._app_sell_price = stats.approximate_sell_price;
+                                        item._avg_discount = stats.avg_discount;
+                                        item._sold = stats.items_sold;
+                                        item._last_sold = stats.last_sold;
+                                        item._steam_price = stats.steam_price;
+                                        item._steam_volume = stats.steam_volume;
                                         item._real_discount = getDiffAsPercentage(item.price_market, item._steam_price);
 
                                         if(item._real_discount >= this.deal + (this.dealMargin) && item._steam_volume > 1) this.buyItem(item);
@@ -329,14 +333,10 @@ Vue.component('bot', {
                                     else this.addToConfirm(item);
                                 });
                             }
-
-                            if(this.items.filtered.length > 0) console.log(this.items.filtered);
                         }
                     }
                     catch(err) {
-                        /*this.ui.errorDot.setAttribute('class', 'button__red');
-                        this.bLog('\n', new Error(err));*/
-                        console.log(err);
+                        this.log('\n', new Error(err));
                     }
                 }
 
@@ -346,6 +346,9 @@ Vue.component('bot', {
                     
                 await new Promise(r => setTimeout(r, 1000 * this.runDelay));
             }
+        },
+        log(msg, data) {
+            console.log('[' + new Date().toLocaleTimeString() + '] [SP-BOT] ' + msg, data);
         },
         validate(target, min, max) {
             if(max == null) return target >= min;

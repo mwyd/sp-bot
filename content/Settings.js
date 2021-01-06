@@ -5,22 +5,25 @@ Vue.component('settings', {
             <div class="spb-flex">
                 <div style="width: 100%;" class="spb-bs__option">
                     <span class="spb-bs__desc">Api key</span>
-                        <input ref="apiKeyInput" type="password" min="0" max="100" class="spb-bs__input input--val-wrong">
+                        <input ref="apiKeyInput" :value="apiKey" type="password" min="0" max="100" :class="'spb-bs__input ' + authStatus">
                 </div>
             </div>
-        <button @click="setApiKey" class="spb-bs__start-button spb-button--green">SAVE</button></div>
+        <button @click="save" class="spb-bs__start-button spb-button--green">SAVE</button></div>
     `,
-    methods: {
-        getApiKey() {
-            chrome.storage.sync.get(['apiKey'], (items) => {
-                this.$refs.apiKeyInput.value = items.apiKey;
-            });
+    computed: {
+        authStatus() {
+            return this.$store.state.auth.pass ? 'input--val-ok' : 'input--val-wrong';
         },
-        setApiKey() {
-            chrome.storage.sync.set({'apiKey': this.$refs.apiKeyInput.value});
+        apiKey() {
+            return this.$store.state.auth.apiKey;
+        }
+    },
+    methods: {
+        save() {
+            this.$store.dispatch('setAuth', {user: '', apiKey: this.$refs.apiKeyInput.value});
         }
     },
     mounted() {
-        this.getApiKey();
+        this.$refs.apiKeyInput.value = this.apiKeyInputVal;
     }
 });
