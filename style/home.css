@@ -92,7 +92,7 @@
     width: 0%;
     height: 2px;
     background: rgb(87 152 233);
-    animation-name: item-buy-timebar;
+    animation-name: spb-buy-timer;
     animation-duration: 900s;
     animation-timing-function: linear;
 }
@@ -109,7 +109,7 @@
     border-left: 2px solid rgb(50, 191, 145);
 }
 
-@keyframes item-buy-timebar {
+@keyframes spb-buy-timer {
     0% {
       width: 100%;
     }

@@ -120,16 +120,20 @@ Vue.component('bot', {
     methods: {
         toggleStart() {
             if(this.isRunning) {
-                for(let pendingItem of this.items.active) pendingItem._current_run = false;
-                this.items.toConfirm = [];
                 this.isRunning = false;
                 this.$emit('statusupdate', 'idle');
             }
             else {
                 this.isRunning = true;
-                this.moneySpent = 0;
                 this.$emit('statusupdate', 'running');
             }
+        },
+        clear() {
+            for(let pendingItem of this.items.active) pendingItem._current_run = false;
+            this.items.toConfirm = [];
+            this.$store.commit('updateItems', {type: 'toConfirm', spb_index: this.index, items: this.items.toConfirm});
+            this.$store.commit('updateItems', {type: 'active', spb_index: this.index, items: []});
+            this.moneySpent = 0;
         },
         updateGetItemsUrl() {
             if(this.updateUrl) {
@@ -179,6 +183,7 @@ Vue.component('bot', {
                 item._status = 'pending';
                 item._current_run = true;
                 item._transaction_id = null;
+                item._time_bought = getFullDate(new Date());
 
                 this.items.active.push(item);
     
@@ -249,7 +254,6 @@ Vue.component('bot', {
                                 if(historyItem === undefined) continue;
 
                                 item.state = historyItem.state;
-                                item._time_finished = historyItem.time_finished;
     
                                 switch(item.state) {
                                     case 'cancelled':
@@ -302,11 +306,11 @@ Vue.component('bot', {
                             })
                 
                             this.items.filtered.sort((itemC, itemN) => { 
-                                let itemCPriceF = parseFloat(itemC.price_market);
-                                if(itemCPriceF < itemN.price_market) return 1;
-                                if(itemCPriceF > itemN.price_market) return -1;
+                                let price = parseFloat(itemC.price_market);
+                                if(price < itemN.price_market) return 1;
+                                if(price > itemN.price_market) return -1;
                                 return 0;
-                            })
+                            });
 
                             for(let item of this.items.filtered) {
                                 chrome.runtime.sendMessage({
@@ -346,6 +350,8 @@ Vue.component('bot', {
                     
                 await new Promise(r => setTimeout(r, 1000 * this.runDelay));
             }
+
+            this.clear();
         },
         log(msg, data) {
             console.log('[' + new Date().toLocaleTimeString() + '] [SP-BOT] ' + msg, data);
