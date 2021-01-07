@@ -12,16 +12,19 @@
     overflow-x: hidden;
 }
 
-.spb-history-row {
+.spb-history__item {
     height: 60px;
     width: 100%;
-    border-radius: 10px;
-    background-color: var(--secondary-bg-color);
-    font-weight: 100;
-    font-size: 14px;
+    position: relative;
+}
+
+.spb-history__row {
     margin-top: 4px;
     margin-bottom: 4px;
-    position: relative;
+    background-color: var(--secondary-bg-color);
+    border-radius: 10px;
+    font-weight: 100;
+    font-size: 14px;
 }
 
 .spb-history__col {
@@ -95,6 +98,15 @@
     animation-name: spb-buy-timer;
     animation-duration: 900s;
     animation-timing-function: linear;
+}
+
+.spb-history__item-stats {
+    padding: 4px;
+}
+
+.spb-history__item-stats table {
+    width: 100%;
+    text-align: center;
 }
 
 .spb-item-state-active {

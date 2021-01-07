@@ -8,7 +8,7 @@ Vue.component('bot', {
             deal: 50,
             dealMargin: 0,
             minPrice: 1.00,
-            maxPrice: 100.00,
+            maxPrice: 10.00,
             toSpend: 10.00,
             search: '',
             moneySpent: 0,
