@@ -3,13 +3,13 @@ Vue.component('bot', {
     data() {
         return {
             isRunning: false,
-            runDelay: 4.0,
             hotDeal: 70,
             deal: 50,
             dealMargin: 0,
-            minPrice: 1.00,
-            maxPrice: 10.00,
-            toSpend: 10.00,
+            minPrice: '1.00',
+            maxPrice: '10.00',
+            toSpend: '10.00',
+            runDelay: '4.0',
             search: '',
             moneySpent: 0,
             csrfCookie: '',
@@ -38,36 +38,36 @@ Vue.component('bot', {
                         <span class="spb-bs__desc">% Hot deal</span>
                             <input 
                             :value="hotDeal" 
-                            v-on:focusout="inFocusOut($event, 'hotDeal')" 
-                            v-on:input="inInput($event, 'hotDeal')" 
-                            v-on:keydown.enter="inEnter($event, 'hotDeal')" 
+                            @focusout="inFocusOut($event, 'hotDeal')" 
+                            @input="inInput($event, 'hotDeal')" 
+                            @keydown.enter="inEnter($event, 'hotDeal')" 
                             class="spb-bs__input input--val-ok" type="number" min="0" max="100">
                     </div>
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">$ Item min price</span>
                             <input 
                             :value="minPrice" 
-                            v-on:focusout="inFocusOut($event, 'minPrice')" 
-                            v-on:input="inInput($event, 'minPrice')" 
-                            v-on:keydown.enter="inEnter($event, 'minPrice')" 
+                            @focusout="inFocusOut($event, 'minPrice')" 
+                            @input="inInput($event, 'minPrice')" 
+                            @keydown.enter="inEnter($event, 'minPrice')" 
                             class="spb-bs__input input--val-ok" type="number" min="0" step="0.01">
                     </div>
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">% Deal margin</span>
                             <input 
                             :value="dealMargin" 
-                            v-on:focusout="inFocusOut($event, 'dealMargin')" 
-                            v-on:input="inInput($event, 'dealMargin')" 
-                            v-on:keydown.enter="inEnter($event, 'dealMargin')" 
+                            @focusout="inFocusOut($event, 'dealMargin')" 
+                            @input="inInput($event, 'dealMargin')" 
+                            @keydown.enter="inEnter($event, 'dealMargin')" 
                             class="spb-bs__input input--val-ok" type="number" min="-100" max="100">
                     </div>
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">Search</span>
                             <input 
                             :value="search" 
-                            v-on:focusout="inFocusOut($event, 'search')" 
-                            v-on:input="inInput($event, 'search')" 
-                            v-on:keydown.enter="inEnter($event, 'search')" 
+                            @focusout="inFocusOut($event, 'search')" 
+                            @input="inInput($event, 'search')" 
+                            @keydown.enter="inEnter($event, 'search')" 
                             class="spb-bs__input input--val-ok" type="text" min="0" step="0.01">
                     </div>  
                 </div>
@@ -76,42 +76,42 @@ Vue.component('bot', {
                         <span class="spb-bs__desc">% Deal</span>
                             <input 
                             :value="deal" 
-                            v-on:focusout="inFocusOut($event, 'deal')" 
-                            v-on:input="inInput($event, 'deal')" 
-                            v-on:keydown.enter="inEnter($event, 'deal')" 
+                            @focusout="inFocusOut($event, 'deal')" 
+                            @input="inInput($event, 'deal')" 
+                            @keydown.enter="inEnter($event, 'deal')" 
                             class="spb-bs__input input--val-ok" type="number" min="0" max="100">
                     </div>  
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">$ Item max price</span>
                             <input 
                             :value="maxPrice" 
-                            v-on:focusout="inFocusOut($event, 'maxPrice')" 
-                            v-on:input="inInput($event, 'maxPrice')" 
-                            v-on:keydown.enter="inEnter($event, 'maxPrice')" 
+                            @focusout="inFocusOut($event, 'maxPrice')" 
+                            @input="inInput($event, 'maxPrice')" 
+                            @keydown.enter="inEnter($event, 'maxPrice')" 
                             class="spb-bs__input input--val-ok" type="number" min="0" step="0.01">
                     </div>
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">$ Money to spend</span>
                             <input 
                             :value="toSpend" 
-                            v-on:focusout="inFocusOut($event, 'toSpend')" 
-                            v-on:input="inInput($event, 'toSpend')" 
-                            v-on:keydown.enter="inEnter($event, 'toSpend')" 
+                            @focusout="inFocusOut($event, 'toSpend')" 
+                            @input="inInput($event, 'toSpend')" 
+                            @keydown.enter="inEnter($event, 'toSpend')" 
                             class="spb-bs__input input--val-ok" type="number" min="0" step="0.01">
                     </div>
                     <div class="spb-bs__option">
                         <span class="spb-bs__desc">Refresh time</span>
                             <input 
                             :value="runDelay" 
-                            v-on:input="inInput($event, 'runDelay')" 
-                            v-on:focusout="inFocusOut($event, 'runDelay')" 
-                            v-on:keydown.enter="inEnter($event, 'runDelay')" 
+                            @input="inInput($event, 'runDelay')" 
+                            @focusout="inFocusOut($event, 'runDelay')" 
+                            @keydown.enter="inEnter($event, 'runDelay')" 
                             class="spb-bs__input input--val-ok" type="number" min="0" step="1">
                     </div>
                 </div>
             </div>
             <button 
-                v-on:click="run" 
+                @click="run" 
                 :class="'spb-bs__start-button ' + (isRunning ? 'spb-button--red' : 'spb-button--green')">
                 {{ isRunning ? 'STOP' : 'START' }}
             </button>
@@ -331,7 +331,7 @@ Vue.component('bot', {
                                         item._steam_volume = stats.steam_volume;
                                         item._real_discount = getDiffAsPercentage(item.price_market, item._steam_price);
 
-                                        if(item._real_discount >= this.deal + (this.dealMargin) && item._steam_volume > 1) this.buyItem(item);
+                                        if(item._real_discount >= this.deal + (this.dealMargin) && item._steam_volume > 5) this.buyItem(item);
                                         else this.addToConfirm(item);
                                     }
                                     else this.addToConfirm(item);
@@ -357,10 +357,11 @@ Vue.component('bot', {
             console.log('[' + new Date().toLocaleTimeString() + '] [SP-BOT] ' + msg, data);
         },
         validate(target, min, max) {
-            if(max == null) return target >= min;
-            if(min == null) return target <= max;
-            
-            return target <= max && target >= min;
+            if(parseFloat(target.value) < min && min !== null) target.value = min;
+            else if(parseFloat(target.value) > max && max !== null) target.value = max;
+
+            target.classList.replace('input--val-wrong', 'input--val-ok');
+            return target.value;
         },
         getOptionByName(name) {
             switch(name) {
@@ -408,53 +409,29 @@ Vue.component('bot', {
         inEnter(e, name) {
             switch(name) {
                 case 'hotDeal':
-                    if(this.validate(e.target.value, 0, 100)) {
-                        this.hotDeal = parseInt(e.target.value);
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
-                    }
-                    else this.inFocusOut(e, name);
-                    break
+                    this.hotDeal = parseInt(this.validate(e.target, 0, 100));
+                    break;
 
                 case 'deal':
-                    if(this.validate(e.target.value, 0, 100)) {
-                        this.deal = parseInt(e.target.value);
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
-                    }
-                    else this.inFocusOut(e, name);
+                    this.deal = parseInt(this.validate(e.target, 0, 100));
                     break;
 
                 case 'dealMargin':
-                    if(this.validate(e.target.value, -this.deal, (100 - this.deal))) {
-                        this.dealMargin = parseInt(e.target.value);
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
-                    }
-                    else this.inFocusOut(e, name);
+                    this.dealMargin = parseInt(this.validate(e.target, -this.deal, (100 - this.deal)));
                     break;
 
                 case 'minPrice':
-                    if(this.validate(e.target.value, 0, this.maxPrice)) {
-                        this.updateUrl = true;
-                        this.minPrice = parseFloat(e.target.value).toFixed(2);
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
-                    }
-                    else this.inFocusOut(e, name);
+                    this.updateUrl = true;
+                    this.minPrice = parseFloat(this.validate(e.target, 0, this.maxPrice)).toFixed(2);
                     break;
 
                 case 'maxPrice':
-                    if(this.validate(e.target.value, this.minPrice, null)) {
-                        this.updateUrl = true;
-                        this.maxPrice = parseFloat(e.target.value).toFixed(2);
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
-                    }
-                    else this.inFocusOut(e, name);
+                    this.updateUrl = true;
+                    this.maxPrice = parseFloat(this.validate(e.target, this.minPrice, this.toSpend)).toFixed(2);
                     break;
 
                 case 'toSpend':
-                    if(this.validate(e.target.value, 0, null)) {
-                        this.toSpend = parseFloat(e.target.value).toFixed(2);
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
-                    }
-                    else this.inFocusOut(e, name);
+                    this.toSpend = parseFloat(this.validate(e.target, this.maxPrice, null)).toFixed(2);
                     break;
 
                 case 'search':
@@ -464,11 +441,7 @@ Vue.component('bot', {
                     break;
 
                 case 'runDelay':
-                    if(this.validate(e.target.value, 0.5, null)) {
-                        this.runDelay = parseFloat(e.target.value).toFixed(1);
-                        e.target.classList.replace('input--val-wrong', 'input--val-ok');
-                    }
-                    else this.inFocusOut(e, name);
+                    this.runDelay = parseFloat(this.validate(e.target, 0.5, null)).toFixed(1);
                     break;
             }
         }
