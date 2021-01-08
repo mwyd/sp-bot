@@ -167,7 +167,7 @@ Vue.component('bot', {
                 if(item.price_market != this.items.toConfirm[i].price_market ) {
                     this.items.toConfirm[i].price = item.price;
                     this.items.toConfirm[i].price_market = item.price_market;
-                    this.items.toConfirm[i].discount = item.discount;
+                    this.items.toConfirm[i].discount = Math.round(item.discount);
                     this.items.toConfirm[i]._real_discount = getDiffAsPercentage(item.price_market, this.items.toConfirm[i]._steam_price);
                     updated++;
                 }
@@ -303,14 +303,9 @@ Vue.component('bot', {
                             this.items.filtered = this.items.filtered.filter(item => !item.is_my_item);
                             this.items.filtered = this.items.filtered.filter(item => {
                                 return (item.discount >= this.deal && item.price_market >= this.minPrice) || item.discount >= this.hotDeal;
-                            })
-                
-                            this.items.filtered.sort((itemC, itemN) => { 
-                                let price = parseFloat(itemC.price_market);
-                                if(price < itemN.price_market) return 1;
-                                if(price > itemN.price_market) return -1;
-                                return 0;
                             });
+                
+                            this.items.filtered.sort((a, b) => b.price_market - a.price_market);
 
                             for(let item of this.items.filtered) {
                                 chrome.runtime.sendMessage({

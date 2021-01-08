@@ -6,8 +6,8 @@ Vue.component('item', {
         }
     },
     template: `
-        <div class="spb-history__row">
-            <div :class="'spb-history__item spb-flex ' + getStateClass">
+        <div :class="'spb-history__row ' + getStateClass">
+            <div class="spb-history__item spb-flex">
                 <div class="spb-history__col spb-item-name">
                     <a target="_blank" :href="'https://steamcommunity.com/market/listings/730/' + item.steam_market_hash_name">
                         <img style="padding-right: 10px;" height="50px" :src="'https://community.cloudflare.steamstatic.com/economy/image/' + item.steam_icon_url_large">
@@ -22,7 +22,6 @@ Vue.component('item', {
                     {{ getDate }}
                 </div>
                 <div @click="showStats" class="spb-history__col spb-item-info spb-info-ico"></div>
-                <div v-if="(item.state == 'active' && type != 'toConfirm')" class="spb-item-timebar"></div>
             </div>
             <div class="spb-history__item-stats" :style="{display: stats}" >
                 <table>
