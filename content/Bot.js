@@ -324,9 +324,11 @@ Vue.component('bot', {
                                         item._last_sold = stats.last_sold;
                                         item._steam_price = stats.steam_price;
                                         item._steam_volume = stats.steam_volume;
+                                        item._app_income = ((0.87 * stats.steam_price) - item.price_market).toFixed(2);
+                                        item._app_income_percentage = getDiffAsPercentage(item.price_market - item._app_income, item.price_market);
                                         item._real_discount = getDiffAsPercentage(item.price_market, item._steam_price);
 
-                                        if(item._real_discount >= this.deal + (this.dealMargin) && item._steam_volume > 5) this.buyItem(item);
+                                        if(item._real_discount >= this.deal + (this.dealMargin) && item._steam_volume > 10) this.buyItem(item);
                                         else this.addToConfirm(item);
                                     }
                                     else this.addToConfirm(item);
@@ -422,7 +424,7 @@ Vue.component('bot', {
 
                 case 'maxPrice':
                     this.updateUrl = true;
-                    this.maxPrice = parseFloat(this.validate(e.target, this.minPrice, this.toSpend)).toFixed(2);
+                    this.maxPrice = parseFloat(this.validate(e.target, this.minPrice, null)).toFixed(2);
                     break;
 
                 case 'toSpend':

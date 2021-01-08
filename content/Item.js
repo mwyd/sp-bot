@@ -26,9 +26,9 @@ Vue.component('item', {
             <div class="spb-history__item-stats" :style="{display: stats}" >
                 <table>
                     <tr>
-                        <td>Approximate sell price</td>
+                        <td>$ Approximate sell price</td>
                         <td>{{ item._app_sell_price }}</td>
-                        <td>Average discount</td>
+                        <td>% Average discount</td>
                         <td>{{ item._avg_discount }}</td>
                     </tr>
                     <tr>
@@ -38,10 +38,16 @@ Vue.component('item', {
                         <td>{{ item._last_sold }}</td>
                     </tr>
                     <tr>
-                        <td>Steam price</td>
+                        <td>$ Steam price</td>
                         <td>{{ item._steam_price }}</td>
                         <td>Steam volume</td>
                         <td>{{ item._steam_volume }}</td>
+                    </tr>
+                    <tr>
+                        <td>$ Income</td>
+                        <td> {{ item._app_income }} </td>
+                        <td>% Income</td>
+                        <td>{{ item._app_income_percentage }}</td>
                     </tr>
                 </table>
             </div>

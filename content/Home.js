@@ -1,7 +1,8 @@
 Vue.component('home', {
     data() {
         return {
-            currentView: 'active'
+            currentView: 'active',
+            sortBy: 'realDiscount'
         }
     },
     template: `
@@ -23,7 +24,7 @@ Vue.component('home', {
             </div>
             <div class="spb-history__header flex">
                 <div class="spb-history__col spb-item-name">Item</div>
-                <div class="spb-history__col spb-item-price">Price</div>
+                <div @click="changeSort" class="spb-history__col spb-item-price">Price</div>
                 <div class="spb-history__col spb-item-status">Status</div>
                 <div class="spb-history__col spb-item-date">{{ currentView == 'active' ? 'Buy' : 'Date' }}</div>
                 <div class="spb-history__col spb-item-info">Info</div>
@@ -53,6 +54,7 @@ Vue.component('home', {
     `,
     computed: {
         getToConfirm() {
+            if(this.sortBy == 'income') return this.$store.getters.getToConfirm.sort((a, b) => b._app_income - a._app_income);
             return this.$store.getters.getToConfirm.sort((a, b) => b._real_discount - a._real_discount);
         },
         getActive() {
@@ -69,6 +71,10 @@ Vue.component('home', {
         },
         changeView(view) {
             this.currentView = view;
+        },
+        changeSort() {
+            if(this.sortBy == 'income') this.sortBy = 'realDiscount';
+            else this.sortBy = 'income';
         }
     }
 });

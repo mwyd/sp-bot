@@ -84,6 +84,7 @@
     background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/info.svg');
     background-size: 20px;
     min-height: 50px;
+    cursor: pointer;
     background-position: center;
     background-repeat: no-repeat;
 }
