@@ -15,7 +15,7 @@ function initRoot() {
                 :key="'static-tab-' + tab.id">
             </tab>
             <div class="spb-tab">
-                <div @click="addTab" class="spb-tab-btn spb-flex">+</div>
+                <div @click="addTab" class="spb-tab__btn spb-flex">+</div>
             </div>
             <tab 
                 v-for="(tab, index) in dynamicTabs" 

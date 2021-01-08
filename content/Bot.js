@@ -24,95 +24,95 @@ Vue.component('bot', {
             items: {
                 filtered: [],
                 toConfirm: [],
-                active: [],
+                pending: [],
                 finished: []
             }
         }
     },
     template: `
-        <div class="spb-bot-settings flex">
+        <div class="spb-bot">
             <h3 class="spb-header-3">Options - Bot {{ index }}</h3>
-            <div class="spb-flex">
+            <div class="spb-bot__options spb-flex">
                 <div>
-                    <div class="spb-bs__option">
-                        <span class="spb-bs__desc">% Hot deal</span>
+                    <div class="spb-bot__option">
+                        <span class="spb-bot__option-desc">% Hot deal</span>
                             <input 
                             :value="hotDeal" 
                             @focusout="inFocusOut($event, 'hotDeal')" 
                             @input="inInput($event, 'hotDeal')" 
                             @keydown.enter="inEnter($event, 'hotDeal')" 
-                            class="spb-bs__input input--val-ok" type="number" min="0" max="100">
+                            class="spb-input spb-input--val-ok" type="number" min="0" max="100">
                     </div>
-                    <div class="spb-bs__option">
-                        <span class="spb-bs__desc">$ Item min price</span>
+                    <div class="spb-bot__option">
+                        <span class="spb-bot__option-desc">$ Item min price</span>
                             <input 
                             :value="minPrice" 
                             @focusout="inFocusOut($event, 'minPrice')" 
                             @input="inInput($event, 'minPrice')" 
                             @keydown.enter="inEnter($event, 'minPrice')" 
-                            class="spb-bs__input input--val-ok" type="number" min="0" step="0.01">
+                            class="spb-input spb-input--val-ok" type="number" min="0" step="0.01">
                     </div>
-                    <div class="spb-bs__option">
-                        <span class="spb-bs__desc">% Deal margin</span>
+                    <div class="spb-bot__option">
+                        <span class="spb-bot__option-desc">% Deal margin</span>
                             <input 
                             :value="dealMargin" 
                             @focusout="inFocusOut($event, 'dealMargin')" 
                             @input="inInput($event, 'dealMargin')" 
                             @keydown.enter="inEnter($event, 'dealMargin')" 
-                            class="spb-bs__input input--val-ok" type="number" min="-100" max="100">
+                            class="spb-input spb-input--val-ok" type="number" min="-100" max="100">
                     </div>
-                    <div class="spb-bs__option">
-                        <span class="spb-bs__desc">Search</span>
+                    <div class="spb-bot__option">
+                        <span class="spb-bot__option-desc">Search</span>
                             <input 
                             :value="search" 
                             @focusout="inFocusOut($event, 'search')" 
                             @input="inInput($event, 'search')" 
                             @keydown.enter="inEnter($event, 'search')" 
-                            class="spb-bs__input input--val-ok" type="text" min="0" step="0.01">
+                            class="spb-input spb-input--val-ok" type="text" min="0" step="0.01">
                     </div>  
                 </div>
                 <div>
-                    <div class="spb-bs__option">
-                        <span class="spb-bs__desc">% Deal</span>
+                    <div class="spb-bot__option">
+                        <span class="spb-bot__option-desc">% Deal</span>
                             <input 
                             :value="deal" 
                             @focusout="inFocusOut($event, 'deal')" 
                             @input="inInput($event, 'deal')" 
                             @keydown.enter="inEnter($event, 'deal')" 
-                            class="spb-bs__input input--val-ok" type="number" min="0" max="100">
+                            class="spb-input spb-input--val-ok" type="number" min="0" max="100">
                     </div>  
-                    <div class="spb-bs__option">
-                        <span class="spb-bs__desc">$ Item max price</span>
+                    <div class="spb-bot__option">
+                        <span class="spb-bot__option-desc">$ Item max price</span>
                             <input 
                             :value="maxPrice" 
                             @focusout="inFocusOut($event, 'maxPrice')" 
                             @input="inInput($event, 'maxPrice')" 
                             @keydown.enter="inEnter($event, 'maxPrice')" 
-                            class="spb-bs__input input--val-ok" type="number" min="0" step="0.01">
+                            class="spb-input spb-input--val-ok" type="number" min="0" step="0.01">
                     </div>
-                    <div class="spb-bs__option">
-                        <span class="spb-bs__desc">$ Money to spend</span>
+                    <div class="spb-bot__option">
+                        <span class="spb-bot__option-desc">$ Money to spend</span>
                             <input 
                             :value="toSpend" 
                             @focusout="inFocusOut($event, 'toSpend')" 
                             @input="inInput($event, 'toSpend')" 
                             @keydown.enter="inEnter($event, 'toSpend')" 
-                            class="spb-bs__input input--val-ok" type="number" min="0" step="0.01">
+                            class="spb-input spb-input--val-ok" type="number" min="0" step="0.01">
                     </div>
-                    <div class="spb-bs__option">
-                        <span class="spb-bs__desc">Refresh time</span>
+                    <div class="spb-bot__option">
+                        <span class="spb-bot__option-desc">Refresh time</span>
                             <input 
                             :value="runDelay" 
                             @input="inInput($event, 'runDelay')" 
                             @focusout="inFocusOut($event, 'runDelay')" 
                             @keydown.enter="inEnter($event, 'runDelay')" 
-                            class="spb-bs__input input--val-ok" type="number" min="0" step="1">
+                            class="spb-input spb-input--val-ok" type="number" min="0" step="1">
                     </div>
                 </div>
             </div>
             <button 
                 @click="run" 
-                :class="'spb-bs__start-button ' + (isRunning ? 'spb-button--red' : 'spb-button--green')">
+                :class="'spb-button ' + (isRunning ? 'spb-button--red' : 'spb-button--green')">
                 {{ isRunning ? 'STOP' : 'START' }}
             </button>
         </div>
@@ -129,7 +129,7 @@ Vue.component('bot', {
             }
         },
         clear() {
-            for(let pendingItem of this.items.active) pendingItem._current_run = false;
+            for(let pendingItem of this.items.pending) pendingItem._current_run = false;
             this.items.toConfirm = [];
             this.$store.commit('updateItems', {type: 'toConfirm', spb_index: this.index, items: this.items.toConfirm});
             this.$store.commit('updateItems', {type: 'active', spb_index: this.index, items: []});
@@ -176,7 +176,7 @@ Vue.component('bot', {
             if(updated > 0) this.$store.commit('updateItems', {type: 'toConfirm', spb_index: this.index, items: this.items.toConfirm});
         },
         buyItem(item, rePurchase = false) {
-            if(rePurchase == false && this.items.active.findIndex(_item => _item.id == item.id) != -1) return;
+            if(rePurchase == false && this.items.pending.findIndex(_item => _item.id == item.id) != -1) return;
             if(rePurchase == true || parseFloat(item.price_market) + this.moneySpent <= this.toSpend) {
                 this.moneySpent += parseFloat(item.price_market);
     
@@ -185,7 +185,7 @@ Vue.component('bot', {
                 item._transaction_id = null;
                 item._time_bought = getFullDate(new Date());
 
-                this.items.active.push(item);
+                this.items.pending.push(item);
     
                 fetch(this.apiUrls.buyItem, {
                     method: 'POST',
@@ -242,11 +242,11 @@ Vue.component('bot', {
                 .then(data => {
                     switch(data.status) {
                         case 'success':
-                            for(let i = this.items.active.length - 1; i >= 0 ; i--) {
-                                let item = this.items.active[i];
+                            for(let i = this.items.pending.length - 1; i >= 0 ; i--) {
+                                let item = this.items.pending[i];
 
                                 if(item._status == 'error') {
-                                    this.items.active.splice(i, 1);
+                                    this.items.pending.splice(i, 1);
                                     continue;
                                 }
     
@@ -257,7 +257,7 @@ Vue.component('bot', {
     
                                 switch(item.state) {
                                     case 'cancelled':
-                                        this.items.active.splice(i, 1);
+                                        this.items.pending.splice(i, 1);
                                         this.items.finished.push(item);
     
                                         if(item._current_run) this.moneySpent -= parseFloat(item.price_market);
@@ -265,15 +265,15 @@ Vue.component('bot', {
                                         break;
     
                                     case 'finished':
-                                        this.items.active.splice(i, 1);
+                                        this.items.pending.splice(i, 1);
                                         this.items.finished.push(item);
     
-                                        if(this.items.active.length == 0 && Math.abs(this.moneySpent - this.toSpend) < this.minPrice) this.toggleStart();
+                                        if(this.items.pending.length == 0 && Math.abs(this.moneySpent - this.toSpend) < this.minPrice) this.toggleStart();
                                         this.$store.commit('updateItems', {type: 'finished', spb_index: this.index, items: this.items.finished});
                                         break;
     
                                     case 'active':
-                                        this.$store.commit('updateItems', {type: 'active', spb_index: this.index, items: this.items.active});
+                                        this.$store.commit('updateItems', {type: 'active', spb_index: this.index, items: this.items.pending});
                                         break;
                                     }
                             }
@@ -341,7 +341,7 @@ Vue.component('bot', {
                     }
                 }
 
-                if(this.items.active.length > 0) this.updatePending();
+                if(this.items.pending.length > 0) this.updatePending();
                 if(this.items.toConfirm.length > 0 ) this.updateToConfirm();
                 //this.ui.moneySpentContainer.innerHTML = `$ ${this.moneySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`;
                     
@@ -357,7 +357,7 @@ Vue.component('bot', {
             if(parseFloat(target.value) < min && min !== null) target.value = min;
             else if(parseFloat(target.value) > max && max !== null) target.value = max;
 
-            target.classList.replace('input--val-wrong', 'input--val-ok');
+            target.classList.replace('spb-input--val-wrong', 'spb-input--val-ok');
             return target.value;
         },
         getOptionByName(name) {
@@ -395,13 +395,13 @@ Vue.component('bot', {
             if(option == null) return;
 
             e.target.value = option;
-            e.target.classList.replace('input--val-wrong', 'input--val-ok'); 
+            e.target.classList.replace('spb-input--val-wrong', 'spb-input--val-ok'); 
         },
         inInput(e, name) {
             let option = this.getOptionByName(name);
             if(option == null) return;
 
-            option == e.target.value ? e.target.classList.replace('input--val-wrong', 'input--val-ok') : e.target.classList.replace('input--val-ok', 'input--val-wrong');
+            option == e.target.value ? e.target.classList.replace('spb-input--val-wrong', 'spb-input--val-ok') : e.target.classList.replace('spb-input--val-ok', 'spb-input--val-wrong');
         },
         inEnter(e, name) {
             switch(name) {
@@ -434,7 +434,7 @@ Vue.component('bot', {
                 case 'search':
                     this.updateUrl = true;
                     this.search = e.target.value;
-                    e.target.classList.replace('input--val-wrong', 'input--val-ok');
+                    e.target.classList.replace('spb-input--val-wrong', 'spb-input--val-ok');
                     break;
 
                 case 'runDelay':

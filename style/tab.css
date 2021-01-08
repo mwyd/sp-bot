@@ -6,7 +6,7 @@
     color: var(--main-txt-color);
 }
 
-.spb-tab-btn {
+.spb-tab__btn {
     height: 100%;
     width: 100%;
     border-radius: 10px;
@@ -15,15 +15,15 @@
     background-color: var(--main-bg-color);
 }
 
-.spb-tab:hover .spb-tab-btn{
+.spb-tab:hover .spb-tab__btn{
     background-color: var(--active-tab-bg-color);
 }
 
-.spb-tab-btn--bound {
+.spb-tab__btn--bound {
     background-color: var(--active-tab-bg-color);
 }
 
-.spb-tab-window {
+.spb-tab__window {
     position: fixed;
     padding: 10px;
     min-height: 40px;
@@ -32,32 +32,32 @@
     background-color: var(--main-bg-color);
 }
 
-.spb-tab-close {
+.spb-tab__close {
     background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/close.svg');
     right: 2px;
 }
 
-.spb-status-idle {
+.spb-tab__status--idle {
     background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/idle.svg');
     left: 2px;
 }
 
-.spb-status-ok {
+.spb-tab__status--ok {
     background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/ok.svg');
     left: 2px;
 }
 
-.spb-tab-ico {
+.spb-tab__ico {
     position: absolute;
     height: 12px;
     width: 12px;
     top: 2px;
 }
 
-.spb-active {
+.spb-tab__window--active {
     left: 50px;
 }
 
-.spb-hidden {
+.spb-tab__window--hidden {
     left: -1200px;
 }

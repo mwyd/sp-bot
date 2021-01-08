@@ -8,8 +8,8 @@ Vue.component('home', {
     template: `
         <div class="spb-home">
             <h3 class="spb-header-3">Home</h3>
-            <div class="spb-home__state--wrapper">
-                <div class="spb-home__state spb-flex">
+            <div class="spb-home__views-wrapper">
+                <div class="spb-home__views spb-flex">
                     <div 
                         @click="changeView('active')" 
                         :class="getStateClass('active')">
@@ -22,22 +22,22 @@ Vue.component('home', {
                     </div>
                 </div>
             </div>
-            <div class="spb-history__header flex">
-                <div class="spb-history__col spb-item-name">Item</div>
-                <div @click="changeSort" class="spb-history__col spb-item-price">Price</div>
-                <div class="spb-history__col spb-item-status">Status</div>
-                <div class="spb-history__col spb-item-date">{{ currentView == 'active' ? 'Buy' : 'Date' }}</div>
-                <div class="spb-history__col spb-item-info">Info</div>
+            <div class="spb-home__items-header">
+                <div class="spb-home__item-col spb-home__item-name">Item</div>
+                <div @click="changeSort" class="spb-home__item-col spb-home__item-price">Price</div>
+                <div class="spb-home__item-col spb-home__item-status">Status</div>
+                <div class="spb-home__item-col spb-home__item-date">{{ currentView == 'active' ? 'Buy' : 'Date' }}</div>
+                <div class="spb-home__item-col spb-home__item-info">Info</div>
             </div>
-            <div class="spb-history flex">
-                <div v-if="currentView == 'active'" class="spb-history__active">
+            <div class="spb-home__items">
+                <div v-if="currentView == 'active'" class="spb-home__items-active">
                     <item v-for="item in getToConfirm" 
                         :type="'toConfirm'" 
                         :item="item" 
                         :key="'item-' + item.id">
                     </item>
                 </div>
-                <div v-else class="spb-history__buy-history">
+                <div v-else class="spb-home__items-buy-history">
                     <item v-for="item in getActive" 
                         :type="'active'" 
                         :item="item" 
@@ -66,8 +66,8 @@ Vue.component('home', {
     },
     methods: {
         getStateClass(view) {
-            let base = 'spb-home__state-child';
-            return this.currentView == view ? `${base} spb-home-state--active` : base;
+            let base = 'spb-home__view';
+            return this.currentView == view ? `${base} spb-home__view--active` : base;
         },
         changeView(view) {
             this.currentView = view;

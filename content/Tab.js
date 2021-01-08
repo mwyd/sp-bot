@@ -1,7 +1,7 @@
 Vue.component('tab-window', {
     props: ['child', 'index'],
     template: `
-        <div class="spb-tab-window">
+        <div class="spb-tab__window">
             <component :index="index" @statusupdate="updateStatus" :is="child"></component>
         </div>
     `,
@@ -29,9 +29,9 @@ Vue.component('tab', {
             class="spb-tab">
             <div 
                 @click="show"  
-                :class="{'spb-tab-btn': 1, 'spb-flex': 1, 'spb-tab-btn--bound': bound}">
-                <div v-if="!static && displayClose" @click="close" class="spb-tab-close spb-tab-ico"></div>
-                <div v-if="!static" :class="getStatusClass" class="spb-tab-ico"></div>
+                :class="{'spb-tab__btn': 1, 'spb-flex': 1, 'spb-tab__btn--bound': bound}">
+                <div v-if="!static && displayClose" @click="close" class="spb-tab__close spb-tab-ico"></div>
+                <div v-if="!static" :class="getStatusClass" class="spb-tab__ico"></div>
                 {{ getTabName }}
             </div>
             <tab-window 
@@ -39,7 +39,7 @@ Vue.component('tab', {
                 @statusupdate="updateStatus" 
                 :child="child"  
                 :index="index" 
-                :class="{'spb-active': isActive, 'spb-hidden': !isActive}"> 
+                :class="{'spb-tab__window--active': isActive, 'spb-tab__window--hidden': !isActive}"> 
             </tab-window>
         </div>
     `,
@@ -50,10 +50,10 @@ Vue.component('tab', {
         getStatusClass() {
             switch(this.status) {
                 case 'idle':
-                    return 'spb-status-idle';
+                    return 'spb-tab__status--idle';
 
                 case 'running':
-                    return 'spb-status-ok';
+                    return 'spb-tab__status--ok';
             }
         }
     },
