@@ -120,10 +120,10 @@
     border-left: 2px solid var(--active-color);
 }
 
-.spb-home__item-cancelled {
+.spb-home__item--cancelled {
     border-left: 2px solid var(--cancelled-color);
 }
 
-.spb-home__item-finished {
+.spb-home__item--finished {
     border-left: 2px solid var(--accepted-color);
 }
