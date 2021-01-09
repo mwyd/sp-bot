@@ -12,9 +12,7 @@ Vue.component('bot', {
             runDelay: '4.0',
             search: '',
             moneySpent: 0,
-            csrfCookie: '',
             updateUrl: true,
-            notifiSound: new Audio(chrome.extension.getURL('/assets/audio/Jestem_zrujnowany.mp3')),
             initDate: getFullDate(new Date()),
             apiUrls: {
                 getItems: 'https://api.shadowpay.com/api/market/get_items?types=[]&exteriors=[]&rarities=[]&collections=[]&item_subcategories=[]&float=%7B%22from%22:0,%22to%22:1%7D&price_from=0&price_to=12558.58&game=csgo&stickers=[]&count_stickers=[]&short_name=&search=&stack=false&sort=desc&sort_column=price_rate&limit=50&offset=0',
@@ -131,8 +129,6 @@ Vue.component('bot', {
         clear() {
             for(let pendingItem of this.items.pending) pendingItem._current_run = false;
             this.items.toConfirm = [];
-            this.$store.commit('updateItems', {type: 'toConfirm', spb_index: this.index, items: this.items.toConfirm});
-            this.$store.commit('updateItems', {type: 'active', spb_index: this.index, items: []});
             this.moneySpent = 0;
         },
         updateGetItemsUrl() {
@@ -152,10 +148,8 @@ Vue.component('bot', {
             
             item._onclick = () => {this.buyItem(item)};
             this.items.toConfirm.push(item);
-            this.$store.commit('updateItems', {type: 'toConfirm', spb_index: this.index, items: this.items.toConfirm});
         },
-        updateToConfirm() {
-            let updated = 0;        
+        updateToConfirm() {       
             for(let i = this.items.toConfirm.length - 1; i >= 0; i--) {
                 let item = this.items.filtered.find(_item => _item.id == this.items.toConfirm[i].id);
                 
@@ -169,11 +163,8 @@ Vue.component('bot', {
                     this.items.toConfirm[i].price_market = item.price_market;
                     this.items.toConfirm[i].discount = Math.round(item.discount);
                     this.items.toConfirm[i]._real_discount = getDiffAsPercentage(item.price_market, this.items.toConfirm[i]._steam_price);
-                    updated++;
                 }
             }
-            
-            if(updated > 0) this.$store.commit('updateItems', {type: 'toConfirm', spb_index: this.index, items: this.items.toConfirm});
         },
         buyItem(item, repurchase = false) {
             if(!repurchase) {
@@ -194,7 +185,7 @@ Vue.component('bot', {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: `id=${item.id}&price=${item.price_market}&csrf_token=${this.csrfCookie}`
+                body: `id=${item.id}&price=${item.price_market}&csrf_token=${this.$store.getters.getCsrfCookie}`
             })
             .then(res => res.json())
             .then(data => {
@@ -202,7 +193,7 @@ Vue.component('bot', {
                     case "error":
                         switch(data.error_message) {
                             case 'wrong_token':
-                                this.csrfCookie = data.token;
+                                this.$store.commit('setCsrfCookie', data.token);
                                 this.buyItem(item, true);
                                 break;
 
@@ -218,7 +209,7 @@ Vue.component('bot', {
                         item._status = 'success';
                         
                         chrome.runtime.sendMessage({action: 'buy_item', params: {}});
-                        this.notifiSound.play();
+                        this.$store.getters.getNotifySound.play();
                         break;
                 }
 
@@ -263,7 +254,6 @@ Vue.component('bot', {
                                         this.items.finished.push(item);
     
                                         if(item._current_run) this.moneySpent -= parseFloat(item.price_market);
-                                        this.$store.commit('updateItems', {type: 'finished', spb_index: this.index, items: this.items.finished});
                                         break;
     
                                     case 'finished':
@@ -271,11 +261,6 @@ Vue.component('bot', {
                                         this.items.finished.push(item);
     
                                         if(this.items.pending.length == 0 && Math.abs(this.moneySpent - this.toSpend) < this.minPrice) this.toggleStart();
-                                        this.$store.commit('updateItems', {type: 'finished', spb_index: this.index, items: this.items.finished});
-                                        break;
-    
-                                    case 'active':
-                                        this.$store.commit('updateItems', {type: 'active', spb_index: this.index, items: this.items.pending});
                                         break;
                                     }
                             }
@@ -446,9 +431,10 @@ Vue.component('bot', {
         }
     },
     beforeMount() {
-        this.csrfCookie = getCookie('csrf_cookie');
+        this.$store.commit('addBot', {index: this.index, instance: this});
     },
     beforeDestroy() {
         this.isRunning = false;
+        this.$store.commit('closeBot', this.index);
     }
 });

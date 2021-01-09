@@ -46,67 +46,52 @@ window.onload = () => {
                 pass: false
             },
             moneySpent: 0,
-            items: {
-                toConfirm: [],
-                active: [],
-                finished: []
+            botInstances: [],
+            notifiSound: new Audio(chrome.extension.getURL('/assets/audio/Jestem_zrujnowany.mp3')),
+            sp: {
+                csrfCookie: getCookie('csrf_cookie')
             }
         },
         getters: {
             getToConfirm(state) {
                 let unique = [];
-                for(let set of state.items.toConfirm) {
-                    set.items.filter(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
+                for(let bot of state.botInstances) {
+                    bot.instance.items.toConfirm.filter(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
                 }
                 return unique;
             },
             getActive(state) {
                 let unique = [];
-                for(let set of state.items.active) {
-                    set.items.filter(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
+                for(let bot of state.botInstances) {
+                    bot.instance.items.pending.filter(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
                 }
                 return unique;
             },
             getFinished(state) {
                 let unique = [];
-                for(let set of state.items.finished) {
-                    set.items.filter(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
+                for(let bot of state.botInstances) {
+                    bot.instance.items.finished.filter(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
                 }
                 return unique;
+            },
+            getCsrfCookie(state) {
+                return state.sp.csrfCookie;
+            },
+            getNotifySound(state) {
+                return state.notifiSound;
             }
         },
         mutations: {
-            updateMoney(state, money) {
-                state.moneySpent += money;
+            addBot(state, data) {
+                state.botInstances.push(data);
             },
-            updateItems(state, data) {
-                let set;
-                switch(data.type) {
-                    case 'toConfirm':
-                        set = state.items.toConfirm.find(_set => _set.id == data.spb_index);
-                        if(set === undefined) {
-                            state.items.toConfirm.push({id: data.spb_index, items: data.items});
-                        }
-                        else set.items = data.items;
-                        break;
-
-                    case 'active':
-                        set = state.items.active.find(_set => _set.id == data.spb_index);
-                        if(set === undefined) {
-                            state.items.active.push({id: data.spb_index, items: data.items});
-                        }
-                        else set.items = data.items;
-                        break;
-
-                    case 'finished':
-                        set = state.items.finished.find(_set => _set.id == data.spb_index);
-                        if(set === undefined) {
-                            state.items.finished.push({id: data.spb_index, items: data.items});
-                        }
-                        else set.items = data.items;
-                        break;
-                }
+            setCsrfCookie(state, cookie) {
+                state.sp.csrfCookie = cookie;
             },
+            closeBot(state, index) {
+                let id = state.botInstances.findIndex(bot => bot.index == index);
+                if(id > -1) state.botInstances.splice(id, 1);
+            }
         },
         actions: {
             setAuth(context, data) {
