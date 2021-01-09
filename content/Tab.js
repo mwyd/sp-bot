@@ -30,7 +30,7 @@ Vue.component('tab', {
             <div 
                 @click="show"  
                 :class="{'spb-tab__btn': 1, 'spb-flex': 1, 'spb-tab__btn--bound': bound}">
-                <div v-if="!static && displayClose" @click="close" class="spb-tab__close spb-tab-ico"></div>
+                <div v-if="!static && displayClose" @click="close" class="spb-tab__close spb-tab__ico"></div>
                 <div v-if="!static" :class="getStatusClass" class="spb-tab__ico"></div>
                 {{ getTabName }}
             </div>

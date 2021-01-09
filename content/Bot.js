@@ -175,58 +175,60 @@ Vue.component('bot', {
             
             if(updated > 0) this.$store.commit('updateItems', {type: 'toConfirm', spb_index: this.index, items: this.items.toConfirm});
         },
-        buyItem(item, rePurchase = false) {
-            if(rePurchase == false && this.items.pending.findIndex(_item => _item.id == item.id) != -1) return;
-            if(rePurchase == true || parseFloat(item.price_market) + this.moneySpent <= this.toSpend) {
-                this.moneySpent += parseFloat(item.price_market);
-    
+        buyItem(item, repurchase = false) {
+            if(!repurchase) {
+                if(this.items.pending.findIndex(_item => _item.id == item.id) != -1 || parseFloat(item.price_market) + this.moneySpent > this.toSpend) return;
+
                 item._status = 'pending';
                 item._current_run = true;
                 item._transaction_id = null;
                 item._time_bought = getFullDate(new Date());
 
                 this.items.pending.push(item);
-    
-                fetch(this.apiUrls.buyItem, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `id=${item.id}&price=${item.price_market}&csrf_token=${this.csrfCookie}`
-                })
-                .then(res => res.json())
-                .then(data => {
-                    switch(data.status) {
-                        case "error":
-                            switch(data.error_message) {
-                                case 'wrong_token':
-                                    this.csrfCookie = data.token;
-                                    this.buyItem(item, true);
-                                    break;
-                            }
-    
-                            item._status = 'error';
-                            this.moneySpent -= parseFloat(item.price_market);
-                            break
-                            
-                        case "success":
-                            item._transaction_id = data.id;
-                            item._status = 'success';
-                            
-                            chrome.runtime.sendMessage({action: 'buy_item', params: {}});
-                            this.notifiSound.play();
-                            break;
-                    }
-
-                    this.log('Buy info', data);
-                })
-                .catch(err => {
-                    item._status = 'error';
-                    this.moneySpent -= parseFloat(item.price_market);
-                    this.log('\n', new Error(err))
-                })
+                this.moneySpent += parseFloat(item.price_market);
             }
+    
+            fetch(this.apiUrls.buyItem, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `id=${item.id}&price=${item.price_market}&csrf_token=${this.csrfCookie}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                switch(data.status) {
+                    case "error":
+                        switch(data.error_message) {
+                            case 'wrong_token':
+                                this.csrfCookie = data.token;
+                                this.buyItem(item, true);
+                                break;
+
+                            default:
+                                this.moneySpent -= parseFloat(item.price_market);
+                                item._status = 'error';
+                                break;
+                        }
+                        break;
+                        
+                    case "success":
+                        item._transaction_id = data.id;
+                        item._status = 'success';
+                        
+                        chrome.runtime.sendMessage({action: 'buy_item', params: {}});
+                        this.notifiSound.play();
+                        break;
+                }
+
+                this.log('Buy info', data);
+            })
+            .catch(err => {
+                item._status = 'error';
+                this.moneySpent -= parseFloat(item.price_market);
+                this.log('\n', new Error(err))
+            });
         },
         updatePending() {
             chrome.runtime.sendMessage({action: 'get_bought_items_counter', params: {}}, res => {
