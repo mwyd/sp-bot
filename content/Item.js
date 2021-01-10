@@ -18,7 +18,14 @@ Vue.component('item', {
                 </div>
                 <div class="spb-home__item-col spb-home__item-status"> {{ item.state }}</div>
                 <div class="spb-home__item-col spb-home__item-date">
-                    <button v-if="type == 'toConfirm'" @click="item._onclick" class="spb-button spb-button--font-10 spb-button--green">Buy now</button>
+                    <button 
+                        v-if="type == 'toConfirm'" 
+                        @click="item._onclick" 
+                        @mouseenter="overbuybtn(true)" 
+                        @mouseleave="overbuybtn(false)" 
+                        class="spb-button spb-button--font-10 spb-button--green">
+                        Buy now
+                    </button>
                     {{ getDate }}
                 </div>
                 <div @click="showStats" class="spb-home__item-col spb-home__item-info spb-home__item-info-ico"></div>
@@ -66,6 +73,9 @@ Vue.component('item', {
     methods: {
         showStats() {
             this.dispalyStats = !this.dispalyStats;
+        },
+        overbuybtn(val) {
+            this.$emit('overbuybtn', val);
         }
     }
 });

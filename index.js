@@ -56,21 +56,21 @@ window.onload = () => {
             getToConfirm(state) {
                 let unique = [];
                 for(let bot of state.botInstances) {
-                    bot.instance.items.toConfirm.filter(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
+                    bot.instance.items.toConfirm.forEach(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
                 }
                 return unique;
             },
             getActive(state) {
                 let unique = [];
                 for(let bot of state.botInstances) {
-                    bot.instance.items.pending.filter(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
+                    bot.instance.items.pending.forEach(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
                 }
                 return unique;
             },
             getFinished(state) {
                 let unique = [];
                 for(let bot of state.botInstances) {
-                    bot.instance.items.finished.filter(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
+                    bot.instance.items.finished.forEach(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
                 }
                 return unique;
             },

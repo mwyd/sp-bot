@@ -2,7 +2,13 @@ Vue.component('home', {
     data() {
         return {
             currentView: 'active',
-            sortBy: 'realDiscount'
+            sortBy: 'realDiscount',
+            items: {
+                toConfirm: [],
+                //active: [],
+                finished: []
+            },
+            frozenToConfirm: false
         }
     },
     template: `
@@ -32,6 +38,7 @@ Vue.component('home', {
             <div class="spb-home__items">
                 <div v-if="currentView == 'active'" class="spb-home__items-active">
                     <item v-for="item in getToConfirm" 
+                        @overbuybtn="freezeToConfirm" 
                         :type="'toConfirm'" 
                         :item="item" 
                         :key="'item-' + item.id">
@@ -54,14 +61,20 @@ Vue.component('home', {
     `,
     computed: {
         getToConfirm() {
-            if(this.sortBy == 'income') return this.$store.getters.getToConfirm.sort((a, b) => b._app_income - a._app_income);
-            return this.$store.getters.getToConfirm.sort((a, b) => b._real_discount - a._real_discount);
+            if(!this.frozenToConfirm) this.items.toConfirm = this.$store.getters.getToConfirm;
+
+            return this.sortBy != 'income' 
+                ? this.items.toConfirm.sort((a, b) => b._app_income - a._app_income) 
+                : this.items.toConfirm.sort((a, b) => b._real_discount - a._real_discount);
         },
         getActive() {
             return this.$store.getters.getActive;
         },
         getFinished() {
-            return this.$store.getters.getFinished;
+            this.$store.getters.getFinished.forEach(v => {
+                if(this.items.finished.findIndex(x => x.id == v.id) == -1) this.items.finished.push(v);
+            });
+            return this.items.finished;
         }
     },
     methods: {
@@ -75,6 +88,9 @@ Vue.component('home', {
         changeSort() {
             if(this.sortBy == 'income') this.sortBy = 'realDiscount';
             else this.sortBy = 'income';
+        },
+        freezeToConfirm(val) {
+            this.frozenToConfirm = val;
         }
     }
 });
