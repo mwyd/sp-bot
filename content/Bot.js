@@ -294,32 +294,34 @@ Vue.component('bot', {
                 
                             this.items.filtered.sort((a, b) => b.price_market - a.price_market);
 
-                            for(let item of this.items.filtered) {
-                                chrome.runtime.sendMessage({
-                                    action: 'get_price', 
-                                    params: {
-                                        hash_name: item.steam_market_hash_name, 
-                                        apiKey: this.$store.state.auth.apiKey}}, 
-                                    res => {
-                                    const {stats, success} = res.data;
-                                    item.discount = Math.round(item.discount);
+                            for(const [index, item] of this.items.filtered.entries()) {
+                                setTimeout(() => {
+                                    chrome.runtime.sendMessage({
+                                        action: 'get_price', 
+                                        params: {
+                                            hash_name: item.steam_market_hash_name, 
+                                            apiKey: this.$store.state.auth.apiKey}}, 
+                                        res => {
+                                        const {stats, success} = res.data;
+                                        item.discount = Math.round(item.discount);
 
-                                    if(success) {
-                                        item._app_sell_price = stats.approximate_sell_price;
-                                        item._avg_discount = stats.avg_discount;
-                                        item._sold = stats.items_sold;
-                                        item._last_sold = stats.last_sold;
-                                        item._steam_price = stats.steam_price;
-                                        item._steam_volume = stats.steam_volume;
-                                        item._app_income = ((0.87 * stats.steam_price) - item.price_market).toFixed(2);
-                                        item._app_income_percentage = getDiffAsPercentage(item.price_market - item._app_income, item.price_market);
-                                        item._real_discount = getDiffAsPercentage(item.price_market, item._steam_price);
+                                        if(success) {
+                                            item._app_sell_price = stats.approximate_sell_price;
+                                            item._avg_discount = stats.avg_discount;
+                                            item._sold = stats.items_sold;
+                                            item._last_sold = stats.last_sold;
+                                            item._steam_price = stats.steam_price;
+                                            item._steam_volume = stats.steam_volume;
+                                            item._app_income = ((0.87 * stats.steam_price) - item.price_market).toFixed(2);
+                                            item._app_income_percentage = getDiffAsPercentage(item.price_market - item._app_income, item.price_market);
+                                            item._real_discount = getDiffAsPercentage(item.price_market, item._steam_price);
 
-                                        if(item._real_discount >= this.deal + (this.dealMargin) && item._steam_volume > 10) this.buyItem(item);
+                                            if(item._real_discount >= this.deal + (this.dealMargin) && item._steam_volume > 10) this.buyItem(item);
+                                            else this.addToConfirm(item);
+                                        }
                                         else this.addToConfirm(item);
-                                    }
-                                    else this.addToConfirm(item);
-                                });
+                                    });
+                                }, 40 * index);
                             }
                         }
                     }
@@ -425,7 +427,7 @@ Vue.component('bot', {
                     break;
 
                 case 'runDelay':
-                    this.runDelay = parseFloat(this.validate(e.target, 0.5, null)).toFixed(1);
+                    this.runDelay = parseFloat(this.validate(e.target, 2, null)).toFixed(1);
                     break;
             }
         }
