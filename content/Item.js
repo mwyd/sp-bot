@@ -2,7 +2,8 @@ Vue.component('item', {
     props: ['type', 'item'],
     data() {
         return {
-            dispalyStats: false
+            dispalyStats: false,
+            shadowpayStats: false
         }
     },
     template: `
@@ -63,6 +64,7 @@ Vue.component('item', {
             return this.type != 'toConfirm' ? `spb-home__item--${this.item.state}` : '';
         },
         getStatsClass() {
+            this.shadowpayStats;
             let base = 'spb-home__item-stats';
             return this.dispalyStats ? base : `${base} spb--hidden`;
         },
@@ -73,6 +75,27 @@ Vue.component('item', {
     methods: {
         showStats() {
             this.dispalyStats = !this.dispalyStats;
+
+            if(this.shadowpayStats == false) {
+                chrome.runtime.sendMessage({
+                    action: 'shadowpay_market', 
+                    params: {
+                        hash_name: this.item.steam_market_hash_name, 
+                        apiKey: this.$store.state.auth.apiKey}
+                    }, 
+                    res => {
+                    const {stats, success} = res.data;
+
+                    if(success) {
+                        this.item._app_sell_price = stats.approximate_sell_price;
+                        this.item._avg_discount = stats.avg_discount;
+                        this.item._sold = stats.items_sold;
+                        this.item._last_sold = stats.last_sold;
+                    }
+
+                    this.shadowpayStats = true;
+                });
+            }
         },
         overbuybtn(val) {
             this.$emit('overbuybtn', val);

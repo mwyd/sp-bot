@@ -296,19 +296,16 @@ Vue.component('bot', {
 
                             for(let item of this.items.filtered) {
                                 chrome.runtime.sendMessage({
-                                    action: 'get_price', 
+                                    action: 'steam_market', 
                                     params: {
                                         hash_name: item.steam_market_hash_name, 
-                                        apiKey: this.$store.state.auth.apiKey}}, 
+                                        apiKey: this.$store.state.auth.apiKey}
+                                    }, 
                                     res => {
                                     const {stats, success} = res.data;
                                     item.discount = Math.round(item.discount);
 
                                     if(success) {
-                                        item._app_sell_price = stats.approximate_sell_price;
-                                        item._avg_discount = stats.avg_discount;
-                                        item._sold = stats.items_sold;
-                                        item._last_sold = stats.last_sold;
                                         item._steam_price = stats.steam_price;
                                         item._steam_volume = stats.steam_volume;
                                         item._app_income = ((0.87 * stats.steam_price) - item.price_market).toFixed(2);
@@ -425,7 +422,7 @@ Vue.component('bot', {
                     break;
 
                 case 'runDelay':
-                    this.runDelay = parseFloat(this.validate(e.target, 0.5, null)).toFixed(1);
+                    this.runDelay = parseFloat(this.validate(e.target, 1, null)).toFixed(1);
                     break;
             }
         }
