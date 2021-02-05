@@ -12,7 +12,9 @@ Vue.component('settings', {
     `,
     computed: {
         authStatus() {
-            return this.$store.state.auth.pass ? 'spb-input--val-ok' : 'spb-input--val-wrong';
+            const pass = this.$store.state.auth.pass;
+            this.$emit('statusupdate', pass ? 'ok' : 'error');
+            return pass ? 'spb-input--val-ok' : 'spb-input--val-wrong';
         },
         apiKey() {
             return this.$store.state.auth.apiKey;

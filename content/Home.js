@@ -63,7 +63,7 @@ Vue.component('home', {
         getToConfirm() {
             if(!this.frozenToConfirm) this.items.toConfirm = this.$store.getters.getToConfirm;
 
-            return this.sortBy != 'income' 
+            return this.sortBy == 'income' 
                 ? this.items.toConfirm.sort((a, b) => b._app_income - a._app_income) 
                 : this.items.toConfirm.sort((a, b) => b._real_discount - a._real_discount);
         },

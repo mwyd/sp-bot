@@ -32,6 +32,9 @@
     background-color: var(--main-bg-color);
 }
 
+/*https://www.flaticon.com/packs/notifications-7?word=notification*/
+/*https://www.flaticon.com/authors/freepik*/
+
 .spb-tab__close {
     background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/close.svg');
     right: 2px;
@@ -44,6 +47,21 @@
 
 .spb-tab__status--ok {
     background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/ok.svg');
+    left: 2px;
+}
+
+.spb-tab__status--error {
+    background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/error.svg');
+    left: 2px;
+}
+
+.spb-tab__status--notify {
+    background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/notify.svg');
+    left: 2px;
+}
+
+.spb-tab__status--running {
+    background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/running.svg');
     left: 2px;
 }
 

@@ -47,6 +47,16 @@ window.onload = () => {
             },
             moneySpent: 0,
             botInstances: [],
+            presets: [{
+                name: "default",
+                deal: "50",
+                dealMargin: "0",
+                minPrice: "1.00",
+                maxPrice: "10.00",
+                toSpend: "10.00",
+                runDelay: "4.0",
+                search: '',
+            }],
             notifiSound: new Audio(chrome.extension.getURL('/assets/audio/Jestem_zrujnowany.mp3')),
             sp: {
                 csrfCookie: getCookie('csrf_cookie')
@@ -74,6 +84,9 @@ window.onload = () => {
                 }
                 return unique;
             },
+            getPresets(state) {
+                return state.presets;
+            },
             getCsrfCookie(state) {
                 return state.sp.csrfCookie;
             },
@@ -87,6 +100,9 @@ window.onload = () => {
             },
             setCsrfCookie(state, cookie) {
                 state.sp.csrfCookie = cookie;
+            },
+            setPresets(state, presets) {
+                state.presets = [...state.presets, ...presets];
             },
             closeBot(state, index) {
                 let id = state.botInstances.findIndex(bot => bot.index == index);
@@ -110,6 +126,11 @@ window.onload = () => {
 
                     chrome.storage.sync.set({user: context.state.auth.user, apiKey: context.state.auth.apiKey});
                 });
+            },
+            loadPresets(context) {
+                fetch(chrome.extension.getURL('presets.json'))
+                .then(res => res.json())
+                .then(data => context.commit('setPresets', data));
             }
         }
     });
@@ -147,6 +168,7 @@ window.onload = () => {
 
                 this.$store.dispatch('setAuth', {user: user, apiKey: apiKey});
             });
+            this.$store.dispatch('loadPresets');
         }
     });
 }

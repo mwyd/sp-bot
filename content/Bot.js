@@ -3,14 +3,8 @@ Vue.component('bot', {
     data() {
         return {
             isRunning: false,
-            hotDeal: 70,
-            deal: 50,
-            dealMargin: 0,
-            minPrice: '1.00',
-            maxPrice: '10.00',
-            toSpend: '10.00',
-            runDelay: '4.0',
-            search: '',
+            presetIndex: 0,
+            preset: {},
             moneySpent: 0,
             updateUrl: true,
             initDate: getFullDate(new Date()),
@@ -33,78 +27,77 @@ Vue.component('bot', {
             <div class="spb-bot__options spb-flex">
                 <div>
                     <div class="spb-bot__option">
-                        <span class="spb-bot__option-desc">% Hot deal</span>
-                            <input 
-                            :value="hotDeal" 
-                            @focusout="inFocusOut($event, 'hotDeal')" 
-                            @input="inInput($event, 'hotDeal')" 
-                            @keydown.enter="inEnter($event, 'hotDeal')" 
-                            class="spb-input spb-input--val-ok" type="number" min="0" max="100">
-                    </div>
-                    <div class="spb-bot__option">
-                        <span class="spb-bot__option-desc">$ Item min price</span>
-                            <input 
-                            :value="minPrice" 
-                            @focusout="inFocusOut($event, 'minPrice')" 
-                            @input="inInput($event, 'minPrice')" 
-                            @keydown.enter="inEnter($event, 'minPrice')" 
-                            class="spb-input spb-input--val-ok" type="number" min="0" step="0.01">
-                    </div>
-                    <div class="spb-bot__option">
-                        <span class="spb-bot__option-desc">% Deal margin</span>
-                            <input 
-                            :value="dealMargin" 
-                            @focusout="inFocusOut($event, 'dealMargin')" 
-                            @input="inInput($event, 'dealMargin')" 
-                            @keydown.enter="inEnter($event, 'dealMargin')" 
-                            class="spb-input spb-input--val-ok" type="number" min="-100" max="100">
-                    </div>
-                    <div class="spb-bot__option">
-                        <span class="spb-bot__option-desc">Search</span>
-                            <input 
-                            :value="search" 
-                            @focusout="inFocusOut($event, 'search')" 
-                            @input="inInput($event, 'search')" 
-                            @keydown.enter="inEnter($event, 'search')" 
-                            class="spb-input spb-input--val-ok" type="text" min="0" step="0.01">
-                    </div>  
-                </div>
-                <div>
-                    <div class="spb-bot__option">
                         <span class="spb-bot__option-desc">% Deal</span>
                             <input 
-                            :value="deal" 
+                            :value="preset.deal" 
                             @focusout="inFocusOut($event, 'deal')" 
                             @input="inInput($event, 'deal')" 
                             @keydown.enter="inEnter($event, 'deal')" 
-                            class="spb-input spb-input--val-ok" type="number" min="0" max="100">
+                            class="spb-input spb-input--val-ok" type="number">
+                    </div>  
+                    <div class="spb-bot__option">
+                        <span class="spb-bot__option-desc">$ Item min price</span>
+                            <input 
+                            :value="preset.minPrice" 
+                            @focusout="inFocusOut($event, 'minPrice')" 
+                            @input="inInput($event, 'minPrice')" 
+                            @keydown.enter="inEnter($event, 'minPrice')" 
+                            class="spb-input spb-input--val-ok" type="number">
+                    </div>
+                    <div class="spb-bot__option">
+                        <span class="spb-bot__option-desc">Preset</span>
+                            <select @change="updatePreset" v-model="presetIndex" class="spb-input spb-input--val-ok">
+                                <option v-for="(preset, index) in $store.getters.getPresets" :key="'preset-' + index" :value="index">
+                                    {{preset.name}}
+                                </option>
+                            </select>
+                    </div>  
+                    <div class="spb-bot__option">
+                        <span class="spb-bot__option-desc">Search</span>
+                            <input 
+                            :value="preset.search" 
+                            @focusout="inFocusOut($event, 'search')" 
+                            @input="inInput($event, 'search')" 
+                            @keydown.enter="inEnter($event, 'search')" 
+                            class="spb-input spb-input--val-ok" type="text">
+                    </div> 
+                </div>
+                <div>
+                    <div class="spb-bot__option">
+                        <span class="spb-bot__option-desc">% Deal margin</span>
+                            <input 
+                            :value="preset.dealMargin" 
+                            @focusout="inFocusOut($event, 'dealMargin')" 
+                            @input="inInput($event, 'dealMargin')" 
+                            @keydown.enter="inEnter($event, 'dealMargin')" 
+                            class="spb-input spb-input--val-ok" type="number">
                     </div>  
                     <div class="spb-bot__option">
                         <span class="spb-bot__option-desc">$ Item max price</span>
                             <input 
-                            :value="maxPrice" 
+                            :value="preset.maxPrice" 
                             @focusout="inFocusOut($event, 'maxPrice')" 
                             @input="inInput($event, 'maxPrice')" 
                             @keydown.enter="inEnter($event, 'maxPrice')" 
-                            class="spb-input spb-input--val-ok" type="number" min="0" step="0.01">
+                            class="spb-input spb-input--val-ok" type="number">
                     </div>
                     <div class="spb-bot__option">
                         <span class="spb-bot__option-desc">$ Money to spend</span>
                             <input 
-                            :value="toSpend" 
+                            :value="preset.toSpend" 
                             @focusout="inFocusOut($event, 'toSpend')" 
                             @input="inInput($event, 'toSpend')" 
                             @keydown.enter="inEnter($event, 'toSpend')" 
-                            class="spb-input spb-input--val-ok" type="number" min="0" step="0.01">
+                            class="spb-input spb-input--val-ok" type="number">
                     </div>
                     <div class="spb-bot__option">
                         <span class="spb-bot__option-desc">Refresh time</span>
                             <input 
-                            :value="runDelay" 
+                            :value="preset.runDelay" 
                             @input="inInput($event, 'runDelay')" 
                             @focusout="inFocusOut($event, 'runDelay')" 
                             @keydown.enter="inEnter($event, 'runDelay')" 
-                            class="spb-input spb-input--val-ok" type="number" min="0" step="1">
+                            class="spb-input spb-input--val-ok" type="number">
                     </div>
                 </div>
             </div>
@@ -135,13 +128,16 @@ Vue.component('bot', {
             if(this.updateUrl) {
                 let getItemsURL = new URL(this.apiUrls.getItems);
 
-                getItemsURL.searchParams.set('price_from', this.minPrice);
-                getItemsURL.searchParams.set('price_to', this.maxPrice);
-                getItemsURL.searchParams.set('search', this.search);
+                getItemsURL.searchParams.set('price_from', this.preset.minPrice);
+                getItemsURL.searchParams.set('price_to', this.preset.maxPrice);
+                getItemsURL.searchParams.set('search', this.preset.search);
 
                 this.apiUrls.getItems = getItemsURL.toString();
                 this.updateUrl = false;
             }
+        },
+        updatePreset() {
+            this.preset = this.$store.getters.getPresets[this.presetIndex];
         },
         addToConfirm(item) {
             if(this.items.toConfirm.findIndex(_item => _item.id == item.id) != -1) return;
@@ -168,7 +164,7 @@ Vue.component('bot', {
         },
         buyItem(item, repurchase = false) {
             if(!repurchase) {
-                if(this.items.pending.findIndex(_item => _item.id == item.id) != -1 || parseFloat(item.price_market) + this.moneySpent > this.toSpend) return;
+                if(this.items.pending.findIndex(_item => _item.id == item.id) != -1 || parseFloat(item.price_market) + this.moneySpent > this.preset.toSpend) return;
 
                 item._status = 'pending';
                 item._current_run = true;
@@ -260,7 +256,7 @@ Vue.component('bot', {
                                         this.items.pending.splice(i, 1);
                                         this.items.finished.push(item);
     
-                                        if(this.items.pending.length == 0 && Math.abs(this.moneySpent - this.toSpend) < this.minPrice) this.toggleStart();
+                                        if(this.items.pending.length == 0 && Math.abs(this.moneySpent - this.preset.toSpend) < this.preset.minPrice) this.toggleStart();
                                         break;
                                     }
                             }
@@ -279,7 +275,7 @@ Vue.component('bot', {
                 this.updateGetItemsUrl();
                 this.items.filtered = [];
 
-                if(Math.abs(this.moneySpent - this.toSpend) >= this.minPrice) {
+                if(Math.abs(this.moneySpent - this.preset.toSpend) >= this.preset.minPrice) {
                     try {    
                         const response = await fetch(this.apiUrls.getItems, {credentials: 'include'});
                         let data = await response.json();
@@ -289,7 +285,7 @@ Vue.component('bot', {
                 
                             this.items.filtered = this.items.filtered.filter(item => !item.is_my_item);
                             this.items.filtered = this.items.filtered.filter(item => {
-                                return (item.discount >= this.deal && item.price_market >= this.minPrice) || item.discount >= this.hotDeal;
+                                return item.discount >= this.preset.deal && item.price_market >= this.preset.minPrice;
                             });
                 
                             this.items.filtered.sort((a, b) => b.price_market - a.price_market);
@@ -312,7 +308,7 @@ Vue.component('bot', {
                                         item._app_income_percentage = getDiffAsPercentage(item.price_market - item._app_income, item.price_market);
                                         item._real_discount = getDiffAsPercentage(item.price_market, item._steam_price);
 
-                                        if(item._real_discount >= this.deal + (this.dealMargin) && item._steam_volume > 10) this.buyItem(item);
+                                        if(item._real_discount >= this.preset.deal + (this.preset.dealMargin) && item._steam_volume > 10) this.buyItem(item);
                                         else this.addToConfirm(item);
                                     }
                                     else this.addToConfirm(item);
@@ -327,9 +323,8 @@ Vue.component('bot', {
 
                 if(this.items.pending.length > 0) this.updatePending();
                 if(this.items.toConfirm.length > 0 ) this.updateToConfirm();
-                //this.ui.moneySpentContainer.innerHTML = `$ ${this.moneySpent.toFixed(2)} / ${this.currentPreset.moneyToSpend.toFixed(2)}`;
                     
-                await new Promise(r => setTimeout(r, 1000 * this.runDelay));
+                await new Promise(r => setTimeout(r, 1000 * this.preset.runDelay));
             }
 
             this.clear();
@@ -346,29 +341,26 @@ Vue.component('bot', {
         },
         getOptionByName(name) {
             switch(name) {
-                case 'hotDeal':
-                    return this.hotDeal;
-
                 case 'deal':
-                    return this.deal;
+                    return this.preset.deal;
 
                 case 'dealMargin':
-                    return this.dealMargin;
+                    return this.preset.dealMargin;
 
                 case 'minPrice':
-                    return this.minPrice;
+                    return this.preset.minPrice;
 
                 case 'maxPrice':
-                    return this.maxPrice;
+                    return this.preset.maxPrice;
 
                 case 'toSpend':
-                    return this.toSpend;
+                    return this.preset.toSpend;
 
                 case 'search':
-                    return this.search;
+                    return this.preset.search;
 
                 case 'runDelay':
-                    return this.runDelay;
+                    return this.preset.runDelay;
 
                 default:
                     return null;
@@ -389,45 +381,42 @@ Vue.component('bot', {
         },
         inEnter(e, name) {
             switch(name) {
-                case 'hotDeal':
-                    this.hotDeal = parseInt(this.validate(e.target, 0, 100));
-                    break;
-
                 case 'deal':
-                    this.deal = parseInt(this.validate(e.target, 0, 100));
+                    this.preset.deal = parseInt(this.validate(e.target, 0, 100));
                     break;
 
                 case 'dealMargin':
-                    this.dealMargin = parseInt(this.validate(e.target, -this.deal, (100 - this.deal)));
+                    this.preset.dealMargin = parseInt(this.validate(e.target, -this.preset.deal, (100 - this.preset.deal)));
                     break;
 
                 case 'minPrice':
                     this.updateUrl = true;
-                    this.minPrice = parseFloat(this.validate(e.target, 0, this.maxPrice)).toFixed(2);
+                    this.preset.minPrice = parseFloat(this.validate(e.target, 0, this.preset.maxPrice)).toFixed(2);
                     break;
 
                 case 'maxPrice':
                     this.updateUrl = true;
-                    this.maxPrice = parseFloat(this.validate(e.target, this.minPrice, null)).toFixed(2);
+                    this.preset.maxPrice = parseFloat(this.validate(e.target, this.preset.minPrice, null)).toFixed(2);
                     break;
 
                 case 'toSpend':
-                    this.toSpend = parseFloat(this.validate(e.target, this.maxPrice, null)).toFixed(2);
+                    this.preset.toSpend = parseFloat(this.validate(e.target, this.preset.maxPrice, null)).toFixed(2);
                     break;
 
                 case 'search':
                     this.updateUrl = true;
-                    this.search = e.target.value;
+                    this.preset.search = e.target.value;
                     e.target.classList.replace('spb-input--val-wrong', 'spb-input--val-ok');
                     break;
 
                 case 'runDelay':
-                    this.runDelay = parseFloat(this.validate(e.target, 1, null)).toFixed(1);
+                    this.preset.runDelay = parseFloat(this.validate(e.target, 1, null)).toFixed(1);
                     break;
             }
         }
     },
     beforeMount() {
+        this.updatePreset();
         this.$store.commit('addBot', {index: this.index, instance: this});
     },
     beforeDestroy() {

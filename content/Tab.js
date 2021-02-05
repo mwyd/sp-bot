@@ -31,7 +31,7 @@ Vue.component('tab', {
                 @click="show"  
                 :class="{'spb-tab__btn': 1, 'spb-flex': 1, 'spb-tab__btn--bound': bound}">
                 <div v-if="!static && displayClose" @click="close" class="spb-tab__close spb-tab__ico"></div>
-                <div v-if="!static" :class="getStatusClass" class="spb-tab__ico"></div>
+                <div :class="getStatusClass" class="spb-tab__ico"></div>
                 {{ getTabName }}
             </div>
             <tab-window 
@@ -53,7 +53,16 @@ Vue.component('tab', {
                     return 'spb-tab__status--idle';
 
                 case 'running':
+                    return 'spb-tab__status--running';
+
+                case 'ok':
                     return 'spb-tab__status--ok';
+
+                case 'notify':
+                    return 'spb-tab__status--notify';
+
+                case 'error':
+                    return 'spb-tab__status--error';
             }
         }
     },

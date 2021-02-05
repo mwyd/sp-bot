@@ -19,7 +19,7 @@
     left: 0;
     flex-direction: column;
     align-items: unset;
-    z-index: 100;
+    z-index: 1200;
 }
 
 .spb-tab-bar {
