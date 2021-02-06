@@ -419,7 +419,7 @@ Vue.component('bot', {
                     break;
 
                 case 'runDelay':
-                    this.preset.runDelay = parseFloat(this.validate(e.target, 1, null));
+                    this.preset.runDelay = parseFloat(this.validate(e.target, 0, null));
                     break;
             }
         }
