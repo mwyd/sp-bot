@@ -1,22 +1,32 @@
 [
     {
         "name": "1-50 / 40",
-        "deal": "5",
-        "dealMargin": "35",
-        "minPrice": "1.00",
-        "maxPrice": "50.00",
-        "toSpend": "50.00",
-        "runDelay": "4.0",
+        "deal": 5,
+        "dealMargin": 35,
+        "minPrice": 1.00,
+        "maxPrice": 50.00,
+        "toSpend": 50.00,
+        "runDelay": 4.0,
         "search": ""
     },
     {
         "name": "50-100 / 40",
-        "deal": "5",
-        "dealMargin": "35",
-        "minPrice": "50.00",
-        "maxPrice": "100.00",
-        "toSpend": "100.00",
-        "runDelay": "4.0",
+        "deal": 5,
+        "dealMargin": 35,
+        "minPrice": 50.00,
+        "maxPrice": 100.00,
+        "toSpend": 100.00,
+        "runDelay": 4.0,
+        "search": ""
+    },
+    {
+        "name": "100-200 / 40",
+        "deal": 5,
+        "dealMargin": 35,
+        "minPrice": 100.00,
+        "maxPrice": 200.00,
+        "toSpend": 100.00,
+        "runDelay": 4.0,
         "search": ""
     }
 ]
