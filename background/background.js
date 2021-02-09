@@ -1,4 +1,4 @@
-const apiUrl = 'https://conduitpower.fun/api';
+const apiUrl = 'https://conduitpower.fun/api/v1';
 
 let boughtItemsCounter = 0;
 
@@ -18,7 +18,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     break;
 
                 case 'auth':
-                    fetch(`${apiUrl}/user/auth/`, {
+                    fetch(`${apiUrl}/user/name`, {
                         'headers': {
                             'X-Auth': params.apiKey
                         }
@@ -28,7 +28,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     break;
 
                 case 'steam_market':
-                    fetch(`${apiUrl}/item/steam_market/?hash_name=${params.hash_name}`, {
+                    fetch(`${apiUrl}/item/stats/steam?hash_name=${params.hash_name}`, {
                         'headers': {
                             'X-Auth': params.apiKey
                         }
@@ -38,7 +38,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     break;
 
                 case 'shadowpay_market':
-                    fetch(`${apiUrl}/item/shadowpay_market/?hash_name=${params.hash_name}`, {
+                    fetch(`${apiUrl}/item/stats/shadowpay?hash_name=${params.hash_name}`, {
                         'headers': {
                             'X-Auth': params.apiKey
                         }

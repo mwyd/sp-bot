@@ -137,7 +137,7 @@ Vue.component('bot', {
             }
         },
         updatePreset() {
-            this.preset = this.$store.getters.getPresets[this.presetIndex];
+            this.preset = {...this.$store.getters.getPresets[this.presetIndex]};
         },
         addToConfirm(item) {
             if(this.items.toConfirm.findIndex(_item => _item.id == item.id) != -1) return;
