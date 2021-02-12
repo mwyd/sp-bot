@@ -426,7 +426,7 @@ Vue.component('bot', {
     },
     beforeMount() {
         this.updatePreset();
-        this.$store.commit('addBot', {index: this.index, instance: this});
+        this.$store.commit('addBot', this);
     },
     beforeDestroy() {
         this.isRunning = false;

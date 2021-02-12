@@ -15,18 +15,18 @@ const gsBots = {
     getters: {
         getItems: (state) => (type) => {
             let unique = [];
-            for(let bot of state.instances) {
+            for(let instance of state.instances) {
                 switch(type) {
                     case 'toConfirm':
-                        bot.instance.items.toConfirm.forEach(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
+                        instance.items.toConfirm.forEach(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
                         break;
 
                     case 'active':
-                        bot.instance.items.pending.forEach(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
+                        instance.items.pending.forEach(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
                         break;
 
                     case 'finished':
-                        bot.instance.items.finished.forEach(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
+                        instance.items.finished.forEach(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
                         break;
                 }
             }
@@ -37,11 +37,11 @@ const gsBots = {
         }
     },
     mutations: {
-        addBot(state, data) {
-            state.instances.push(data);
+        addBot(state, instance) {
+            state.instances.push(instance);
         },
         closeBot(state, index) {
-            let id = state.instances.findIndex(bot => bot.index == index);
+            let id = state.instances.findIndex(instance => instance.index == index);
             if(id > -1) state.instances.splice(id, 1);
         },
         setPresets(state, presets) {
