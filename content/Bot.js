@@ -209,12 +209,12 @@ Vue.component('bot', {
                         break;
                 }
 
-                this.log('Buy info', data);
+                spbLog('Buy info', data);
             })
             .catch(err => {
                 item._status = 'error';
                 this.moneySpent -= parseFloat(item.price_market);
-                this.log('\n', new Error(err))
+                spbLog('\n', new Error(err))
             });
         },
         updatePending() {
@@ -264,7 +264,7 @@ Vue.component('bot', {
                     }
                 })
                 .catch(err => {
-                    this.log('\n', new Error(err))
+                    spbLog('\n', new Error(err))
                 })
             });
         },
@@ -317,7 +317,7 @@ Vue.component('bot', {
                         }
                     }
                     catch(err) {
-                        this.log('\n', new Error(err));
+                        spbLog('\n', new Error(err));
                     }
                 }
 
@@ -328,9 +328,6 @@ Vue.component('bot', {
             }
 
             this.clear();
-        },
-        log(msg, data) {
-            console.log('[' + new Date().toLocaleTimeString() + '] [SP-BOT] ' + msg, data);
         },
         validate(target, min, max) {
             if(parseFloat(target.value) < min && min !== null) target.value = min;

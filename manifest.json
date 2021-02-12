@@ -23,6 +23,7 @@
           "/style/bot.css",
           "/style/home.css",
           "/style/app.css",
+          "/style/settings.css",
           "/style/tab.css"
         ],
         "matches": ["https://shadowpay.com/*"]

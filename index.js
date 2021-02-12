@@ -63,7 +63,7 @@ window.onload = () => {
             }
         },
         beforeCreate() {
-            chrome.storage.sync.get(['apiKey', 'user'], (items) => this.$store.dispatch('authorize', items));
+            chrome.storage.sync.get(['apiKey', 'user', 'remoteAccess'], (items) => this.$store.dispatch('authorize', items));
             this.$store.dispatch('loadPresets');
         }
     });

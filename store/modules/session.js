@@ -21,10 +21,14 @@ const gsSession = {
     },
     actions: {
         authorize(context, data) {
+            context.commit('setRemoteAccess', data.remoteAccess);
             chrome.runtime.sendMessage({action: 'authorize', params: {apiKey: data.apiKey}}, res => {
                 const {success, user} = res.data;
 
-                if(success) context.commit('setSession', {user: user, apiKey: data.apiKey, logged: true});
+                if(success) {
+                    context.commit('setSession', {user: user, apiKey: data.apiKey, logged: true});
+                    context.dispatch('initWs');
+                }
                 else context.commit('setSession', {user: data.user, apiKey: data.apiKey, logged: false});
 
                 chrome.storage.sync.set({user: user, apiKey: data.apiKey});

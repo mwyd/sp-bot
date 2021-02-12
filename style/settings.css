@@ -1,0 +1,13 @@
+.spb-settings__option {
+    width: 100%;
+}
+
+.spb-settings__option-row {
+    justify-content: space-between;
+    font-size: 14px;
+    height: 22px;
+}
+
+.spb-settings__save-btn {
+    margin-top: 4px;
+}

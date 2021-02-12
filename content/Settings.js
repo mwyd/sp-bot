@@ -3,12 +3,16 @@ Vue.component('settings', {
         <div class="spb-bot">
             <h3 class="spb-header-3">Settings</h3>
             <div class="spb-flex">
-                <div style="width: 100%; padding-bottom: 8px;" class="spb-bot__option">
+                <div class="spb-bot__option spb-settings__option">
                     <span class="spb-bot__option-desc">Api key</span>
                         <input @keydown.enter="save" ref="apiKeyInput" :value="apiKey" type="password" min="0" max="100" :class="'spb-input ' + authStatus">
                 </div>
             </div>
-        <button @click="save" class="spb-button spb-button--green">SAVE</button></div>
+            <div class="spb-bot__option spb-settings__option spb-flex spb-settings__option-row">
+                <div>Remote access</div>
+                <input v-model="remoteAccess" type="checkbox">
+            </div>
+        <button @click="save" class="spb-settings__save-btn spb-button spb-button--green">save</button></div>
     `,
     computed: {
         authStatus() {
@@ -18,6 +22,14 @@ Vue.component('settings', {
         },
         apiKey() {
             return this.$store.getters.apiKey;
+        },
+        remoteAccess: {
+            get() {
+                return this.$store.getters.remoteAccess;
+            },
+            set(value) {
+                this.$store.commit('setRemoteAccess', value);
+            }
         }
     },
     methods: {
