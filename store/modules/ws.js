@@ -40,6 +40,12 @@ const gsWs = {
             }
 
             context.state.ws = ws
+        },
+        wsSend(context, msg) {
+            const ws = context.state.ws;
+            if(ws) {
+                if(ws.readyState == 1) ws.send(JSON.stringify(msg)); 
+            }
         }
     }
 }

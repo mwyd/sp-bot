@@ -424,9 +424,11 @@ Vue.component('bot', {
     beforeMount() {
         this.updatePreset();
         this.$store.commit('addBot', this);
+        this.$store.dispatch('wsSend', {action: 'update', type: 'instances', target: this.$store.getters.botsOptions});
     },
     beforeDestroy() {
         this.isRunning = false;
         this.$store.commit('closeBot', this.index);
+        this.$store.dispatch('wsSend', {action: 'update', type: 'instances', target: this.$store.getters.botsOptions});
     }
 });

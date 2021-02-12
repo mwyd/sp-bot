@@ -5,7 +5,7 @@ Vue.component('home', {
             sortBy: 'realDiscount',
             items: {
                 toConfirm: [],
-                //active: [],
+                active: [],
                 finished: []
             },
             frozenToConfirm: false
@@ -63,17 +63,26 @@ Vue.component('home', {
         getToConfirm() {
             if(!this.frozenToConfirm) this.items.toConfirm = this.$store.getters.getItems('toConfirm');
 
-            return this.sortBy == 'income' 
+            this.sortBy == 'income' 
                 ? this.items.toConfirm.sort((a, b) => b._app_income - a._app_income) 
                 : this.items.toConfirm.sort((a, b) => b._real_discount - a._real_discount);
+
+            this.$store.dispatch('wsSend', {action: 'update', type: 'to_confirm', target: this.items.toConfirm});
+
+            return this.items.toConfirm;
         },
         getActive() {
-            return this.$store.getters.getItems('active');
+            this.items.active = this.$store.getters.getItems('active');
+            this.$store.dispatch('wsSend', {action: 'update', type: 'active', target: this.items.active});
+
+            return this.items.active;
         },
         getFinished() {
             this.$store.getters.getItems('finished').forEach(v => {
                 if(this.items.finished.findIndex(x => x.id == v.id) == -1) this.items.finished.push(v);
             });
+            this.$store.dispatch('wsSend', {action: 'update', type: 'finished', target: this.items.finished});
+
             return this.items.finished;
         }
     },

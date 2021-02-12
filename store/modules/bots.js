@@ -34,6 +34,17 @@ const gsBots = {
         },
         getPresets(state) {
             return state.presets;
+        },
+        botsOptions(state) {
+            let options = [];
+            
+            for(let instance of state.instances) options.push({
+                index: instance.index,
+                isRunning: instance.isRunning,
+                preset: instance.preset
+            });
+
+            return options;
         }
     },
     mutations: {
