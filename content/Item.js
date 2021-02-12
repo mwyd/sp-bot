@@ -81,7 +81,7 @@ Vue.component('item', {
                     action: 'shadowpay_market', 
                     params: {
                         hash_name: this.item.steam_market_hash_name, 
-                        apiKey: this.$store.state.auth.apiKey}
+                        apiKey: this.$store.getters.apiKey}
                     }, 
                     res => {
                     const {stats, success} = res.data;

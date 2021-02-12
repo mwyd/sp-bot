@@ -181,7 +181,7 @@ Vue.component('bot', {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: `id=${item.id}&price=${item.price_market}&csrf_token=${this.$store.getters.getCsrfCookie}`
+                body: `id=${item.id}&price=${item.price_market}&csrf_token=${this.$store.getters.csrfCookie}`
             })
             .then(res => res.json())
             .then(data => {
@@ -205,7 +205,7 @@ Vue.component('bot', {
                         item._status = 'success';
                         
                         chrome.runtime.sendMessage({action: 'buy_item', params: {}});
-                        this.$store.getters.getNotifySound.play();
+                        this.$store.getters.notifySound.play();
                         break;
                 }
 
@@ -295,7 +295,7 @@ Vue.component('bot', {
                                     action: 'steam_market', 
                                     params: {
                                         hash_name: item.steam_market_hash_name, 
-                                        apiKey: this.$store.state.auth.apiKey}
+                                        apiKey: this.$store.getters.apiKey}
                                     }, 
                                     res => {
                                     const {stats, success} = res.data;

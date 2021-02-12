@@ -17,7 +17,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     sendResponse({data: boughtItemsCounter});
                     break;
 
-                case 'auth':
+                case 'authorize':
                     fetch(`${apiUrl}/user/name`, {
                         'headers': {
                             'X-Auth': params.apiKey

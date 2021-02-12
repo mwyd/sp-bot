@@ -12,17 +12,17 @@ Vue.component('settings', {
     `,
     computed: {
         authStatus() {
-            const pass = this.$store.state.auth.pass;
-            this.$emit('statusupdate', pass ? 'ok' : 'error');
-            return pass ? 'spb-input--val-ok' : 'spb-input--val-wrong';
+            const logged = this.$store.getters.logged;
+            this.$emit('statusupdate', logged ? 'ok' : 'error');
+            return logged ? 'spb-input--val-ok' : 'spb-input--val-wrong';
         },
         apiKey() {
-            return this.$store.state.auth.apiKey;
+            return this.$store.getters.apiKey;
         }
     },
     methods: {
         save() {
-            this.$store.dispatch('setAuth', {user: '', apiKey: this.$refs.apiKeyInput.value});
+            this.$store.dispatch('authorize', {user: '', apiKey: this.$refs.apiKeyInput.value});
         }
     },
     mounted() {

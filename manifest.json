@@ -4,14 +4,19 @@
     "description": "",
     "content_scripts": [{
         "js": [
-          "/content/functions.js",
-          "/content/Vue.js",
-          "/content/Vuex.js",
+          "/lib/functions.js",
+          "/lib/Vue.js",
+          "/lib/Vuex.js",
           "/content/Item.js",
           "/content/Bot.js",
           "/content/Settings.js",
           "/content/Home.js",
           "/content/Tab.js",
+          "/store/modules/app.js",
+          "/store/modules/bots.js",
+          "/store/modules/session.js",
+          "/store/modules/ws.js",
+          "/store/store.js",
           "index.js"
         ],
         "css": [
