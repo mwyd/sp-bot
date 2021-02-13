@@ -211,7 +211,7 @@ Vue.component('bot', {
                         break;
                 }
 
-                spbLog('Buy info', data);
+                spbLog('Buy info', {...data, _item: item});
             })
             .catch(err => {
                 item._status = 'error';
