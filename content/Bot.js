@@ -137,6 +137,7 @@ Vue.component('bot', {
             }
         },
         updatePreset() {
+            this.updateUrl = true;
             this.preset = {...this.$store.getters.getPresets[this.presetIndex]};
         },
         addToConfirm(item) {
@@ -147,19 +148,20 @@ Vue.component('bot', {
         },
         updateToConfirm() {       
             for(let i = this.items.toConfirm.length - 1; i >= 0; i--) {
-                let item = this.items.filtered.find(_item => _item.id == this.items.toConfirm[i].id);
+                let tcItem = this.items.toConfirm[i];
+                let item = this.items.filtered.find(_item => _item.id == tcItem.id);
                 
                 if(item === undefined) {
                     this.items.toConfirm.splice(i, 1);
                     continue;
                 }
     
-                if(item.price_market != this.items.toConfirm[i].price_market ) {
-                    this.items.toConfirm[i].price = item.price;
-                    this.items.toConfirm[i].price_market = item.price_market;
-                    this.items.toConfirm[i].discount = Math.round(item.discount);
-                    this.items.toConfirm[i]._real_discount = getDiffAsPercentage(item.price_market, this.items.toConfirm[i]._steam_price);
+                if(item.price_market != tcItem.price_market ) {
+                    this.items.toConfirm.splice(i, 1);
+                    continue;
                 }
+
+                if(tcItem._updated && tcItem._real_discount >= this.preset.deal + (this.preset.dealMargin) && tcItem._steam_volume > 10) this.buyItem(tcItem);
             }
         },
         buyItem(item, repurchase = false) {
@@ -291,6 +293,9 @@ Vue.component('bot', {
                             this.items.filtered.sort((a, b) => b.price_market - a.price_market);
 
                             for(let item of this.items.filtered) {
+                                item._updated = false;
+                                if(this.items.toConfirm.findIndex(_item => _item.id == item.id) > -1) continue;
+
                                 chrome.runtime.sendMessage({
                                     action: 'steam_market', 
                                     params: {
@@ -307,11 +312,9 @@ Vue.component('bot', {
                                         item._app_income = ((0.87 * stats.steam_price) - item.price_market).toFixed(2);
                                         item._app_income_percentage = getDiffAsPercentage(item.price_market - item._app_income, item.price_market);
                                         item._real_discount = getDiffAsPercentage(item.price_market, item._steam_price);
-
-                                        if(item._real_discount >= this.preset.deal + (this.preset.dealMargin) && item._steam_volume > 10) this.buyItem(item);
-                                        else this.addToConfirm(item);
+                                        item._updated = true;
                                     }
-                                    else this.addToConfirm(item);
+                                    this.addToConfirm(item);
                                 });
                             }
                         }
@@ -322,7 +325,7 @@ Vue.component('bot', {
                 }
 
                 if(this.items.pending.length > 0) this.updatePending();
-                if(this.items.toConfirm.length > 0 ) this.updateToConfirm();
+                if(this.items.toConfirm.length > 0) this.updateToConfirm();
                     
                 await new Promise(r => setTimeout(r, 1000 * this.preset.runDelay));
             }

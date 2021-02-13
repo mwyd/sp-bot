@@ -14,22 +14,28 @@ const gsBots = {
     }),
     getters: {
         getItems: (state) => (type) => {
-            let unique = [];
+            let merged = [];
             for(let instance of state.instances) {
                 switch(type) {
                     case 'toConfirm':
-                        instance.items.toConfirm.forEach(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
+                        merged = [...merged, ...instance.items.toConfirm];
                         break;
 
                     case 'active':
-                        instance.items.pending.forEach(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
+                        merged = [...merged, ...instance.items.pending];
                         break;
 
                     case 'finished':
-                        instance.items.finished.forEach(v => {if(unique.findIndex(x => x.id == v.id) == -1) unique.push(v)});
+                        merged = [...merged, ...instance.items.finished];
                         break;
                 }
             }
+
+            let unique = [];
+            for(let item of merged) {
+                if(unique.findIndex(_item => _item.id == item.id) == -1) unique.push(item);
+            }
+            
             return unique;
         },
         getPresets(state) {
