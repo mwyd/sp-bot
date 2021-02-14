@@ -7,7 +7,9 @@ Vue.component('bot', {
             preset: {},
             moneySpent: 0,
             updateUrl: true,
-            initDate: getFullDate(new Date()),
+            initDate: dateTime(new Date()),
+            lastPendingUpdate: Date.now(),
+            pendingUpdateDelay: 10,
             apiUrls: {
                 getItems: 'https://api.shadowpay.com/api/market/get_items?types=[]&exteriors=[]&rarities=[]&collections=[]&item_subcategories=[]&float=%7B%22from%22:0,%22to%22:1%7D&price_from=0&price_to=12558.58&game=csgo&stickers=[]&count_stickers=[]&short_name=&search=&stack=false&sort=desc&sort_column=price_rate&limit=50&offset=0',
                 buyItem: 'https://api.shadowpay.com/api/market/buy_item',
@@ -171,7 +173,7 @@ Vue.component('bot', {
                 item._status = 'pending';
                 item._current_run = true;
                 item._transaction_id = null;
-                item._time_bought = getFullDate(new Date());
+                item._time_bought = dateTime(new Date());
 
                 this.items.pending.push(item);
                 this.moneySpent += parseFloat(item.price_market);
@@ -220,6 +222,7 @@ Vue.component('bot', {
             });
         },
         updatePending() {
+            if(this.items.pending.length == 0 || Date.now() - this.lastPendingUpdate < this.pendingUpdateDelay * 1000) return;
             chrome.runtime.sendMessage({action: 'get_bought_items_counter', params: {}}, res => {
                 fetch(this.apiUrls.getBuyHistory, {
                     method: 'POST',
@@ -227,10 +230,11 @@ Vue.component('bot', {
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: `page=1&limit=${res.data}&sort_column=time_finished&sort_dir=desc&custom_id=&date_start=${getFullDate(new Date(this.initDate), -2)}&date_end=&state=all`
+                    body: `page=1&limit=${res.data}&sort_column=time_finished&sort_dir=desc&custom_id=&date_start=${dateTime(new Date(this.initDate), -2)}&date_end=&state=all`
                 })
                 .then(res => res.json())
                 .then(data => {
+                    this.lastPendingUpdate = Date.now();
                     switch(data.status) {
                         case 'success':
                             for(let i = this.items.pending.length - 1; i >= 0 ; i--) {
@@ -310,8 +314,8 @@ Vue.component('bot', {
                                         item._steam_price = stats.steam_price;
                                         item._steam_volume = stats.steam_volume;
                                         item._app_income = ((0.87 * stats.steam_price) - item.price_market).toFixed(2);
-                                        item._app_income_percentage = getDiffAsPercentage(item.price_market - item._app_income, item.price_market);
-                                        item._real_discount = getDiffAsPercentage(item.price_market, item._steam_price);
+                                        item._app_income_percentage = percentageDifference(item.price_market - item._app_income, item.price_market);
+                                        item._real_discount = percentageDifference(item.price_market, item._steam_price);
                                         item._updated = true;
                                     }
                                     this.addToConfirm(item);
@@ -324,8 +328,8 @@ Vue.component('bot', {
                     }
                 }
 
-                if(this.items.pending.length > 0) this.updatePending();
-                if(this.items.toConfirm.length > 0) this.updateToConfirm();
+                this.updatePending();
+                this.updateToConfirm();
                     
                 await new Promise(r => setTimeout(r, 1000 * this.preset.runDelay));
             }
