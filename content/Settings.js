@@ -8,6 +8,10 @@ Vue.component('settings', {
                         <input ref="apiKeyInput" :value="apiKey" type="password" min="0" max="100" :class="'spb-input ' + authStatus">
                 </div>
                 <div class="spb-flex spb-settings__option spb-settings__option-row">
+                    <div>Run all bots</div>
+                    <button @click="$store.dispatch('toggleBots')" :class="botsRunningBtnClass">{{ $store.getters.botsRunning ? 'stop' : 'run' }}</button>
+                </div>
+                <div class="spb-flex spb-settings__option spb-settings__option-row">
                     <div>Remote access</div>
                     <input disabled v-model="remoteAccess" type="checkbox">
                 </div>
@@ -27,6 +31,10 @@ Vue.component('settings', {
         <button @click="save" class="spb-settings__save-btn spb-button spb-button--green">save</button></div>
     `,
     computed: {
+        botsRunningBtnClass() {
+            const base = 'spb-button spb-button--small';
+            return this.$store.getters.botsRunning ? `${base} spb-button--red` : `${base} spb-button--green`;
+        },
         authStatus() {
             const logged = this.$store.getters.logged;
             this.$emit('statusupdate', logged ? 'ok' : 'error');

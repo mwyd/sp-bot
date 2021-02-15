@@ -49,6 +49,12 @@
     color: var(--main-txt-color);
 }
 
+.spb-button--small {
+    height: 20px;
+    width: 40px;
+    font-size: 10px;
+}
+
 .spb-button--font-10 {
     font-size: 10px;
 }

@@ -8,6 +8,7 @@ const gsApp = {
         tabsCreated: 2,
         dynmaicTabsLimit: 100,
         moneySpent: 0,
+        botsRunning: false,
         notifiSound: new Audio(chrome.extension.getURL('/assets/audio/Jestem_zrujnowany.mp3')),
         sp: {
             csrfCookie: getCookie('csrf_cookie')
@@ -34,6 +35,9 @@ const gsApp = {
         },
         dynamicTabs(state) {
             return state.dynamicTabs;
+        },
+        botsRunning(state) {
+            return state.botsRunning;
         }
     },
     mutations: {
@@ -42,6 +46,9 @@ const gsApp = {
         },
         setConfig(state, {type, value}) {
             state.config[type] = value;
+        },
+        toggleBotsRunning(state) {
+            state.botsRunning = !state.botsRunning;
         },
         addTab(state, callback = () => {}) {
             if(state.dynamicTabs.length >= state.dynmaicTabsLimit) return;
@@ -69,7 +76,6 @@ const gsApp = {
                     context.commit('addTab', tab => {
                         const bot = tab.$children[0].$children[0];
                         bot.updatePreset(i);
-                        bot.run();
                     });
                 }
             }

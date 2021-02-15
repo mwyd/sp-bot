@@ -76,6 +76,13 @@ const gsBots = {
             .catch(err => {
                 spbLog('[WARN] presets.json not found\n', err);
             });
-        }
+        },
+        toggleBots(context) {
+            context.commit('toggleBotsRunning');
+            for(let instance of context.state.instances) {
+                if(context.getters.botsRunning && !instance.isRunning) instance.run();
+                else if(!context.getters.botsRunning && instance.isRunning) instance.toggleStart();
+            }
+        },
     }
 }
