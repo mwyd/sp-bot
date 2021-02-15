@@ -24,7 +24,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         }
                     })
                     .then(res => res.json())
-                    .then(data => sendResponse({data: data}));
+                    .then(data => sendResponse({data: data}))
+                    .catch(err => spbLog('[ERR] unable to connect\n', err));
                     break;
 
                 case 'steam_market':
@@ -34,7 +35,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         }
                     })
                     .then(res => res.json())
-                    .then(data => sendResponse({data: data}));
+                    .then(data => sendResponse({data: data}))
+                    .catch(err => spbLog('[ERR] unable to connect\n', err));
                     break;
 
                 case 'shadowpay_market':
@@ -44,7 +46,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         }
                     })
                     .then(res => res.json())
-                    .then(data => sendResponse({data: data}));
+                    .then(data => sendResponse({data: data}))
+                    .catch(err => spbLog('[ERR] unable to connect\n', err));
                     break;
             }
             break;

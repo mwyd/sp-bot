@@ -48,7 +48,7 @@ Vue.component('bot', {
                     </div>
                     <div class="spb-bot__option">
                         <span class="spb-bot__option-desc">Preset</span>
-                            <select @change="updatePreset" v-model="presetIndex" class="spb-input spb-input--val-ok">
+                            <select @change="updatePreset()" v-model="presetIndex" class="spb-input spb-input--val-ok">
                                 <option v-for="(preset, index) in $store.getters.presets" :key="'preset-' + index" :value="index">
                                     {{preset.name}}
                                 </option>
