@@ -1,7 +1,7 @@
 [
     {
         "name": "1-50 / 40",
-        "deal": 5,
+        "deal": 15,
         "dealMargin": 35,
         "minPrice": 1.00,
         "maxPrice": 50.00,
@@ -11,7 +11,7 @@
     },
     {
         "name": "50-100 / 40",
-        "deal": 5,
+        "deal": 15,
         "dealMargin": 35,
         "minPrice": 50.00,
         "maxPrice": 100.00,
@@ -21,11 +21,61 @@
     },
     {
         "name": "100-200 / 40",
-        "deal": 5,
+        "deal": 15,
         "dealMargin": 35,
         "minPrice": 100.00,
         "maxPrice": 200.00,
-        "toSpend": 100.00,
+        "toSpend": 200.00,
+        "runDelay": 4.0,
+        "search": ""
+    },
+    {
+        "name": "200-300 / 40",
+        "deal": 15,
+        "dealMargin": 35,
+        "minPrice": 200.00,
+        "maxPrice": 300.00,
+        "toSpend": 300.00,
+        "runDelay": 4.0,
+        "search": ""
+    },
+    {
+        "name": "300-400 / 40",
+        "deal": 15,
+        "dealMargin": 35,
+        "minPrice": 300.00,
+        "maxPrice": 400.00,
+        "toSpend": 400.00,
+        "runDelay": 4.0,
+        "search": ""
+    },
+    {
+        "name": "400-500 / 40",
+        "deal": 15,
+        "dealMargin": 35,
+        "minPrice": 400.00,
+        "maxPrice": 500.00,
+        "toSpend": 500.00,
+        "runDelay": 4.0,
+        "search": ""
+    },
+    {
+        "name": "500-600 / 40",
+        "deal": 15,
+        "dealMargin": 35,
+        "minPrice": 500.00,
+        "maxPrice": 600.00,
+        "toSpend": 600.00,
+        "runDelay": 4.0,
+        "search": ""
+    },
+    {
+        "name": "600-700 / 40",
+        "deal": 15,
+        "dealMargin": 35,
+        "minPrice": 600.00,
+        "maxPrice": 700.00,
+        "toSpend": 700.00,
         "runDelay": 4.0,
         "search": ""
     }
