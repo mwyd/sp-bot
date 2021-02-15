@@ -1,5 +1,12 @@
+.spb-settings {
+    display: flex;
+    flex-direction: column;
+    width: 365px;
+}
+
 .spb-settings__option {
     width: 100%;
+    padding: 4px;
 }
 
 .spb-settings__option-row {

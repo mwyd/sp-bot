@@ -18,12 +18,12 @@ Vue.component('home', {
                 <div class="spb-home__views spb-flex">
                     <div 
                         @click="changeView('active')" 
-                        :class="getStateClass('active')">
+                        :class="stateClass('active')">
                         Active
                     </div>
                     <div 
                         @click="changeView('buyHistory')" 
-                        :class="getStateClass('buyHistory')">
+                        :class="stateClass('buyHistory')">
                         Buy history
                     </div>
                 </div>
@@ -37,7 +37,7 @@ Vue.component('home', {
             </div>
             <div class="spb-home__items">
                 <div v-if="currentView == 'active'" class="spb-home__items-active">
-                    <item v-for="item in getToConfirm" 
+                    <item v-for="item in toConfirm" 
                         @overbuybtn="freezeToConfirm" 
                         :type="'toConfirm'" 
                         :item="item" 
@@ -45,12 +45,12 @@ Vue.component('home', {
                     </item>
                 </div>
                 <div v-else class="spb-home__items-buy-history">
-                    <item v-for="item in getActive" 
+                    <item v-for="item in active" 
                         :type="'active'" 
                         :item="item" 
                         :key="'item-' + item.id">
                     </item> 
-                    <item v-for="item in getFinished" 
+                    <item v-for="item in finished" 
                         :type="'finished'" 
                         :item="item" 
                         :key="'item-' + item.id">
@@ -60,8 +60,8 @@ Vue.component('home', {
         </div>
     `,
     computed: {
-        getToConfirm() {
-            if(!this.frozenToConfirm) this.items.toConfirm = this.$store.getters.getItems('toConfirm');
+        toConfirm() {
+            if(!this.frozenToConfirm) this.items.toConfirm = this.$store.getters.items('toConfirm');
 
             this.sortBy == 'income' 
                 ? this.items.toConfirm.sort((a, b) => b._app_income - a._app_income) 
@@ -71,14 +71,14 @@ Vue.component('home', {
 
             return this.items.toConfirm;
         },
-        getActive() {
-            this.items.active = this.$store.getters.getItems('active');
+        active() {
+            this.items.active = this.$store.getters.items('active');
             this.$store.dispatch('wsSend', {action: 'update', type: 'active', target: this.items.active});
 
             return this.items.active;
         },
-        getFinished() {
-            this.$store.getters.getItems('finished').forEach(v => {
+        finished() {
+            this.$store.getters.items('finished').forEach(v => {
                 if(this.items.finished.findIndex(x => x.id == v.id) == -1) this.items.finished.push(v);
             });
             this.$store.dispatch('wsSend', {action: 'update', type: 'finished', target: this.items.finished});
@@ -87,7 +87,7 @@ Vue.component('home', {
         }
     },
     methods: {
-        getStateClass(view) {
+        stateClass(view) {
             let base = 'spb-home__view';
             return this.currentView == view ? `${base} spb-home__view--active` : base;
         },

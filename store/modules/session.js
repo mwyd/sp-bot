@@ -21,7 +21,6 @@ const gsSession = {
     },
     actions: {
         authorize(context, data) {
-            context.commit('setRemoteAccess', data.remoteAccess);
             chrome.runtime.sendMessage({action: 'authorize', params: {apiKey: data.apiKey}}, res => {
                 const {success, user} = res.data;
 

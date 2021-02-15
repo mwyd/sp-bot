@@ -7,7 +7,7 @@ Vue.component('item', {
         }
     },
     template: `
-        <div :class="'spb-home__item-row ' + getStateClass">
+        <div :class="'spb-home__item-row ' + stateClass">
             <div class="spb-home__item spb-flex">
                 <div class="spb-home__item-col spb-home__item-name">
                     <a target="_blank" :href="'https://steamcommunity.com/market/listings/730/' + item.steam_market_hash_name">
@@ -27,11 +27,11 @@ Vue.component('item', {
                         class="spb-button spb-button--font-10 spb-button--green">
                         Buy now
                     </button>
-                    {{ getDate }}
+                    {{ date }}
                 </div>
                 <div @click="showStats" class="spb-home__item-col spb-home__item-info spb-home__item-info-ico"></div>
             </div>
-            <div :class="getStatsClass">
+            <div :class="statsClass">
                 <div v-if="item._app_income" class="spb-home__item-stat">
                     Income <span>$ {{ item._app_income }}</span>
                 </div>
@@ -60,15 +60,15 @@ Vue.component('item', {
         </div>
     `,
     computed: {
-        getStateClass() {
+        stateClass() {
             return this.type != 'toConfirm' ? `spb-home__item--${this.item.state}` : '';
         },
-        getStatsClass() {
+        statsClass() {
             this.shadowpayStats;
             let base = 'spb-home__item-stats';
             return this.dispalyStats ? base : `${base} spb--hidden`;
         },
-        getDate() {
+        date() {
             return this.type != 'toConfirm' ? this.item._time_bought : '';
         }
     },

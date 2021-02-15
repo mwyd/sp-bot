@@ -5,25 +5,20 @@ function initRoot() {
     root.classList.add('spb-flex');
 
     root.innerHTML = `
-        <div class="spb-tab-bar spb-theme-dark">
+        <div :class="barClass">
             <tab 
                 v-for="(tab, index) in staticTabs" 
-                :ico="tab.ico" 
-                :static="true" 
-                :index="index"  
-                :child="tab.child" 
+                :tabdata="tab"
+                :index="index"   
                 :key="'static-tab-' + tab.id">
             </tab>
             <div class="spb-tab">
-                <div @click="addTab" class="spb-tab__btn spb-flex">+</div>
+                <div @click="$store.commit('addTab')" class="spb-tab__btn spb-flex">+</div>
             </div>
             <tab 
                 v-for="(tab, index) in dynamicTabs" 
-                @close="closeTab" 
-                :ico="tab.ico" 
-                :static="false" 
+                :tabdata="tab"
                 :index="index" 
-                :child="tab.child" 
                 :key="'dynamic-tab-' + tab.id">
             </tab>
         </div>
@@ -39,31 +34,34 @@ window.onload = () => {
     const app = new Vue({
         el: root,
         store: gStore,
-        data: {
-            staticTabs: [
-                {id: 0, name: 'Home', ico: 'H', child: 'home'},
-                {id: 1, name: 'Settings', ico: 'S', child: 'settings'}
-            ],
-            dynamicTabs: [],
-            tabsCreated: 2,
-            dynmaicTabsLimit: 10
-        },
-        methods: {
-            addTab() {
-                if(this.dynamicTabs.length >= this.dynmaicTabsLimit) return;
-
-                id = this.tabsCreated;
-                let tab = {id: id, name: `Bot-${id}`, ico: `B`, child: 'bot'}
-                
-                this.dynamicTabs.push(tab);
-                this.tabsCreated++;
+        computed: {
+            staticTabs() {
+                return this.$store.getters.staticTabs;
             },
-            closeTab(index) {
-                this.dynamicTabs.splice(index, 1);
+            dynamicTabs() {
+                return this.$store.getters.dynamicTabs;
+            },
+            barClass() {
+                const base = 'spb-tab-bar spb-theme-dark';
+                const root = this.$root.$el;
+                
+                if(this.$store.getters.config('alwaysOnTop')) {
+                    root.classList.remove('z-100');
+                    root.classList.add('z-1200');
+                }
+                else {
+                    root.classList.remove('z-1200');
+                    root.classList.add('z-100'); 
+                }
+
+                return base;
             }
         },
         beforeCreate() {
-            chrome.storage.sync.get(['apiKey', 'user', 'remoteAccess'], (items) => this.$store.dispatch('authorize', items));
+            chrome.storage.sync.get(['apiKey', 'user', 'config'], (items) => {
+                this.$store.dispatch('authorize', {apiKey: items.apiKey, user: items.user});
+                this.$store.commit('loadConfig', items.config);
+            });
             this.$store.dispatch('loadPresets');
         }
     });

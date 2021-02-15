@@ -19,11 +19,19 @@
     left: 0;
     flex-direction: column;
     align-items: unset;
+}
+
+.z-100 {
+    z-index: 100;
+}
+
+.z-1200 {
     z-index: 1200;
 }
 
 .spb-tab-bar {
     overflow: hidden;
+    direction: rtl;
 }
 
 .spb-tab-bar:hover {

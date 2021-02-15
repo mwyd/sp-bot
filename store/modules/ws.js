@@ -8,7 +8,7 @@ const gsWs = {
     mutations: {},
     actions: {
         initWs(context) {
-            if(!context.getters.remoteAccess || !context.state.keepReconnect) return;
+            if(!context.getters.config('remoteAccess') || !context.state.keepReconnect) return;
 
             let ws = new WebSocket('wss://conduitpower.fun/ws')
 

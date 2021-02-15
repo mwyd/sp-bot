@@ -4,6 +4,7 @@
     padding: 5px;
     position: relative;
     color: var(--main-txt-color);
+    direction: ltr;
 }
 
 .spb-tab__btn {

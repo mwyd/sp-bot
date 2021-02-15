@@ -13,7 +13,7 @@ const gsBots = {
         }],
     }),
     getters: {
-        getItems: (state) => (type) => {
+        items: (state) => (type) => {
             let merged = [];
             for(let instance of state.instances) {
                 switch(type) {
@@ -38,7 +38,7 @@ const gsBots = {
             
             return unique;
         },
-        getPresets(state) {
+        presets(state) {
             return state.presets;
         },
         botsOptions(state) {
@@ -69,7 +69,13 @@ const gsBots = {
         loadPresets(context) {
             fetch(chrome.extension.getURL('presets.json'))
             .then(res => res.json())
-            .then(data => context.commit('setPresets', data));
+            .then(data => {
+                context.commit('setPresets', data);
+                context.dispatch('openBots');
+            })
+            .catch(err => {
+                spbLog('[WARN] presets.json not found\n', err);
+            });
         }
     }
 }

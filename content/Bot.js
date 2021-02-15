@@ -49,7 +49,7 @@ Vue.component('bot', {
                     <div class="spb-bot__option">
                         <span class="spb-bot__option-desc">Preset</span>
                             <select @change="updatePreset" v-model="presetIndex" class="spb-input spb-input--val-ok">
-                                <option v-for="(preset, index) in $store.getters.getPresets" :key="'preset-' + index" :value="index">
+                                <option v-for="(preset, index) in $store.getters.presets" :key="'preset-' + index" :value="index">
                                     {{preset.name}}
                                 </option>
                             </select>
@@ -138,9 +138,10 @@ Vue.component('bot', {
                 this.updateUrl = false;
             }
         },
-        updatePreset() {
+        updatePreset(index = null) {
+            if(index) this.presetIndex = index;
             this.updateUrl = true;
-            this.preset = {...this.$store.getters.getPresets[this.presetIndex]};
+            this.preset = {...this.$store.getters.presets[this.presetIndex]};
         },
         addToConfirm(item) {
             if(this.items.toConfirm.findIndex(_item => _item.id == item.id) != -1) return;

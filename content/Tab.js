@@ -13,7 +13,7 @@ Vue.component('tab-window', {
 });
 
 Vue.component('tab', {
-    props: ['ico', 'static', 'index', 'child'],
+    props: ['index', 'tabdata'],
     data() {
         return {
             isActive: false,
@@ -29,25 +29,25 @@ Vue.component('tab', {
             class="spb-tab">
             <div 
                 @click="show"  
-                :class="{'spb-tab__btn': 1, 'spb-flex': 1, 'spb-tab__btn--bound': bound}">
-                <div v-if="!static && displayClose" @click="close" class="spb-tab__close spb-tab__ico"></div>
-                <div :class="getStatusClass" class="spb-tab__ico"></div>
-                {{ getTabName }}
+                :class="tabBtnClass">
+                <div v-if="!tabdata.static && displayClose" @click="close" class="spb-tab__close spb-tab__ico"></div>
+                <div :class="tabStatusClass" class="spb-tab__ico"></div>
+                {{ tabName }}
             </div>
             <tab-window 
                 ref="tabWindow" 
                 @statusupdate="updateStatus" 
-                :child="child"  
+                :child="tabdata.child"  
                 :index="index" 
-                :class="{'spb-tab__window--active': isActive, 'spb-tab__window--hidden': !isActive}"> 
+                :class="tabWindowClass"> 
             </tab-window>
         </div>
     `,
     computed: {
-        getTabName() {
-            return this.child == 'bot' ? this.ico + this.index : this.ico;
+        tabName() {
+            return this.tabdata.child == 'bot' ? this.tabdata.ico + this.index : this.tabdata.ico;
         },
-        getStatusClass() {
+        tabStatusClass() {
             switch(this.status) {
                 case 'idle':
                     return 'spb-tab__status--idle';
@@ -64,6 +64,16 @@ Vue.component('tab', {
                 case 'error':
                     return 'spb-tab__status--error';
             }
+        },
+        tabWindowClass() {
+            if(!this.$store.getters.config('displayTabPreview')) {
+                return this.isActive && this.bound ? 'spb-tab__window--active' : 'spb-tab__window--hidden';
+            }
+            return this.isActive ? 'spb-tab__window--active' : 'spb-tab__window--hidden';
+        },
+        tabBtnClass() {
+            const base = `spb-tab__btn spb-flex`;
+            return this.bound ? `${base} spb-tab__btn--bound` : base;
         }
     },
     methods: {
@@ -94,8 +104,11 @@ Vue.component('tab', {
             this.displayClose = false;
         },
         close() {
-            this.$emit('close', this.index);
+            this.$store.commit('closeTab', this.index);
         }
+    },
+    mounted() {
+        this.tabdata.mounted(this);
     }
 });
 
