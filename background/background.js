@@ -1,3 +1,7 @@
+const spbLog = (msg, data) => {
+    console.log('[' + new Date().toLocaleTimeString() + '] [SP-BOT] ' + msg, data);
+}
+
 const apiUrl = 'https://conduitpower.fun/api/v1';
 
 let boughtItemsCounter = 0;
