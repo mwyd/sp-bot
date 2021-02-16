@@ -11,7 +11,7 @@ Vue.component('settings', {
                     <span class="spb-bot__option-desc spb-clear-padding">Manage</span>
                         <div class="spb-flex spb-settings__option-row">
                             <div>Run all bots</div>
-                            <button @click="$store.dispatch('toggleBots')" :class="botsRunningBtnClass">{{ $store.getters.botsRunning ? 'stop' : 'run' }}</button>
+                            <button @click="$store.dispatch('toggleBots')" :class="runBotsBtnClass">{{ $store.getters.runBots ? 'stop' : 'start' }}</button>
                         </div>
                 </div>
                 <div class="spb-settings__option">
@@ -37,9 +37,9 @@ Vue.component('settings', {
         <button @click="save" class="spb-settings__save-btn spb-button spb-button--green">save</button></div>
     `,
     computed: {
-        botsRunningBtnClass() {
+        runBotsBtnClass() {
             const base = 'spb-button spb-button--small';
-            return this.$store.getters.botsRunning ? `${base} spb-button--red` : `${base} spb-button--green`;
+            return this.$store.getters.runBots ? `${base} spb-button--red` : `${base} spb-button--green`;
         },
         authStatus() {
             const logged = this.$store.getters.logged;

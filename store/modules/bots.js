@@ -79,11 +79,11 @@ const gsBots = {
             });
         },
         toggleBots(context) {
-            context.commit('toggleBotsRunning');
+            context.commit('toggleRunBots');
             context.state.instances.forEach( (instance, i) => {
-                if(context.getters.botsRunning) {
+                if(context.getters.runBots) {
                     setTimeout( () => {
-                        if(!instance.isRunning && context.getters.botsRunning) instance.toggleStart();
+                        if(!instance.isRunning && context.getters.runBots) instance.toggleStart();
                     }, i * context.state.runBotsDealy);
                 }
                 else if(instance.isRunning) instance.toggleStart();
