@@ -83,7 +83,7 @@ const gsBots = {
             context.state.instances.forEach( (instance, i) => {
                 if(context.getters.botsRunning) {
                     setTimeout( () => {
-                        if(!instance.isRunning && context.getters.botsRunning) instance.run();
+                        if(!instance.isRunning && context.getters.botsRunning) instance.toggleStart();
                     }, i * context.state.runBotsDealy);
                 }
                 else if(instance.isRunning) instance.toggleStart();

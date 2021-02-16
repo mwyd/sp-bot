@@ -46,12 +46,12 @@ window.onload = () => {
                 const root = this.$root.$el;
                 
                 if(this.$store.getters.config('alwaysOnTop')) {
-                    root.classList.remove('z-100');
-                    root.classList.add('z-1200');
+                    root.classList.remove('spb-z-100');
+                    root.classList.add('spb-z-1200');
                 }
                 else {
-                    root.classList.remove('z-1200');
-                    root.classList.add('z-100'); 
+                    root.classList.remove('spb-z-1200');
+                    root.classList.add('spb-z-100'); 
                 }
 
                 return base;

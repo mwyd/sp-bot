@@ -12,7 +12,7 @@
 .spb-settings__option-row {
     justify-content: space-between;
     font-size: 14px;
-    height: 22px;
+    padding: 0px 4px;
 }
 
 .spb-settings__save-btn {

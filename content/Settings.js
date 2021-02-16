@@ -7,27 +7,33 @@ Vue.component('settings', {
                     <span class="spb-bot__option-desc">Api key</span>
                         <input ref="apiKeyInput" :value="apiKey" type="password" min="0" max="100" :class="'spb-input ' + authStatus">
                 </div>
-                <div class="spb-flex spb-settings__option spb-settings__option-row">
-                    <div>Run all bots</div>
-                    <button @click="$store.dispatch('toggleBots')" :class="botsRunningBtnClass">{{ $store.getters.botsRunning ? 'stop' : 'run' }}</button>
+                <div class="spb-settings__option">
+                    <span class="spb-bot__option-desc spb-clear-padding">Manage</span>
+                        <div class="spb-flex spb-settings__option-row">
+                            <div>Run all bots</div>
+                            <button @click="$store.dispatch('toggleBots')" :class="botsRunningBtnClass">{{ $store.getters.botsRunning ? 'stop' : 'run' }}</button>
+                        </div>
                 </div>
-                <div class="spb-flex spb-settings__option spb-settings__option-row">
-                    <div>Remote access</div>
-                    <input disabled v-model="remoteAccess" type="checkbox">
+                <div class="spb-settings__option">
+                    <span class="spb-bot__option-desc spb-clear-padding">Config</span>
+                        <div class="spb-flex spb-settings__option-row">
+                            <div>Remote access</div>
+                            <input disabled v-model="remoteAccess" type="checkbox">
+                        </div>
+                        <div class="spb-flex spb-settings__option-row">
+                            <div>Open bots at startup</div>
+                            <input v-model="openBots" type="checkbox">
+                        </div>
+                        <div class="spb-flex spb-settings__option-row">
+                            <div>Display tab preview</div>
+                            <input v-model="displayTabPreview" type="checkbox">
+                        </div>
+                        <div class="spb-flex spb-settings__option-row">
+                            <div>Always on top</div>
+                            <input v-model="alwaysOnTop" type="checkbox">
+                        </div>
+                    </div>
                 </div>
-                <div class="spb-flex spb-settings__option spb-settings__option-row">
-                    <div>Open bots at startup</div>
-                    <input v-model="openBots" type="checkbox">
-                </div>
-                <div class="spb-flex spb-settings__option spb-settings__option-row">
-                    <div>Display tab preview</div>
-                    <input v-model="displayTabPreview" type="checkbox">
-                </div>
-                <div class="spb-flex spb-settings__option spb-settings__option-row">
-                    <div>Always on top</div>
-                    <input v-model="alwaysOnTop" type="checkbox">
-                </div>
-            </div>
         <button @click="save" class="spb-settings__save-btn spb-button spb-button--green">save</button></div>
     `,
     computed: {

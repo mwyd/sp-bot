@@ -21,11 +21,15 @@
     align-items: unset;
 }
 
-.z-100 {
+.spb-clear-padding {
+    padding: 0;
+}
+
+.spb-z-100 {
     z-index: 100;
 }
 
-.z-1200 {
+.spb-z-1200 {
     z-index: 1200;
 }
 
