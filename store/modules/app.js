@@ -71,13 +71,12 @@ const gsApp = {
     },
     actions: {
         openBots(context) {
-            if(context.getters.config('openBots')) {
-                for(let i = 1; i < context.getters.presets.length; i++) {
-                    context.commit('addTab', tab => {
-                        const bot = tab.$children[0].$children[0];
-                        bot.updatePreset(i);
-                    });
-                }
+            if(!context.getters.config('openBots')) return;
+            for(let i = 1; i < context.getters.presets.length; i++) {
+                context.commit('addTab', tab => {
+                    const bot = tab.$children[0].$children[0];
+                    bot.updatePreset(i);
+                });
             }
         }
     }

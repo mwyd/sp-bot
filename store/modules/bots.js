@@ -1,6 +1,7 @@
 const gsBots = {
     state: () => ({
         instances: [],
+        runBotsDealy: 4000,
         presets: [{
             name: "default",
             deal: 50,
@@ -79,10 +80,14 @@ const gsBots = {
         },
         toggleBots(context) {
             context.commit('toggleBotsRunning');
-            for(let instance of context.state.instances) {
-                if(context.getters.botsRunning && !instance.isRunning) instance.run();
-                else if(!context.getters.botsRunning && instance.isRunning) instance.toggleStart();
-            }
+            context.state.instances.forEach( (instance, i) => {
+                if(context.getters.botsRunning) {
+                    setTimeout( () => {
+                        if(!instance.isRunning && context.getters.botsRunning) instance.run();
+                    }, i * context.state.runBotsDealy);
+                }
+                else if(instance.isRunning) instance.toggleStart();
+            });
         },
     }
 }

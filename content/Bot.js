@@ -3,6 +3,7 @@ Vue.component('bot', {
     data() {
         return {
             isRunning: false,
+            timeoutId: null,
             presetIndex: 0,
             preset: {},
             moneySpent: 0,
@@ -104,20 +105,28 @@ Vue.component('bot', {
                 </div>
             </div>
             <button 
-                @click="run" 
+                @click="toggleStart" 
                 :class="'spb-button ' + (isRunning ? 'spb-button--red' : 'spb-button--green')">
                 {{ isRunning ? 'STOP' : 'START' }}
             </button>
         </div>
     `,
     methods: {
+        initTimeout() {
+            this.timeoutId = setTimeout(() => {
+                this.run();
+            }, 1000 * this.preset.runDelay);
+        },
         toggleStart() {
             if(this.isRunning) {
                 this.isRunning = false;
+                clearTimeout(this.timeoutId);
+                this.clear();
                 this.$emit('statusupdate', 'idle');
             }
             else {
                 this.isRunning = true;
+                this.initTimeout();
                 this.$emit('statusupdate', 'running');
             }
         },
@@ -276,66 +285,60 @@ Vue.component('bot', {
             });
         },
         async run() {
-            this.toggleStart();
+            this.updateGetItemsUrl();
+            this.items.filtered = [];
 
-            while(this.isRunning) {
-                this.updateGetItemsUrl();
-                this.items.filtered = [];
+            if(Math.abs(this.moneySpent - this.preset.toSpend) >= this.preset.minPrice) {
+                try {    
+                    const response = await fetch(this.apiUrls.getItems, {credentials: 'include'});
+                    let data = await response.json();
 
-                if(Math.abs(this.moneySpent - this.preset.toSpend) >= this.preset.minPrice) {
-                    try {    
-                        const response = await fetch(this.apiUrls.getItems, {credentials: 'include'});
-                        let data = await response.json();
+                    if(data.status == "success") {
+                        this.items.filtered = Array.from(data.items);
+            
+                        this.items.filtered = this.items.filtered.filter(item => !item.is_my_item);
+                        this.items.filtered = this.items.filtered.filter(item => {
+                            return item.discount >= this.preset.deal && item.price_market >= this.preset.minPrice;
+                        });
+            
+                        this.items.filtered.sort((a, b) => b.price_market - a.price_market);
 
-                        if(data.status == "success") {
-                            this.items.filtered = Array.from(data.items);
-                
-                            this.items.filtered = this.items.filtered.filter(item => !item.is_my_item);
-                            this.items.filtered = this.items.filtered.filter(item => {
-                                return item.discount >= this.preset.deal && item.price_market >= this.preset.minPrice;
+                        for(let item of this.items.filtered) {
+                            item._updated = false;
+                            if(this.items.toConfirm.findIndex(_item => _item.id == item.id) > -1) continue;
+
+                            chrome.runtime.sendMessage({
+                                action: 'steam_market', 
+                                params: {
+                                    hash_name: item.steam_market_hash_name, 
+                                    apiKey: this.$store.getters.apiKey}
+                                }, 
+                                res => {
+                                const {stats, success} = res.data;
+                                item.discount = Math.round(item.discount);
+
+                                if(success) {
+                                    item._steam_price = stats.steam_price;
+                                    item._steam_volume = stats.steam_volume;
+                                    item._app_income = ((0.87 * stats.steam_price) - item.price_market).toFixed(2);
+                                    item._app_income_percentage = percentageDifference(item.price_market - item._app_income, item.price_market);
+                                    item._real_discount = percentageDifference(item.price_market, item._steam_price);
+                                    item._updated = true;
+                                }
+                                this.addToConfirm(item);
                             });
-                
-                            this.items.filtered.sort((a, b) => b.price_market - a.price_market);
-
-                            for(let item of this.items.filtered) {
-                                item._updated = false;
-                                if(this.items.toConfirm.findIndex(_item => _item.id == item.id) > -1) continue;
-
-                                chrome.runtime.sendMessage({
-                                    action: 'steam_market', 
-                                    params: {
-                                        hash_name: item.steam_market_hash_name, 
-                                        apiKey: this.$store.getters.apiKey}
-                                    }, 
-                                    res => {
-                                    const {stats, success} = res.data;
-                                    item.discount = Math.round(item.discount);
-
-                                    if(success) {
-                                        item._steam_price = stats.steam_price;
-                                        item._steam_volume = stats.steam_volume;
-                                        item._app_income = ((0.87 * stats.steam_price) - item.price_market).toFixed(2);
-                                        item._app_income_percentage = percentageDifference(item.price_market - item._app_income, item.price_market);
-                                        item._real_discount = percentageDifference(item.price_market, item._steam_price);
-                                        item._updated = true;
-                                    }
-                                    this.addToConfirm(item);
-                                });
-                            }
                         }
                     }
-                    catch(err) {
-                        spbLog('\n', new Error(err));
-                    }
                 }
-
-                this.updatePending();
-                this.updateToConfirm();
-                    
-                await new Promise(r => setTimeout(r, 1000 * this.preset.runDelay));
+                catch(err) {
+                    spbLog('\n', new Error(err));
+                }
             }
 
-            this.clear();
+            this.updatePending();
+            this.updateToConfirm();
+                    
+            if(this.isRunning) this.initTimeout(); 
         },
         validate(target, min, max) {
             if(parseFloat(target.value) < min && min !== null) target.value = min;
