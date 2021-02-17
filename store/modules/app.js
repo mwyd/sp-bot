@@ -2,13 +2,15 @@ const gsApp = {
     state: () => ({
         staticTabs: [
             {id: 0, static: true, name: 'Home', ico: 'H', child: 'home', mounted: () => {}},
-            {id: 1, static: true, name: 'Settings', ico: 'S', child: 'settings', mounted: () => {}}
+            {id: 1, static: true, name: 'SaleGuard', ico: 'G', child: 'saleGuard', mounted: () => {}},
+            {id: 2, static: true, name: 'Settings', ico: 'S', child: 'settings', mounted: () => {}}
         ],
         dynamicTabs: [],
-        tabsCreated: 2,
+        tabsCreated: 3,
         dynmaicTabsLimit: 100,
         moneySpent: 0,
         runBots: false,
+        runSellGuard: false,
         notifiSound: new Audio(chrome.extension.getURL('/assets/audio/Jestem_zrujnowany.mp3')),
         sp: {
             csrfCookie: getCookie('csrf_cookie')
@@ -38,6 +40,9 @@ const gsApp = {
         },
         runBots(state) {
             return state.runBots;
+        },
+        runSellGuard(state) {
+            return state.runSellGuard;
         }
     },
     mutations: {
@@ -67,6 +72,9 @@ const gsApp = {
         },
         loadConfig(state, config) {
             if(config) state.config = config;
+        },
+        toggleSellGuard(state) {
+            state.runSellGuard = !state.runSellGuard;
         }
     },
     actions: {

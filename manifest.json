@@ -10,6 +10,7 @@
           "/content/Item.js",
           "/content/Bot.js",
           "/content/Settings.js",
+          "/content/SaleGuard.js",
           "/content/Home.js",
           "/content/Tab.js",
           "/store/modules/app.js",
@@ -22,6 +23,7 @@
         "css": [
           "/style/bot.css",
           "/style/home.css",
+          "/style/saleguard.css",
           "/style/app.css",
           "/style/settings.css",
           "/style/tab.css"

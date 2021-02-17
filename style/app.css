@@ -53,10 +53,11 @@
     color: var(--main-txt-color);
 }
 
-.spb-button--small {
-    height: 20px;
+.spb-button--tiny {
+    height: 16px;
     width: 40px;
     font-size: 10px;
+    border-radius: 2px;
 }
 
 .spb-button--font-10 {
@@ -90,6 +91,10 @@
     border: none;
     background-color: var(--secondary-bg-color);
     color: var(--main-txt-color);
+}
+
+.spb-input--light {
+    background-color: var(--main-bg-color);
 }
 
 .spb-input--val-ok {
