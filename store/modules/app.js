@@ -10,7 +10,6 @@ const gsApp = {
         dynmaicTabsLimit: 100,
         moneySpent: 0,
         runBots: false,
-        runSellGuard: false,
         notifiSound: new Audio(chrome.extension.getURL('/assets/audio/Jestem_zrujnowany.mp3')),
         sp: {
             csrfCookie: getCookie('csrf_cookie')
@@ -40,9 +39,6 @@ const gsApp = {
         },
         runBots(state) {
             return state.runBots;
-        },
-        runSellGuard(state) {
-            return state.runSellGuard;
         }
     },
     mutations: {
@@ -72,9 +68,6 @@ const gsApp = {
         },
         loadConfig(state, config) {
             if(config) state.config = config;
-        },
-        toggleSellGuard(state) {
-            state.runSellGuard = !state.runSellGuard;
         }
     },
     actions: {

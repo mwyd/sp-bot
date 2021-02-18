@@ -58,9 +58,10 @@ window.onload = () => {
             }
         },
         beforeCreate() {
-            chrome.storage.sync.get(['apiKey', 'user', 'config'], (items) => {
+            chrome.storage.sync.get(['apiKey', 'user', 'config', 'saleGuardItems'], (items) => {
                 this.$store.dispatch('authorize', {apiKey: items.apiKey, user: items.user});
                 this.$store.commit('loadConfig', items.config);
+                this.$store.commit('loadSaleGuardItems', items.saleGuardItems);
             });
             this.$store.dispatch('loadPresets');
         }

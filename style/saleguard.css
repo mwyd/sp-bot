@@ -47,7 +47,7 @@
 }
 
 .spb-sale-guard__item-price {
-    min-width: 150px;
+    min-width: 180px;
 }
 
 .spb-sale-guard__item-price sup {
@@ -61,7 +61,7 @@
 }
 
 .spb-sale-guard__item-update {
-    min-width: 150px;
+    min-width: 120px;
 }
 
 .spb-sale-guard__item-min-price > .spb-input, .spb-sale-guard__item-update > .spb-button {

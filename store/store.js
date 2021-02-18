@@ -5,6 +5,7 @@ const gStore = new Vuex.Store({
         session: gsSession,
         ws: gsWs,
         app: gsApp,
-        bots: gsBots
+        bots: gsBots,
+        saleGuard: gsSaleGuard
     }
 });

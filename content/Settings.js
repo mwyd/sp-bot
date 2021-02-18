@@ -10,12 +10,12 @@ Vue.component('settings', {
                 <div class="spb-settings__option">
                     <span class="spb-bot__option-desc spb-clear-padding">Manage</span>
                         <div class="spb-flex spb-settings__option-row">
-                            <div>Run all bots</div>
+                            <div>Toggle bots</div>
                             <button @click="$store.dispatch('toggleBots')" :class="runBotsBtnClass">{{ $store.getters.runBots ? 'stop' : 'start' }}</button>
                         </div>
                         <div class="spb-flex spb-settings__option-row">
-                            <div>Run sell guard</div>
-                            <button @click="$store.commit('toggleSellGuard')" :class="runSellGuardBtnClass">{{ $store.getters.runSellGuard ? 'stop' : 'start' }}</button>
+                            <div>Toggle sale guard</div>
+                            <button @click="$store.dispatch('toggleSaleGuard')" :class="runSaleGuardBtnClass">{{ $store.getters.runSaleGuard ? 'stop' : 'start' }}</button>
                         </div>
                 </div>
                 <div class="spb-settings__option">
@@ -45,9 +45,9 @@ Vue.component('settings', {
             const base = 'spb-button spb-button--tiny';
             return this.$store.getters.runBots ? `${base} spb-button--red` : `${base} spb-button--green`;
         },
-        runSellGuardBtnClass() {
+        runSaleGuardBtnClass() {
             const base = 'spb-button spb-button--tiny';
-            return this.$store.getters.runSellGuard ? `${base} spb-button--red` : `${base} spb-button--green`;
+            return this.$store.getters.runSaleGuard ? `${base} spb-button--red` : `${base} spb-button--green`;
         },
         authStatus() {
             const logged = this.$store.getters.logged;

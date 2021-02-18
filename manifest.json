@@ -15,6 +15,7 @@
           "/content/Tab.js",
           "/store/modules/app.js",
           "/store/modules/bots.js",
+          "/store/modules/saleguard.js",
           "/store/modules/session.js",
           "/store/modules/ws.js",
           "/store/store.js",
