@@ -1,7 +1,7 @@
 const gsBots = {
     state: () => ({
         instances: [],
-        runBotsDealy: 4000,
+        runBotsDealy: 4,
         presets: [{
             name: "default",
             deal: 50,
@@ -84,7 +84,7 @@ const gsBots = {
                 if(context.getters.runBots) {
                     setTimeout( () => {
                         if(!instance.isRunning && context.getters.runBots) instance.toggleStart();
-                    }, i * context.state.runBotsDealy);
+                    }, i * context.state.runBotsDealy * 1000);
                 }
                 else if(instance.isRunning) instance.toggleStart();
             });

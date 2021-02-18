@@ -1,10 +1,11 @@
 const gsSaleGuard = {
     state: () => ({
         runSaleGuard: false,
-        timeoutId: null,
+        saleGuardTimeoutId: null,
         saleGuardItems: [],
         itemsOnSale: [],
-        updateSaleGuardDelay: 15,
+        singleItemUpdateDelay: 0.2,
+        updateSaleGuardDelay: 6,
         bidStep: 0.01,
         safeDiscount: 0.99,
         spListItemsUrl: 'https://api.shadowpay.com/api/market/list_items',
@@ -50,7 +51,7 @@ const gsSaleGuard = {
         toggleSaleGuard(context) {
             if(context.state.runSaleGuard) {
                 context.state.runSaleGuard = false;
-                clearTimeout(context.state.timeoutId);
+                clearTimeout(context.state.saleGuardTimeoutId);
             }
             else {
                 context.state.runSaleGuard = true;
@@ -79,7 +80,7 @@ const gsSaleGuard = {
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: `id=${item.id}&price=${newPrice}&csrf_token=${context.getters.csrfCookie}`
+                    body: `id=${item.id}&price=${newPrice.toFixed(2)}&csrf_token=${context.getters.csrfCookie}`
                 })
                 .then(res => res.json())
                 .then(data => {
@@ -127,10 +128,10 @@ const gsSaleGuard = {
                 if(context.state.runSaleGuard) {
                     for(let item of toUpdate) {
                         await context.dispatch('updateItemPrice', item);
-                        await new Promise(r => setTimeout(r, 1000));
+                        await new Promise(r => setTimeout(r, context.state.singleItemUpdateDelay * 1000));
                     }
 
-                    context.state.timeoutId = setTimeout(() => {
+                    context.state.saleGuardTimeoutId = setTimeout(() => {
                         context.dispatch('updateSaleGuard');
                     }, context.state.updateSaleGuardDelay * 1000);
                 }

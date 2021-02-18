@@ -112,11 +112,6 @@ Vue.component('bot', {
         </div>
     `,
     methods: {
-        initTimeout() {
-            this.timeoutId = setTimeout(() => {
-                this.run();
-            }, 1000 * this.preset.runDelay);
-        },
         toggleStart() {
             if(this.isRunning) {
                 this.isRunning = false;
@@ -126,7 +121,7 @@ Vue.component('bot', {
             }
             else {
                 this.isRunning = true;
-                this.initTimeout();
+                this.run();
                 this.$emit('statusupdate', 'running');
             }
         },
@@ -153,7 +148,7 @@ Vue.component('bot', {
             this.preset = {...this.$store.getters.presets[this.presetIndex]};
         },
         addToConfirm(item) {
-            if(this.items.toConfirm.findIndex(_item => _item.id == item.id) != -1) return;
+            if(this.items.toConfirm.findIndex(_item => _item.id == item.id) != -1 || !this.isRunning) return;
             
             item._onclick = () => {this.buyItem(item)};
             this.items.toConfirm.push(item);
@@ -338,7 +333,11 @@ Vue.component('bot', {
             this.updatePending();
             this.updateToConfirm();
                     
-            if(this.isRunning) this.initTimeout(); 
+            if(this.isRunning) {
+                this.timeoutId = setTimeout(() => {
+                    this.run();
+                }, 1000 * this.preset.runDelay);
+            }
         },
         validate(target, min, max) {
             if(parseFloat(target.value) < min && min !== null) target.value = min;

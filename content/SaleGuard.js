@@ -45,8 +45,8 @@ Vue.component('saleItem', {
         },
         updateMinPrice(e) {
             this.item._min_price = parseFloat(e.target.value);
-            e.target.classList.replace('spb-input--val-wrong', 'spb-input--val-ok');
             this.$store.commit('updateSaleGuardItemPrice', this.item);
+            e.target.classList.replace('spb-input--val-wrong', 'spb-input--val-ok');
         },
 
     }
