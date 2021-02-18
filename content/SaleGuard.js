@@ -8,7 +8,7 @@ Vue.component('saleItem', {
                         <img style="padding-right: 10px;" height="50px" :src="'https://community.cloudflare.steamstatic.com/economy/image/' + item.steam_icon_url_large">
                     {{ item.steam_market_hash_name }}</a>
                 </div>
-                <div class="spb-sale-guard__item-col spb-sale-guard__item-price">$ {{ item.steam_price_en + ' -> ' + item.price_market }}
+                <div class="spb-sale-guard__item-col spb-sale-guard__item-price">$ {{ item.steam_price_en + ' → ' + item.price_market }}
                     <sup>{{ Math.round(item.discount) }}%</sup>
                 </div>
                 <div class="spb-sale-guard__item-col spb-sale-guard__item-min-price">

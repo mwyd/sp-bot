@@ -9,7 +9,7 @@ const gsSaleGuard = {
         bidStep: 0.01,
         safeDiscount: 0.99,
         spListItemsUrl: 'https://api.shadowpay.com/api/market/list_items',
-        spItemPurchaseStats: 'https://api.shadowpay.com/api/market/get_item_purchase_order_stats',
+        spItemListObjUrl: new URL('https://api.shadowpay.com/api/market/get_items?types=[]&exteriors=[]&rarities=[]&collections=[]&item_subcategories=[]&float={"from":0,"to":1}&price_from=0&price_to=13492.97&game=csgo&stickers=[]&count_stickers=[]&short_name=&search=&stack=false&sort=asc&sort_column=price&limit=50&offset=0'),
         spSaveItemPriceUrl: 'https://api.shadowpay.com/api/market/save_item_price' // post -> body [id, price, csrf_token]
     }),
     getters: {
@@ -60,19 +60,31 @@ const gsSaleGuard = {
         },
         async updateItemPrice(context, item) {
             try {
-                const response = await fetch(context.state.spItemPurchaseStats + `?item_id=${item.item_id}`, {credentials: 'include'});
-                const data = await response.json();
+                context.state.spItemListObjUrl.searchParams.set('price_to', item.steam_price_en);
+                context.state.spItemListObjUrl.searchParams.set('search', item.steam_market_hash_name);
 
-                if(data.status != 'success') return;
+                const response = await fetch(context.state.spItemListObjUrl.toString(), {credentials: 'include'});
+                const {status, items} = await response.json();
 
-                const currentMinPrice = parseFloat(data.current_min_price);
-                const suggestedPrice = parseFloat(data.suggested_price);
-                let newPrice = parseFloat(item.price_market);
+                if(status != 'success') return;
 
-                if(currentMinPrice > item._min_price) newPrice = currentMinPrice - context.state.bidStep;
-                else if(currentMinPrice > suggestedPrice) newPrice = suggestedPrice * context.state.safeDiscount;
+                const suggestedPrice = parseFloat(item.steam_price_en);
+                let newPrice = suggestedPrice * context.state.safeDiscount;
 
-                if(item.price_market == newPrice) return;
+                if(newPrice < item._min_price) newPrice = item._min_price;
+
+                for(let spItem of items) {
+                    if(spItem.is_my_item) continue;
+
+                    let currentMinPrice = parseFloat(spItem.price_market);
+
+                    if(currentMinPrice > item._min_price) {
+                        newPrice = currentMinPrice - context.state.bidStep;
+                        break;
+                    }
+                }
+
+                if(item.price_market == newPrice.toFixed(2)) return;
 
                 fetch(context.state.spSaveItemPriceUrl, {
                     method: 'POST',
