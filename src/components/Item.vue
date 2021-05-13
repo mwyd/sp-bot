@@ -1,0 +1,266 @@
+<template>
+    <div :class="stateClass">
+        <div class="spb-item spb--flex">
+            <div class="spb-item__column spb-item__name">
+                <a
+                    target="_blank" 
+                    class="spb--link"
+                    :href="steamItemMarketUrl + item.steam_market_hash_name"
+                >
+                    <img :src="steamItemImageUrl + item.steam_icon_url_large">
+                    {{ item.steam_market_hash_name }}
+                </a>
+            </div>
+            <div class="spb-item__stickers spb--flex">
+                <div class="spb-item__sticker" 
+                    v-for="(sticker, index) in item.stickers"
+                    :spb-sticker-name="sticker.name"
+                    :spb-sticker-price="'$ ' + sticker.steam_price"
+                    :key="'item-sticker-' + index"
+                >
+                    <img :src="steamItemImageUrl + sticker.icon_url">
+                </div>
+            </div>
+            <div class="spb-item__column spb-item__price">
+                <span class="spb--font-weight-light">$ {{ item.price_market_usd.toFixed(2) }}
+                    <sup>{{ (item._real_discount ? item._real_discount + '% | ': '') + item.discount }}%</sup>
+                </span>
+            </div>
+            <div class="spb-item__column spb-item__status"> {{ item.state }}</div>
+            <div class="spb-item__column spb-item__date">
+                <button 
+                    class="spb-button spb--font-size-small spb-button--green"
+                    v-if="type == itemTypes.TO_CONFIRM" 
+                    @click="item._onclick" 
+                    @mouseenter="overBuyButton(true)" 
+                    @mouseleave="overBuyButton(false)" 
+                >
+                    Buy now
+                </button>
+                <span v-else>{{ this.item._time_bought }}</span>
+            </div>
+            <div 
+                class="spb-item__column spb-item__info spb-item__info--ico"
+                @click="toggleDisplayStatistics"
+            ></div>
+        </div>
+        <div 
+            class="spb-item__stats spb--rounded-small" 
+            v-show="displayStatistics"
+        >
+            <div 
+                v-if="item.floatvalue" 
+                class="spb-item__stat"
+            >
+                Float 
+                <span :class="interestingFloat(item.floatvalue) ? 'spb--text-highlight' : 'spb--text-green'">
+                    {{ item.floatvalue }}
+                </span>
+            </div>
+            <div 
+                v-for="property in existingInterestingProperties"
+                class="spb-item__stat" 
+                :key="'item-property-' + property.raw"
+            >
+                {{ property.sugar }} 
+                <span class="spb--text-green">{{ property.unit + ' ' + item[property.raw] }}</span>
+            </div>
+            <div 
+                v-if="item.inspect_url" 
+                class="spb-item__stat"
+            >
+                Owner 
+                <span class="spb--text-green spb--cursor-pointer">
+                    <a 
+                        target="_blank" 
+                        class="spb--link"
+                        :href="steamUserProfileUrl + itemOwnerSteamId(item.inspect_url)"
+                    >Steam</a>
+                </span>
+            </div>
+            <div 
+                @click="loadShadowpayStatistics" 
+                v-if="!hideMoreStatisticsButton" 
+                class="spb--cursor-pointer spb-item__stat"
+            >
+                +
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { mapState } from 'vuex'
+
+export default {
+    name: 'Item',
+    props: {
+        type: String,
+        item: Object
+    },
+    emits: ['overBuyButton'],
+    data() {
+        return {
+            displayStatistics: this.$store.getters['app/config']('displayItemStatistics'),
+            interestingProperties: [...this.$store.state.item.interestingProperties],
+            interestingStatistics: [...this.$store.state.item.interestingStatistics],
+            hideMoreStatisticsButton: false
+        }
+    },
+    computed: {
+        ...mapState({
+            steamItemMarketUrl: state => state.app.steam.resources.ITEM_SELL_LISTINGS,
+            steamItemImageUrl: state => state.app.steam.resources.ITEM_IMAGE,
+            steamUserProfileUrl: state => state.app.steam.resources.USER_PROFILE,
+            itemTypes: state => state.bots.itemTypes
+        }),
+        stateClass() {
+            const className = 'spb-item__row spb--rounded-small';
+            return className + (this.type != this.itemTypes.TO_CONFIRM ? ` spb-item__status--${this.item.state}` : '');
+        },
+        existingInterestingProperties() {
+            return this.interestingProperties.filter(property => this.item[property.raw]);
+        }
+    },
+    methods: {
+        interestingFloat(float) {
+            return this.$store.getters['item/interestingFloat'](float)
+        },
+        itemOwnerSteamId(inspectLink) {
+            return this.$store.getters['item/itemOwnerSteamId'](inspectLink)
+        },
+        toggleDisplayStatistics() {
+            this.displayStatistics = !this.displayStatistics
+        },
+        overBuyButton(value) {
+            this.$emit('overBuyButton', value)
+        }
+    }
+}
+</script>
+
+<style>
+.spb-item {
+    height: 60px;
+    width: 100%;
+}
+
+.spb-item__row {
+    margin: 8px 0px;
+    background-color: var(--secondary-background-color);
+    font-weight: 100;
+    font-size: 14px;
+}
+
+.spb-item__column {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 4px;
+}
+
+.spb-item__name {
+    width: 100%;
+}
+
+.spb-item__name img {
+    padding-right: 10px; 
+    height: 50px;
+}
+
+.spb-item__stickers {
+    padding: 4px; 
+}
+
+.spb-item__sticker > img {
+    height: 24px;
+}
+
+.spb-item__sticker:hover {
+    transform: scale(7);
+    background: var(--main-background-color);
+    border-radius: 1px;
+    box-shadow: 0 0 70px rgb(0 0 0 / 60%);
+}
+
+.spb-item__sticker:hover::after {
+    content: attr(spb-sticker-name) "\A" attr(spb-sticker-price);
+    white-space: pre-wrap;
+    display: block;
+    font-size: 2px;
+    width: 100%;
+    text-align: center;
+    padding: 1px;
+}
+
+.spb-item__price {
+    min-width: 150px;
+}
+
+.spb-item__min-price, .spb-item__max-price {
+    min-width: 120px;
+}
+
+.spb-item__min-price > .spb-input-field, .spb-item__max-price > .spb-input-field {
+    width: 80%;
+}
+
+.spb-item__price sup {
+    vertical-align: sub;
+    font-size: 1em;
+    color: var(--alternative-text-color);
+}
+
+.spb-item__status {
+    min-width: 90px;
+}
+
+.spb-item__update {
+    min-width: 120px;
+}
+
+.spb-item__update > button {
+    width: 80%;
+}
+
+.spb-item__info {
+    min-width: 50px;
+}
+
+.spb-item__info--ico {
+    background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/info.svg');
+    background-size: 20px;
+    min-height: 50px;
+    cursor: pointer;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.spb-item__date {
+    min-width: 150px;
+}
+
+.spb-item__stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: left;
+    padding: 4px;
+    background-color: var(--alternative-dark-background-color);
+}
+
+.spb-item__stat {
+    padding: 4px 10px;
+}
+
+.spb-item__status--active {
+    border-left: 2px solid var(--active-color);
+}
+
+.spb-item__status--cancelled {
+    border-left: 2px solid var(--cancelled-color);
+}
+
+.spb-item__status--finished {
+    border-left: 2px solid var(--accepted-color);
+}
+</style>

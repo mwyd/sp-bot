@@ -1,0 +1,27 @@
+{
+    "manifest_version": 3,
+    "name": "SP-BOT",
+    "version": "3.0",
+    "description": "",
+    "content_scripts": [{
+        "js": [
+            "/js/chunk-vendors.js",
+            "/js/app.js"
+        ],
+        "css": [
+          "/css/app.css"
+        ],
+        "matches": ["https://shadowpay.com/*"]
+      }],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "permissions": [
+      "storage"
+    ],
+    "web_accessible_resources": [{
+      "resources": ["/assets/*"],
+      "matches": ["https://shadowpay.com/*"],
+      "extension_ids": []
+    }]
+}

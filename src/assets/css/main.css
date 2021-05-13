@@ -1,0 +1,143 @@
+.spb-button {
+    text-transform: uppercase;
+    border-radius: 4px;
+    border: none;
+    font-weight: 600;
+    font-size: 12px;
+    height: 32px;
+    width: 100%;
+    color: var(--main-text-color);
+    background-size: 200% auto;
+    transition: 0.2s linear;
+}
+
+.spb-button-tiny {
+    height: 16px;
+    width: 40px;
+    font-size: 10px;
+    border-radius: 2px;
+}
+
+.spb--flex {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spb--h3 {
+    line-height: 27px;
+    white-space: nowrap;
+}
+
+.spb--font-size-large {
+    font-size: 18px;
+}
+
+.spb--font-size-big {
+    font-size: 16px;
+}
+
+.spb--font-size-medium {
+    font-size: 14px;
+}
+
+.spb--font-size-small {
+    font-size: 10px;
+}
+
+.spb--font-weight-heavy {
+    font-weight: 700;
+}
+
+.spb--font-weight-medium {
+    font-weight: 600;
+}
+
+.spb--font-weight-light {
+    font-weight: 500;
+}
+
+.spb--clear-padding {
+    padding: 0;
+}
+
+.spb--rounded-medium {
+    border-radius: 10px;
+}
+
+.spb--rounded-small {
+    border-radius: 4px;
+}
+
+.spb--cursor-pointer {
+    cursor: pointer;
+}
+
+.spb--link {
+    color: inherit;
+}
+
+.spb--z-100 {
+    z-index: 100;
+}
+
+.spb--z-1200 {
+    z-index: 1200;
+}
+
+.spb--text-highlight {
+    color: var(--highlight-text-color);
+}
+
+.spb--text-green {
+    color: var(--button-gradient-green-light);
+}
+
+.spb-button--green {
+    background: linear-gradient(to right, var(--button-gradient-green-light), var(--button-gradient-green-dark));
+}
+
+.spb-button--green:hover {
+    background-position: right center;
+}
+
+.spb-button--red {
+    background: linear-gradient(to right, var(--button-gradient-red-light), var(--button-gradient-red-dark));
+}
+
+.spb-button--red:hover {
+    background-position: right center;
+}
+
+.spb--theme-dark {
+    --main-background-color: #3a4048;
+    --secondary-background-color: #323940;
+    --alternative-dark-background-color: #282f36;
+    --main-text-color: #eef0f2;
+    --alternative-background-color: #495159;
+    --active-tab-background-color: #009c66;
+    --alternative-text-color: #FF9200;
+    --highlight-text-color: #FFFF00;
+    --active-color: #5799e9;
+    --cancelled-color: #e95757;
+    --accepted-color:  #32bf91;
+    --button-gradient-green-light: #4ddf9a;
+    --button-gradient-green-dark: #2fbc90;
+    --button-gradient-red-light: #e95757;
+    --button-gradient-red-dark: #8c3232;
+}
+
+.spb-option {
+    width: 100%;
+    padding: 4px;
+}
+
+.spb-option__row {
+    justify-content: space-between;
+    padding: 0px 4px;
+}
+
+.spb-option__description {
+    display: block;
+    padding-bottom: 8px;
+}
