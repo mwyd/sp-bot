@@ -177,8 +177,7 @@ export default {
     methods: {
         ...mapActions({
             addPreset: 'presetManager/addPreset',
-            updatePreset: 'presetManager/updatePreset',
-            deletePreset: 'presetManager/deletePreset'
+            updatePreset: 'presetManager/updatePreset'
         }),
         viewClass(view) {
             const className = 'spb-preset-manager__view spb--rounded-small'
@@ -190,6 +189,15 @@ export default {
         changePreset(id) {
             this.currentPresetId = id
             this.currentPreset = {...this.getPreset(id)}
+        },
+        deletePreset(id) {
+            this.$store.dispatch('presetManager/deletePreset', id)
+                .then(({success}) => {
+                    if(success) {
+                        const presetsId = this.presetsId
+                        if(presetsId.length > 1) this.changePreset(presetsId[1])
+                    }
+                })
         }
     }
 }

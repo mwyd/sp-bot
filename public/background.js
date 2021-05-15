@@ -19,12 +19,13 @@ const apiFetch = (path, token, callback, config = {}) => {
     }
 
     fetch(`${apiUrl + path}`, config)
-    .then(res => res.json())
-    .then(data => callback(data))
-    .catch(err => callback({
-        success: false, 
-        error_message: err
-    }))
+        .then(res => res.json())
+        .then(data => callback(data))
+        .catch(err => callback({
+            success: false, 
+            error_message: err
+        })
+    )
 }
 
 const setItemsCounter = counter => {

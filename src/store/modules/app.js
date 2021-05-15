@@ -43,6 +43,13 @@ export default {
         tabReservedIds: Array.from(new Array(5).keys()),
         tabFreeIds: Array.from(new Array(45).keys()).map(e => e += 5),
         notificationSound: new Audio(chrome.runtime.getURL('/assets/audio/Jestem_zrujnowany.mp3')),
+        alertTypes: Object.freeze({
+            SUCCESS: 'success',
+            INFO: 'info',
+            ERROR: 'error'
+        }),
+        alertLifeTime: 2 * 1000,
+        alerts: [],
         config: {
             displayItemStatistics: false,
             displayTabPreview: true,
@@ -118,6 +125,12 @@ export default {
             state.tabReservedIds.splice(state.tabReservedIds.indexOf(id), 1)
 
             state.tabs.splice(state.tabs.findIndex(tab => tab.id == id), 1)
+        },
+        addAlert(state, alert) {
+            state.alerts.push(alert)
+        },
+        shiftAlert(state) {
+            state.alerts.shift()
         }
     },
     actions: {
@@ -149,6 +162,10 @@ export default {
                     token: rootState.session.token
                 }
             })
+        },
+        updateAlerts({state, commit}, alert) {
+            commit('addAlert', alert)
+            setTimeout(() => commit('shiftAlert'), state.alertLifeTime)
         },
         async setupApp({dispatch}) {
             await dispatch('session/loadToken', null, { root: true })

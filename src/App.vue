@@ -33,17 +33,28 @@
             >
             </Tab>
         </div>
+        <div class="spb-alert-box">
+            <Alert
+                v-for="(alert, index) in alerts"
+                :key="'spb-alert-' + index"
+                :type="alert.type"
+                :message="alert.message"
+            >
+            </Alert>
+        </div>
     </div>
 </template>
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
 import Tab from './components/Tab.vue'
+import Alert from './components/Alert.vue'
 
 export default {
     name: 'App',
     components: {
-        Tab
+        Tab,
+        Alert
     },
     watch: {
         displayInterfaceOnTop(value) {
@@ -61,7 +72,8 @@ export default {
     },
     computed: {
         ...mapState({
-            tabs: state => state.app.tabs
+            tabs: state => state.app.tabs,
+            alerts: state => state.app.alerts
         }),
         staticTabs() {
             return this.tabs.filter(tab => tab.isStatic)
@@ -111,5 +123,13 @@ export default {
 
 .spb-tab-bar__wrapper:hover {
     overflow-y: auto;
+}
+
+.spb-alert-box {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: auto;
+    width: 250px;
 }
 </style>

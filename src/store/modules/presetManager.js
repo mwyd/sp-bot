@@ -62,7 +62,7 @@ export default {
                 }))
             }
         },
-        addPreset({rootState, commit}, preset) {
+        addPreset({rootState, commit, dispatch}, preset) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'set_preset',
                 params: {
@@ -71,17 +71,27 @@ export default {
                 }
             }, 
             response => {
-                const {success, data} = response
+                const {success, data, error_message} = response
+
+                const alert = {
+                    type: rootState.app.alertTypes.SUCCESS,
+                    message: 'Preset created'
+                }
 
                 if(success) commit('setPreset', {
                     id: data.id,
                     preset: data.preset
                 })
+                else {
+                    alert.type = rootState.app.alertTypes.ERROR,
+                    alert.message = error_message
+                }
 
+                dispatch('app/updateAlerts', alert, { root: true })
                 resolve(response)
             }))
         },
-        updatePreset({rootState, commit}, {id, preset}) {
+        updatePreset({rootState, commit, dispatch}, {id, preset}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'update_preset',
                 params: {
@@ -91,17 +101,27 @@ export default {
                 }
             }, 
             response => {
-                const {success} = response
+                const {success, error_message} = response
+
+                const alert = {
+                    type: rootState.app.alertTypes.SUCCESS,
+                    message: 'Preset updated'
+                }
 
                 if(success) commit('setPreset', {
                     id: id,
                     preset: preset
                 })
+                else {
+                    alert.type = rootState.app.alertTypes.ERROR,
+                    alert.message = error_message
+                }
 
+                dispatch('app/updateAlerts', alert, { root: true })
                 resolve(response)
             }))
         },
-        deletePreset({rootState, commit}, id) {
+        deletePreset({rootState, commit, dispatch}, id) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'delete_preset',
                 params: {
@@ -110,10 +130,20 @@ export default {
                 }
             }, 
             response => {
-                const {success} = response
+                const {success, error_message} = response
+
+                const alert = {
+                    type: rootState.app.alertTypes.SUCCESS,
+                    message: 'Preset deleted'
+                }
 
                 if(success) commit('removePreset', id)
+                else {
+                    alert.type = rootState.app.alertTypes.ERROR,
+                    alert.message = error_message
+                }
 
+                dispatch('app/updateAlerts', alert, { root: true })
                 resolve(response)
             }))
         }
