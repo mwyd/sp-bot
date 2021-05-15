@@ -16,10 +16,17 @@ export default {
     name: 'InputField',
     props: {
         type: String,
-        valid: Boolean,
         modelValue: [String, Number],
-        validator: Function,
-        modelUpdated: Function
+        validator: {
+            type: Function,
+            default: () => true,
+            required: false
+        },
+        modelUpdated: {
+            type: Function,
+            default: () => {},
+            required: false
+        }
     },
     emits: ['update:modelValue'],
     data() {
@@ -36,7 +43,7 @@ export default {
     computed: {
         inputClass() {
             const className = `spb-input-field spb--font-size-medium spb--rounded-small`
-            return className + (this.synchronized && (this.valid ?? true) ? ' spb-input-field--ok' : ' spb-input-field--wrong')
+            return className + (this.synchronized ? ' spb-input-field--ok' : ' spb-input-field--wrong')
         }
     },
     methods: {
@@ -45,13 +52,13 @@ export default {
             this.internalModel = this.modelValue
         },
         validateInternalModel() {
-            if(this.validator?.(this.internalModel) ?? true) this.saveModelValue()
+            if(this.validator(this.internalModel)) this.saveModelValue()
         },
         saveModelValue() {
             this.synchronized = true
             this.$emit('update:modelValue', this.internalModel)
-            this.modelUpdated?.()
-        }
+            this.modelUpdated()
+        },
     }
 }
 </script>

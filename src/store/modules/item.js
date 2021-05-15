@@ -1,40 +1,108 @@
 export default {
     namespaced: true,
     state: () => ({
-        inspectLinkSteamIdRange: [11, 17],
-        inspectLinkSteamIdKeyword: 'preview', 
+        inspectLinkSteamIdRange: [
+            11, 
+            17
+        ],
+        inspectLinkSteamIdKeyword: 'preview',
+        phases: [
+            'Phase 1',
+            'Phase 2',
+            'Phase 3',
+            'Phase 4',
+            'Emerald',
+            'Ruby',
+            'Sapphire'
+        ], 
         interestingFloatRanges: [
-            {min: 0, max: 0.01},
-            {min: 0.07, max: 0.09},
-            {min: 0.15, max: 0.18},
-            {min: 0.18, max: 0.21},
-            {min: 0.45, max: 0.5},
-            {min: 0.76, max: 0.8}
+            {
+                min: 0, 
+                max: 0.01
+            },
+            {
+                min: 0.07, 
+                max: 0.09
+            },
+            {
+                min: 0.15, 
+                max: 0.18
+            },
+            {
+                min: 0.18, 
+                max: 0.21
+            },
+            {
+                min: 0.45, 
+                max: 0.5
+            },
+            {
+                min: 0.76, 
+                max: 0.8
+            }
         ],
-        interestingProperties: [
-            {raw: 'paintindex', sugar: 'Paint index', unit: ''},
-            {raw: 'paintseed', sugar: 'Paint seed', unit: ''},
-            {raw: 'phase', sugar: '', unit: ''},
-            {raw: 'steam_is_souvenir', sugar: 'Souvenir', unit: ''},
-            {raw: '_app_income', sugar: 'Income', unit: '$'},
-            {raw: '_app_income_percentage', sugar: 'Income', unit: '%'},
-            {raw: 'price_real', sugar: 'Suggested price', unit: '$'},
-            {raw: '_steam_price', sugar: 'Steam price', unit: '$'},
-            {raw: '_steam_volume', sugar: 'Steam volume', unit: ''}
-        ],
-        interestingMarketProperties: [
-            {raw: '_items_on_market', sugar: 'Items on market', unit: ''},
-            {raw: '_avg_item_price', sugar: 'Average item price', unit: '$'},
-            {raw: '_market_cheapest', sugar: 'The cheapest one', unit: '$'},
-            {raw: '_market_expensive', sugar: 'The most expensive one', unit: '$'},
-            {raw: '_market_avg_discount', sugar: 'Market average discount', unit: '$'}
-        ],
-        interestingStatistics: [
-            {raw: '_app_sell_price', sugar: 'Average sell price', unit: '$'},
-            {raw: '_avg_discount', sugar: 'Average discount', unit: '%'},
-            {raw: '_sold', sugar: 'Sold', unit: ''},
-            {raw: '_last_sold', sugar: 'Last sold', unit: ''}
-        ]
+        interestingProperites: Object.freeze({
+            paintindex: {
+                name: 'Paint index',
+                unit: ''
+            },
+            paintseed: {
+                name: 'Paint seed',
+                unit: ''
+            },
+            phase: {
+                name: '',
+                unit: ''
+            },
+            steam_is_souvenir: {
+                name: '',
+                unit: ''
+            },
+            price_real: {
+                name: 'Suggested price',
+                unit: '$'
+            },
+            _steam_price: {
+                name: 'Steam price',
+                unit: '$'
+            },
+            _steam_volume: {
+                name: 'Steam volume',
+                unit: ''
+            },
+            _app_income: {
+                name: 'Income',
+                unit: '$'
+            },
+            _app_income_percentage: {
+                name: 'Income',
+                unit: '%'
+            }
+        }),
+        shadowpayStatistics: Object.freeze({
+            _app_sell_price: {
+                name: 'Average sell price',
+                unit: '$'
+            },
+            _avg_discount: {
+                name: 'Average discount',
+                unit: '%'
+            },
+            _sold: {
+                name: 'Sold',
+                unit: ''
+            },
+            _last_sold: {
+                name: 'Last sold',
+                unit: ''
+            }
+        }),
+        mutableProperties: {
+            _app_sell_price: null,
+            _avg_discount: null,
+            _sold: null,
+            _last_sold: null
+        }
     }),
     getters: {
         interestingFloat: state => float =>  {
@@ -44,9 +112,37 @@ export default {
             return false
         },
         itemOwnerSteamId: state => inspectLink => {
-            return inspectLink.substr(inspectLink.search(state.inspectLinkSteamIdKeyword)).substr(...state.inspectLinkSteamIdRange)
+            return inspectLink
+                .substr(inspectLink.search(state.inspectLinkSteamIdKeyword))
+                .substr(...state.inspectLinkSteamIdRange)
+        },
+        steamHashName: state => hashName => {
+            state.phases.forEach(phase => {
+                let position = hashName.search(phase)
+                
+                if(position > -1) {
+                    hashName = hashName
+                        .substr(0, position)
+                        .trim()
+                        
+                    return
+                }
+            })
+
+            return hashName
         }
     },
     mutations: {},
-    actions: {}
+    actions: {
+        loadShadowpayStatistics({rootState}, hashName) {
+            return new Promise(resolve => chrome.runtime.sendMessage({
+                action: 'get_shadowpay_sold_item', 
+                params: {
+                    hash_name: hashName, 
+                    token: rootState.session.token
+                }
+            }, 
+            response => resolve(response)))
+        }
+    }
 }

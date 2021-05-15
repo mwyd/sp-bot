@@ -7,7 +7,7 @@ export default {
     }),
     getters: {},
     mutations: {
-        updateToken(state, token) {
+        setToken(state, token) {
             state.token = token
         },
         setSession(state, data) {
@@ -17,7 +17,7 @@ export default {
     actions: {
         loadToken({commit}) {
             return new Promise(resolve => chrome.storage.sync.get(['token'], ({token}) => {
-                commit('updateToken', token)
+                commit('setToken', token)
                 resolve(token)
             }))
         },

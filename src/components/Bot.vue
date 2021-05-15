@@ -1,12 +1,12 @@
 <template>
     <div class="spb-bot">
-        <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">Options - Bot {{ id }}</h3>
+        <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">Options - Bot #{{ id }}</h3>
         <div class="spb--flex spb-bot__wrapper">
             <div>
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal</span>
                     <InputField 
-                        v-model="preset.deal"
+                        v-model.number="preset.deal"
                         :type="'number'"
                         :validator="value => (value >= 0 && value <= 100)"
                     >
@@ -15,7 +15,7 @@
                 <div class="spb-option">
                     <span class="spb-option__description">$ Item min price</span>
                     <InputField 
-                        v-model="preset.minPrice"
+                        v-model.number="preset.minPrice"
                         :type="'number'" 
                         :validator="value => (value >= 0 && value <= preset.maxPrice)"
                         :modelUpdated="() => updateUrl = true"
@@ -26,15 +26,14 @@
                     <span class="spb-option__description">Preset</span>
                         <select 
                             class="spb-input-field spb-input-field--ok spb--font-size-medium spb--rounded-small"
-                            v-model="presetIndex" 
-                            @change="updatePreset()"
+                            @change="e => changePreset(parseInt(e.target.value))"
                         >
                             <option 
-                                v-for="(preset, index) in presets" 
-                                :key="'preset-' + index" 
-                                :value="index"
+                                v-for="key in presetsId" 
+                                :key="'preset-' + key" 
+                                :value="key"
                             >
-                            {{preset.name}}
+                                {{ getPreset(key).name }}
                             </option>
                         </select>
                 </div>  
@@ -52,7 +51,7 @@
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal margin</span>
                     <InputField 
-                        v-model="preset.dealMargin"
+                        v-model.number="preset.dealMargin"
                         :type="'number'" 
                         :validator="value => (value >= -preset.deal && value <= 100 - preset.deal)"
                     >
@@ -61,7 +60,7 @@
                 <div class="spb-option">
                     <span class="spb-option__description">$ Item max price</span>
                     <InputField 
-                        v-model="preset.maxPrice"
+                        v-model.number="preset.maxPrice"
                         :type="'number'" 
                         :validator="value => (value >= preset.minPrice && value <= preset.toSpend)"
                         :modelUpdated="() => updateUrl = true"
@@ -71,7 +70,7 @@
                 <div class="spb-option">
                     <span class="spb-option__description">$ Money to spend</span>
                     <InputField 
-                        v-model="preset.toSpend"
+                        v-model.number="preset.toSpend"
                         :type="'number'" 
                         :validator="value => (value >= preset.maxPrice && value <= 1000000)"
                     >
@@ -80,7 +79,7 @@
                 <div class="spb-option">
                     <span class="spb-option__description">Refresh time</span>
                     <InputField
-                        v-model="preset.runDelay" 
+                        v-model.number="preset.runDelay" 
                         :type="'number'" 
                         :validator="value => (value >= 0 && value <= 1200)"
                     >
@@ -98,7 +97,7 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex'
+import { mapState, mapGetters, mapMutations } from 'vuex'
 import DateFormat from 'dateformat'
 import InputField from './InputField.vue'
 
@@ -115,8 +114,8 @@ export default {
         return {
             isRunning: false,
             timeoutId: null,
-            presetIndex: 0,
-            preset: {},
+            presetId: 0,
+            preset: {...this.getPreset(0)},
             moneySpent: 0,
             updateUrl: true,
             initDate: Date.now(),
@@ -140,7 +139,11 @@ export default {
             buyItemUrl: state => state.app.shadowpay.api.BUY_ITEM,
             getBuyHistoryUrl: state => state.app.shadowpay.api.BUY_HISTORY,
             presets: state => state.presetManager.presets,
-            finishedItems: state => state.bots.items.finished
+            finishedItems: state => state.bots.items.finished,
+            token: state => state.session.token
+        }),
+        ...mapGetters({
+            presetsId: 'presetManager/presetsId'
         })
     },
     methods: {
@@ -149,6 +152,9 @@ export default {
             startTrack: 'bots/addBot',
             stopTrack: 'bots/closeBot'
         }),
+        getPreset(id) {
+            return this.$store.getters['presetManager/preset'](id)
+        },
         toggleStart() {
             if(this.isRunning) {
                 this.isRunning = false
@@ -167,6 +173,9 @@ export default {
             this.items.toConfirm = []
             this.moneySpent = 0
         },
+        clearDopplerHashName(hashName) {
+            return this.$store.getters['item/steamHashName'](hashName)
+        },
         updateGetItemsUrl() {
             if(this.updateUrl) {
                 let getItemsURL = new URL(this.apiUrls.getItems)
@@ -179,10 +188,10 @@ export default {
                 this.updateUrl = false
             }
         },
-        updatePreset(index = null) {
-            if(index) this.presetIndex = index
+        changePreset(id) {
             this.updateUrl = true
-            this.preset = {...this.presets[this.presetIndex]}
+            this.presetId = id
+            this.preset = {...this.getPreset(id)}
         },
         addToConfirm(item) {
             if(this.items.toConfirm.findIndex(_item => _item.id == item.id) != -1 || !this.isRunning) return
@@ -215,7 +224,7 @@ export default {
                 item._status = 'pending'
                 item._current_run = true
                 item._transaction_id = null
-                item._time_bought = DateFormat(new Date(), 'yyyy-mm-dd H:MM:ss')
+                item._time_bought = Date.now()
 
                 this.items.pending.push(item)
                 this.moneySpent += parseFloat(item.price_market_usd)
@@ -250,7 +259,9 @@ export default {
                         item._transaction_id = data.id
                         item._status = 'success'
                         
-                        chrome.runtime.sendMessage({action: 'buy_item'})
+                        chrome.runtime.sendMessage({
+                            action: 'buy_item'
+                        })
                         this.notificationSound.play()
                         break
                 }
@@ -267,7 +278,9 @@ export default {
         updatePending() {
             if(this.items.pending.length == 0 || Date.now() - this.lastPendingUpdate < this.pendingUpdateDelay * 1000) return
             
-            chrome.runtime.sendMessage({action: 'get_bought_items_counter'}, res => {
+            chrome.runtime.sendMessage({
+                action: 'get_bought_items_counter'
+            }, res => {
                 fetch(this.getBuyHistoryUrl, {
                     method: 'POST',
                     credentials: 'include',
@@ -339,12 +352,15 @@ export default {
 
                         for(let item of this.items.filtered) {
                             item._updated = false
+
                             if(this.items.toConfirm.findIndex(_item => _item.id == item.id) > -1) continue
+                            if(item.phase) item.steam_market_hash_name = this.clearDopplerHashName(item.steam_market_hash_name)
 
                             chrome.runtime.sendMessage({
                                 action: 'get_steam_market_csgo_item', 
                                 params: {
-                                    hash_name: item.steam_market_hash_name
+                                    hash_name: item.steam_market_hash_name,
+                                    token: this.token
                                 }
                             }, 
                             response => {
@@ -381,7 +397,6 @@ export default {
         }
     },
     beforeMount() {
-        this.updatePreset()
         this.startTrack(this)
     },
     beforeUnmount() {

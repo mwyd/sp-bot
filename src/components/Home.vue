@@ -1,11 +1,11 @@
 <template>
     <div class="spb-home">
         <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">Home</h3>
-        <div class="spb-home__wrapper">
+        <div class="spb-home__views-wrapper">
             <div class="spb-home__views spb--cursor-pointer spb--rounded-small spb--flex">
                 <div 
                     @click="currentView = views.ACTIVE" 
-                    :class="stateClass(views.ACTIVE)"
+                    :class="viewClass(views.ACTIVE)"
                 >
                     Active
                 </div>
@@ -14,12 +14,23 @@
                         currentView = views.BUY_HISTORY
                         statusUpdate(tabStates.IDLE)
                     }" 
-                    :class="stateClass(views.BUY_HISTORY)"
+                    :class="viewClass(views.BUY_HISTORY)"
                 >
                     Buy history
                 </div>
             </div>
         </div>
+        <div 
+            v-if="currentView == views.ACTIVE"
+            class="spb-option"
+        >
+            <span class="spb-option__description">Search</span>
+            <InputField 
+                v-model.number="search"
+                :type="'text'"
+            >
+            </InputField>
+        </div>  
         <div class="spb-home__items-header">
             <div class="spb-item__column spb-item__name">Item</div>
             <div class="spb-item__column spb-item__price">Price</div>
@@ -67,11 +78,13 @@
 <script>
 import { mapState } from 'vuex'
 import Item from './Item.vue'
+import InputField from './InputField.vue'
 
 export default {
     name: 'Home',
     components: {
-        Item
+        Item,
+        InputField
     },
     emits: ['statusUpdate'],
     data() {
@@ -84,6 +97,7 @@ export default {
             itemsCache: {
                 toConfirm: []
             },
+            search: '',
             frozenToConfirm: false
         }
     },
@@ -99,20 +113,26 @@ export default {
             finishedItems: state => state.bots.items.finished
         }),
         toConfirmItems() {
-            let items = this.frozenToConfirm ? this.itemsCache.toConfirm : this.$store.getters['bots/items']('toConfirm')
-            return items.sort((a, b) => b._real_discount - a._real_discount)
+            let items = this.frozenToConfirm ? this.itemsCache.toConfirm : this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)
+            return items
+                .sort((a, b) => b._real_discount - a._real_discount)
+                .filter(item => item.steam_market_hash_name
+                    .toLowerCase()
+                    .search(this.search.toLowerCase()) 
+                    > -1
+                )
         },
         pendingItems() {
-            return this.$store.getters['bots/items']('pending')
+            return this.$store.getters['bots/items'](this.itemTypes.PENDING)
         },
     },
     methods: {
-        stateClass(view) {
+        viewClass(view) {
             const className = 'spb-home__view spb--rounded-small'
             return className + (this.currentView == view ? ` spb-home__view--active` : '')
         },
         freezeToConfirm(value) {
-            if(value) this.itemsCache.toConfirm = this.$store.getters['bots/items']('toConfirm')
+            if(value) this.itemsCache.toConfirm = this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)
             this.frozenToConfirm = value
         },
         statusUpdate(status) {
@@ -129,7 +149,7 @@ export default {
     max-width: 1024px;
 }
 
-.spb-home__wrapper {
+.spb-home__views-wrapper {
     width: 100%;
     padding: 10px 0px;
 }

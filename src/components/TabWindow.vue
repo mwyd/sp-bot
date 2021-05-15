@@ -13,6 +13,7 @@
 import Home from './Home.vue'
 import Settings from './Settings.vue'
 import Bot from './Bot.vue'
+import PresetManager from './PresetManager.vue'
 
 export default {
     name: 'TabWindow',
@@ -25,6 +26,7 @@ export default {
     components: {
         Home,
         Settings,
+        PresetManager,
         Bot
     },
     computed: {

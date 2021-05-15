@@ -7,7 +7,6 @@
                     <InputField
                         v-model="token"
                         :type="'password'"
-                        :valid="authenticated"
                         :modelUpdated="() => {
                             saveToken()
                             setupApp()
@@ -86,7 +85,7 @@ export default {
                 return this.$store.state.session.token
             },
             set(value) {
-                this.$store.commit('session/updateToken', value)
+                this.$store.commit('session/setToken', value)
             }
         },
         displayItemStatistics: {

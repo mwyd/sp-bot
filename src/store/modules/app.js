@@ -5,30 +5,35 @@ export default {
     state: () => ({
         tabs: [
             {
+                id: 0,
                 isStatic: true,
                 name: 'Home',
                 symbol: 'H',
                 childComponent: 'Home'
             },
             {
+                id: 1,
                 isStatic: true,
                 name: 'SaleGuard',
                 symbol: 'G',
                 childComponent: 'SaleGuard'
             },
             {
+                id: 2,
                 isStatic: true,
                 name: 'PresetManager',
                 symbol: 'P',
                 childComponent: 'PresetManager'
             },
             {
+                id: 3,
                 isStatic: true,
                 name: 'FriendManager',
                 symbol: 'F',
                 childComponent: 'FriendManager'
             },
             {
+                id: 4,
                 isStatic: true,
                 name: 'Settings',
                 symbol: 'S',
@@ -116,9 +121,12 @@ export default {
         }
     },
     actions: {
-        loadConfig({commit}) {
+        loadConfig({rootState, commit}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'get_config',
+                params: {
+                    token: rootState.session.token
+                }
             }, 
             response => {
                 const {success, data} = response
@@ -133,11 +141,12 @@ export default {
                 resolve(response)
             }))
         },
-        saveConfig({getters}) {
+        saveConfig({rootState, getters}) {
             chrome.runtime.sendMessage({
                 action: 'set_config', 
                 params: {
-                    config: getters.config('*')
+                    config: getters.config('*'),
+                    token: rootState.session.token
                 }
             })
         },
@@ -145,9 +154,9 @@ export default {
             await dispatch('session/loadToken', null, { root: true })
             await dispatch('session/authenticate', null, { root: true })
             await dispatch('loadConfig')
+            await dispatch('presetManager/loadPresets', null, { root: true })
             //await dispatch('loadSaleGuardItems')
             //await dispatch('loadItemsOnSale')
-            //await dispatch('loadPresets')
         }
     }
 }

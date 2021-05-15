@@ -87,7 +87,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 #spb-root {
     height: 100vh;
     width: 50px;

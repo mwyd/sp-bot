@@ -37,7 +37,7 @@
                 >
                     Buy now
                 </button>
-                <span v-else>{{ this.item._time_bought }}</span>
+                <span v-else>{{ timeBought }}</span>
             </div>
             <div 
                 class="spb-item__column spb-item__info spb-item__info--ico"
@@ -58,18 +58,18 @@
                 </span>
             </div>
             <div 
-                v-for="property in existingInterestingProperties"
+                v-for="key in existingInterestingProperties"
                 class="spb-item__stat" 
-                :key="'item-property-' + property.raw"
+                :key="'item.' + key"
             >
-                {{ property.sugar }} 
-                <span class="spb--text-green">{{ property.unit + ' ' + item[property.raw] }}</span>
+                {{ interestingProperties[key].name }} 
+                <span class="spb--text-green">{{ interestingProperties[key].unit + ' ' + item[key] }}</span>
             </div>
             <div 
                 v-if="item.inspect_url" 
                 class="spb-item__stat"
             >
-                Owner 
+                Owner's 
                 <span class="spb--text-green spb--cursor-pointer">
                     <a 
                         target="_blank" 
@@ -77,6 +77,14 @@
                         :href="steamUserProfileUrl + itemOwnerSteamId(item.inspect_url)"
                     >Steam</a>
                 </span>
+            </div>
+            <div 
+                v-for="key in existingShadowpayStatistics"
+                class="spb-item__stat" 
+                :key="'item.' + key"
+            >
+                {{ shadowpayStatistics[key].name }} 
+                <span class="spb--text-green">{{ shadowpayStatistics[key].unit + ' ' + mutableProperties[key] }}</span>
             </div>
             <div 
                 @click="loadShadowpayStatistics" 
@@ -90,6 +98,7 @@
 </template>
 
 <script>
+import DateFormat from 'dateformat'
 import { mapState } from 'vuex'
 
 export default {
@@ -102,8 +111,7 @@ export default {
     data() {
         return {
             displayStatistics: this.$store.getters['app/config']('displayItemStatistics'),
-            interestingProperties: [...this.$store.state.item.interestingProperties],
-            interestingStatistics: [...this.$store.state.item.interestingStatistics],
+            mutableProperties: {...this.$store.state.item.mutableProperties},
             hideMoreStatisticsButton: false
         }
     },
@@ -112,14 +120,22 @@ export default {
             steamItemMarketUrl: state => state.app.steam.resources.ITEM_SELL_LISTINGS,
             steamItemImageUrl: state => state.app.steam.resources.ITEM_IMAGE,
             steamUserProfileUrl: state => state.app.steam.resources.USER_PROFILE,
+            interestingProperties: state => state.item.interestingProperites,
+            shadowpayStatistics: state => state.item.shadowpayStatistics,
             itemTypes: state => state.bots.itemTypes
         }),
         stateClass() {
             const className = 'spb-item__row spb--rounded-small';
-            return className + (this.type != this.itemTypes.TO_CONFIRM ? ` spb-item__status--${this.item.state}` : '');
+            return className + (this.type != this.itemTypes.TO_CONFIRM ? ` spb-item__status--${this.item.state}` : '')
+        },
+        timeBought() {
+            return DateFormat(this.item._time_bought, 'yyyy-mm-dd H:MM:ss')
         },
         existingInterestingProperties() {
-            return this.interestingProperties.filter(property => this.item[property.raw]);
+            return Object.keys(this.interestingProperties).filter(key => this.item[key])
+        },
+        existingShadowpayStatistics() {
+            return Object.keys(this.shadowpayStatistics).filter(key => this.mutableProperties[key])
         }
     },
     methods: {
@@ -134,6 +150,19 @@ export default {
         },
         overBuyButton(value) {
             this.$emit('overBuyButton', value)
+        },
+        loadShadowpayStatistics() {
+            this.hideMoreStatisticsButton = true
+
+            this.$store.dispatch('item/loadShadowpayStatistics', this.item.steam_market_hash_name)
+            .then(({success, data}) => {
+                if(!success || data?.length == 0) return
+
+                this.mutableProperties._app_sell_price = (data[0].avg_sell_price * (1 - (data[0].avg_discount / 100))).toFixed(2)
+                this.mutableProperties._avg_discount = data[0].avg_discount
+                this.mutableProperties._sold = data[0].sold
+                this.mutableProperties._last_sold = DateFormat(new Date(data[0].last_sold), 'yyyy-mm-dd H:MM:ss')
+            })
         }
     }
 }

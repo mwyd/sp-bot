@@ -8,9 +8,8 @@ export default {
             finished: []
         },
         itemTypes: Object.freeze({
-            TO_CONFIRM: 'to_confirm',
-            PENDING: 'pending',
-            FINISHED: 'finished'
+            TO_CONFIRM: 'toConfirm',
+            PENDING: 'pending'
         })
     }),
     getters: {
@@ -28,7 +27,7 @@ export default {
             state.instances.push(instance)
         },
         closeBot(state, id) {
-            state.instances.splice(id, 1)
+            state.instances.splice(state.instances.findIndex(instance => instance.id == id), 1)
         }
     },
     actions: {}

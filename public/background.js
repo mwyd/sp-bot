@@ -1,8 +1,5 @@
 const apiUrl = 'http://localhost/conduit-laravel/public/api'
 
-let boughtItemsCounter = 0
-let apiToken = ''
-
 const apiEndpoints = Object.freeze({
     USER: '/user',
     PRESETS: '/shadowpay-bot-presets',
@@ -12,12 +9,12 @@ const apiEndpoints = Object.freeze({
     SALE_GUARD: '/shadowpay-sale-guard-items'
 })
 
-const apiFetch = (path, callback, config = {}) => {
+const apiFetch = (path, token, callback, config = {}) => {
     config.headers = {
         ...config.headers, 
         ...{
             'Accept': 'application/json',
-            'Authorization': `Bearer ${apiToken}`
+            'Authorization': `Bearer ${token}`
         }
     }
 
@@ -30,6 +27,18 @@ const apiFetch = (path, callback, config = {}) => {
     }))
 }
 
+const setItemsCounter = counter => {
+    chrome.storage.local.set({
+        itemsCounter: counter
+    })
+}
+
+const getItemsCounter = callback => {
+    chrome.storage.local.get(['itemsCounter'], ({itemsCounter}) => callback(itemsCounter))
+}
+
+chrome.runtime.onStartup.addListener(() => setItemsCounter(0))
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     switch(sender.origin) {
         case 'https://shadowpay.com':
@@ -37,83 +46,167 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
             switch(action) {
                 case 'buy_item':
-                    boughtItemsCounter = boughtItemsCounter + 1
-                    sendResponse({data: boughtItemsCounter})
+                    getItemsCounter((itemsCounter) => {
+                        itemsCounter++
+
+                        setItemsCounter(itemsCounter)
+                        sendResponse({
+                            data: itemsCounter
+                        })
+                    })
                     break
 
                 case 'get_bought_items_counter':
-                    sendResponse({data: boughtItemsCounter})
+                    getItemsCounter((itemsCounter) => {
+                        sendResponse({
+                            data: itemsCounter
+                        })
+                    })
                     break
 
                 case 'authenticate':
-                    apiToken = params.token
-                    apiFetch(apiEndpoints.USER, data => sendResponse(data))
+                    apiFetch(
+                        apiEndpoints.USER, 
+                        params.token,
+                        data => sendResponse(data)
+                    )
                     break
 
                 case 'get_presets':
-                    apiFetch(`${apiEndpoints.PRESETS}?offset=${params.offset}&limit=${params.limit}`, data => sendResponse(data))
+                    apiFetch(
+                        `${apiEndpoints.PRESETS}?offset=${params.offset}&limit=${params.limit}`,
+                        params.token,
+                        data => sendResponse(data)
+                    )
                     break
 
                 case 'set_preset':
-                    apiFetch(`${apiEndpoints.PRESETS}/${params.presetId}`, data => sendResponse(data), {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: 'preset=' + JSON.stringify(params.config)
-                    })
+                    apiFetch(
+                        `${apiEndpoints.PRESETS}`,
+                        params.token,
+                        data => sendResponse(data),
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: 'preset=' + JSON.stringify(params.preset)
+                        }
+                    )
+                    break
+
+                case 'update_preset':
+                    apiFetch(
+                        `${apiEndpoints.PRESETS}/${params.id}`,
+                        params.token,
+                        data => sendResponse(data),
+                        {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: 'preset=' + JSON.stringify(params.preset)
+                        }
+                    )
+                    break
+
+                case 'delete_preset':
+                    apiFetch(
+                        `${apiEndpoints.PRESETS}/${params.id}`,
+                        params.token,
+                        data => sendResponse(data),
+                        {
+                            method: 'DELETE'
+                        }
+                    )
                     break
 
                 case 'get_config':
-                    apiFetch(`${apiEndpoints.CONFIGS}`, data => sendResponse(data))
+                    apiFetch(
+                        `${apiEndpoints.CONFIGS}`,
+                        params.token,
+                        data => sendResponse(data)
+                    )
                     break
 
                 case 'set_config':
-                    apiFetch(`${apiEndpoints.CONFIGS}`, data => sendResponse(data), {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: 'config=' + JSON.stringify(params.config)
-                    })
+                    apiFetch(
+                        `${apiEndpoints.CONFIGS}`,
+                        params.token,
+                        data => sendResponse(data),
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: 'config=' + JSON.stringify(params.config)
+                        }
+                    )
                     break
 
                 case 'get_steam_market_csgo_item':
-                    apiFetch(`${apiEndpoints.STEAM_MARKET}/${params.hash_name}`, data => sendResponse(data))
+                    apiFetch(
+                        `${apiEndpoints.STEAM_MARKET}/${params.hash_name}`,
+                        params.token,
+                        data => sendResponse(data)
+                    )
                     break
 
                 case 'get_shadowpay_sold_item':
-                    apiFetch(`${apiEndpoints.SHADOWPAY_MARKET}?search=${params.hash_name}`, data => sendResponse(data))
+                    apiFetch(
+                        `${apiEndpoints.SHADOWPAY_MARKET}?search=${params.hash_name}`,
+                        params.token,
+                        data => sendResponse(data)
+                    )
                     break
 
                 case 'get_saleguard_items':
-                    apiFetch(`${apiEndpoints.SALE_GUARD}?offset=${params.offset}&limit=${params.limit}`, data => sendResponse(data))
+                    apiFetch(
+                        `${apiEndpoints.SALE_GUARD}?offset=${params.offset}&limit=${params.limit}`,
+                        params.token,
+                        data => sendResponse(data)
+                    )
                     break
 
                 case 'set_saleguard_item':
-                    apiFetch(`${apiEndpoints.SALE_GUARD}`, data => sendResponse(data), {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: 'item=' + JSON.stringify(params.item)
-                    })
+                    apiFetch(
+                        `${apiEndpoints.SALE_GUARD}`,
+                        params.token,
+                        data => sendResponse(data),
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: 'item=' + JSON.stringify(params.item)
+                        }
+                    )
                     break
 
                 case 'update_saleguard_item':
-                    apiFetch(`${apiEndpoints.SALE_GUARD}/${params.conduitId}`, data => sendResponse(data), {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: 'item=' + JSON.stringify(params.item)
-                    })
+                    apiFetch(
+                        `${apiEndpoints.SALE_GUARD}/${params.conduitId}`,
+                        params.token,
+                        data => sendResponse(data),
+                        {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: 'item=' + JSON.stringify(params.item)
+                        }
+                    )
                     break
 
                 case 'delete_saleguard_item':
-                    apiFetch(`${apiEndpoints.SALE_GUARD}/${params.conduitId}`, data => sendResponse(data), {
-                        method: 'DELETE'
-                    })
+                    apiFetch(
+                        `${apiEndpoints.SALE_GUARD}/${params.conduitId}`,
+                        params.token,
+                        data => sendResponse(data),
+                        {
+                            method: 'DELETE'
+                        }
+                    )
                     break
             }
             break
