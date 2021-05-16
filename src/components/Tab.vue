@@ -42,7 +42,12 @@ export default {
         isStatic: Boolean,
         name: String,
         symbol: String,
-        childComponent: String
+        childComponent: String,
+        tabMounted: {
+            type: Function,
+            default: () => {},
+            required: false
+        }
     },
     data() {
         return {
@@ -93,6 +98,9 @@ export default {
             this.isOpen = this.isBound
             this.isMouseOver = false
         }
+    },
+    mounted() {
+        this.tabMounted(this)
     }
 }
 </script>

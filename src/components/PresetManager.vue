@@ -21,16 +21,14 @@
             <span class="spb-option__description">Select preset</span>
             <select 
                 class="spb-input-field spb-input-field--ok spb--font-size-medium spb--rounded-small"
-                ref="presetSelect"
-                @change="e => changePreset(parseInt(e.target.value))"
+                v-model="currentPresetIdModel"
             >
                 <option 
-                    v-for="key in presetsId" 
-                    :key="'preset-' + key" 
-                    :value="key"
-                    :disabled="key == 0"
+                    v-for="pair in presets" 
+                    :key="'preset-' + pair[0]" 
+                    :value="pair[0]"
                 >
-                    {{ getPreset(key).name }}
+                    {{ pair[1].name }}
                 </option>
             </select>
         </div> 
@@ -122,6 +120,7 @@
             <div v-else class="spb--flex">
                 <button 
                     class="spb-preset-manager__button-update spb-button spb-button--green" 
+                    :disabled="currentPresetId == 0"
                     @click="updatePreset({
                         id: currentPresetId,
                         preset: currentPreset
@@ -131,6 +130,7 @@
                 </button>
                 <button 
                     class="spb-preset-manager__button-delete spb-button spb-button--red" 
+                    :disabled="currentPresetId == 0"
                     @click="deletePreset(currentPresetId)"
                 >
                 delete
@@ -162,9 +162,8 @@ export default {
         }
     },
     watch: {
-        currentView(value) {
-            if(value == this.views.ADD) this.changePreset(0)
-            else this.changePreset(parseInt(this.$refs.presetSelect.value))
+        currentView() {
+            this.currentPresetIdModel = 0
         },
         presetsLoaded(value) {
             this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
@@ -177,8 +176,17 @@ export default {
             tabStates: state => state.app.tabStates
         }),
         ...mapGetters({
-            presetsId: 'presetManager/presetsId'
-        })
+            presetIds: 'presetManager/presetIds'
+        }),
+        currentPresetIdModel: {
+            get() {
+                return this.currentPresetId
+            },
+            set(value) {
+                this.currentPresetId = value
+                this.currentPreset = {...this.getPreset(this.currentPresetId)}
+            }
+        }
     },
     methods: {
         ...mapActions({
@@ -192,16 +200,12 @@ export default {
         getPreset(id) {
             return this.$store.getters['presetManager/preset'](id)
         },
-        changePreset(id) {
-            this.currentPresetId = id
-            this.currentPreset = {...this.getPreset(id)}
-        },
         deletePreset(id) {
             this.$store.dispatch('presetManager/deletePreset', id)
                 .then(({success}) => {
                     if(success) {
-                        const presetsId = this.presetsId
-                        if(presetsId.length > 1) this.changePreset(presetsId[1])
+                        const {length} = this.presetIds
+                        if(length > 1) this.currentPresetIdModel = this.presetIds[length - 1]
                     }
                 })
         }

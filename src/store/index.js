@@ -4,6 +4,7 @@ import sessionModule from './modules/session.js'
 import botsModule from './modules/bots.js'
 import itemModule from './modules/item.js'
 import presetManagerModule from './modules/presetManager.js'
+import friendManagerModule from './modules/friendManager.js'
 
 export default createStore({
     modules: {
@@ -11,6 +12,7 @@ export default createStore({
         session: sessionModule,
         item: itemModule,
         bots: botsModule,
-        presetManager: presetManagerModule
+        presetManager: presetManagerModule,
+        friendManager: friendManagerModule
     }
 })

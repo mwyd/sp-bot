@@ -12,7 +12,7 @@
                 <div 
                     @click="() => {
                         currentView = views.BUY_HISTORY
-                        statusUpdate(tabStates.IDLE)
+                        clearPendingStatus()
                     }" 
                     :class="viewClass(views.BUY_HISTORY)"
                 >
@@ -103,10 +103,10 @@ export default {
     },
     watch: {
         pendingItems(items) {
-            if(this.currentView != this.views.BUY_HISTORY && items.length > 0) this.statusUpdate(this.tabStates.PENDING)
+            if(this.currentView != this.views.BUY_HISTORY && items.length > 0) this.$emit('statusUpdate', this.tabStates.PENDING)
         },
         botsRunning(value) {
-            this.statusUpdate(value ? this.tabStates.RUNNING : this.tabStates.IDLE)
+            this.$emit('statusUpdate', value ? this.tabStates.RUNNING : this.tabStates.IDLE)
         }
     },
     computed: {
@@ -141,8 +141,10 @@ export default {
             if(value) this.itemsCache.toConfirm = this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)
             this.frozenToConfirm = value
         },
-        statusUpdate(status) {
-            if(this.$parent.$parent.status != status) this.$emit('statusUpdate', status)
+        clearPendingStatus() {
+            if(this.$parent.$parent.status == this.tabStates.PENDING) {
+                this.$emit('statusUpdate', this.botsRunning ? this.tabStates.RUNNING : this.tabStates.IDLE)
+            }
         }
     }
 }

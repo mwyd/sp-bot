@@ -26,14 +26,14 @@
                     <span class="spb-option__description">Preset</span>
                         <select 
                             class="spb-input-field spb-input-field--ok spb--font-size-medium spb--rounded-small"
-                            @change="e => changePreset(parseInt(e.target.value))"
+                            v-model="presetIdModel"
                         >
                             <option 
-                                v-for="key in presetsId" 
-                                :key="'preset-' + key" 
-                                :value="key"
+                                v-for="pair in presets" 
+                                :key="'preset-' + pair[0]" 
+                                :value="pair[0]"
                             >
-                                {{ getPreset(key).name }}
+                                {{ pair[1].name }}
                             </option>
                         </select>
                 </div>  
@@ -97,7 +97,7 @@
 </template>
 
 <script>
-import { mapState, mapGetters, mapMutations } from 'vuex'
+import { mapState, mapMutations } from 'vuex'
 import DateFormat from 'dateformat'
 import InputField from './InputField.vue'
 
@@ -115,7 +115,7 @@ export default {
             isRunning: false,
             timeoutId: null,
             presetId: 0,
-            preset: {...this.getPreset(0)},
+            preset: {},
             moneySpent: 0,
             updateUrl: true,
             initDate: Date.now(),
@@ -142,9 +142,16 @@ export default {
             finishedItems: state => state.bots.items.finished,
             token: state => state.session.token
         }),
-        ...mapGetters({
-            presetsId: 'presetManager/presetsId'
-        })
+        presetIdModel: {
+            get() {
+                return this.presetId
+            },
+            set(value) {
+                this.presetId = value
+                this.updateUrl = true
+                this.preset = {...this.getPreset(this.presetId)}
+            }
+        }
     },
     methods: {
         ...mapMutations({
@@ -187,11 +194,6 @@ export default {
                 this.apiUrls.getItems = getItemsURL.toString()
                 this.updateUrl = false
             }
-        },
-        changePreset(id) {
-            this.updateUrl = true
-            this.presetId = id
-            this.preset = {...this.getPreset(id)}
         },
         addToConfirm(item) {
             if(this.items.toConfirm.findIndex(_item => _item.id == item.id) != -1 || !this.isRunning) return
@@ -397,6 +399,7 @@ export default {
         }
     },
     beforeMount() {
+        this.presetIdModel = this.presetId
         this.startTrack(this)
     },
     beforeUnmount() {

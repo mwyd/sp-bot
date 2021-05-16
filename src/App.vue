@@ -1,5 +1,9 @@
 <template>
     <div class="spb-tab-bar spb--flex spb--theme-dark">
+        <div 
+            v-if="!appLoaded"
+            class="spb-tab-bar__loader spb--z-1200 spb--cursor-wait"
+        ></div>
         <div class="spb-tab-bar__wrapper">
             <Tab 
                 v-for="tab in staticTabs"
@@ -9,6 +13,7 @@
                 :name="tab.name"
                 :symbol="tab.symbol"
                 :childComponent="tab.childComponent"
+                :tabMounted="tab.tabMounted"
             >
             </Tab>
             <div class="spb-tab">
@@ -30,6 +35,7 @@
                 :name="tab.name"
                 :symbol="tab.symbol"
                 :childComponent="tab.childComponent"
+                :tabMounted="tab.tabMounted"
             >
             </Tab>
         </div>
@@ -73,7 +79,8 @@ export default {
     computed: {
         ...mapState({
             tabs: state => state.app.tabs,
-            alerts: state => state.app.alerts
+            alerts: state => state.app.alerts,
+            appLoaded: state => state.app.loaded
         }),
         staticTabs() {
             return this.tabs.filter(tab => tab.isStatic)
@@ -114,6 +121,12 @@ export default {
     height: 100%;
     flex-direction: column;
     align-items: unset;
+}
+
+.spb-tab-bar__loader {
+    position: absolute;
+    height: 100%;
+    width: 100%;
 }
 
 .spb-tab-bar__wrapper {

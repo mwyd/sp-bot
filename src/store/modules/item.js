@@ -138,8 +138,8 @@ export default {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'get_shadowpay_sold_item', 
                 params: {
-                    hash_name: hashName, 
-                    token: rootState.session.token
+                    token: rootState.session.token,
+                    hash_name: hashName
                 }
             }, 
             response => resolve(response)))

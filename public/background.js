@@ -4,6 +4,7 @@ const apiEndpoints = Object.freeze({
     USER: '/user',
     PRESETS: '/shadowpay-bot-presets',
     CONFIGS: '/shadowpay-bot-configs',
+    FRIENDS: '/shadowpay-friends',
     STEAM_MARKET: '/steam-market-csgo-items',
     SHADOWPAY_MARKET: '/shadowpay-sold-items',
     SALE_GUARD: '/shadowpay-sale-guard-items'
@@ -73,6 +74,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     )
                     break
 
+                // presets
                 case 'get_presets':
                     apiFetch(
                         `${apiEndpoints.PRESETS}?offset=${params.offset}&limit=${params.limit}`,
@@ -121,7 +123,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         }
                     )
                     break
+                // presets
 
+                // config
                 case 'get_config':
                     apiFetch(
                         `${apiEndpoints.CONFIGS}`,
@@ -144,7 +148,60 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         }
                     )
                     break
+                // config
 
+                // friends
+                case 'get_friends':
+                    apiFetch(
+                        `${apiEndpoints.FRIENDS}?offset=${params.offset}&limit=${params.limit}`,
+                        params.token,
+                        data => sendResponse(data)
+                    )
+                    break
+
+                case 'set_friend':
+                    apiFetch(
+                        `${apiEndpoints.FRIENDS}`,
+                        params.token,
+                        data => sendResponse(data),
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: `shadowpay_id=${params.shadowpay_id}&name=${params.name}`
+                        }
+                    )
+                    break
+
+                case 'update_friend':
+                    apiFetch(
+                        `${apiEndpoints.FRIENDS}/${params.id}`,
+                        params.token,
+                        data => sendResponse(data),
+                        {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: `shadowpay_id=${params.shadowpay_id}&name=${params.name}`
+                        }
+                    )
+                    break
+
+                case 'delete_friend':
+                    apiFetch(
+                        `${apiEndpoints.FRIENDS}/${params.id}`,
+                        params.token,
+                        data => sendResponse(data),
+                        {
+                            method: 'DELETE'
+                        }
+                    )
+                    break
+                //friends
+
+                // steam
                 case 'get_steam_market_csgo_item':
                     apiFetch(
                         `${apiEndpoints.STEAM_MARKET}/${params.hash_name}`,
@@ -152,7 +209,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         data => sendResponse(data)
                     )
                     break
+                // steam
 
+                // shadowpay
                 case 'get_shadowpay_sold_item':
                     apiFetch(
                         `${apiEndpoints.SHADOWPAY_MARKET}?search=${params.hash_name}`,
@@ -160,6 +219,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         data => sendResponse(data)
                     )
                     break
+                // shadowpay
 
                 case 'get_saleguard_items':
                     apiFetch(

@@ -71,6 +71,10 @@
     cursor: pointer;
 }
 
+.spb--cursor-wait {
+    cursor: wait;
+}
+
 .spb--link {
     color: inherit;
 }

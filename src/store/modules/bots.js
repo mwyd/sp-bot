@@ -42,5 +42,21 @@ export default {
             state.instances.splice(state.instances.findIndex(instance => instance.id == id), 1)
         }
     },
-    actions: {}
+    actions: {
+        openBots({rootGetters, commit}) {
+            if(!rootGetters['app/config']('openTabsAtStartup')) return
+
+            rootGetters['presetManager/presetIds'].forEach(key => {
+                if(key == 0) return
+
+                commit('app/addTab', {
+                    isStatic: false,
+                    name: 'Bot',
+                    symbol: 'B',
+                    childComponent: 'Bot',
+                    tabMounted: tab => tab.$refs.tabWindow.$refs.childComponent.presetIdModel = key
+                }, { root: true })
+            })
+        }
+    }
 }

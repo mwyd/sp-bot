@@ -3,6 +3,7 @@ import Cookies from 'js-cookie'
 export default {
     namespaced: true,
     state: () => ({
+        loaded: null,
         tabs: [
             {
                 id: 0,
@@ -105,6 +106,9 @@ export default {
         }  
     },
     mutations: {
+        setLoaded(state, value) {
+            state.loaded = value
+        },
         setConfig(state, {type, value}) {
             type == '*' ? Object.assign(state.config, value) : state.config[type] = value
         },
@@ -158,8 +162,8 @@ export default {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'set_config', 
                 params: {
-                    config: getters.config('*'),
-                    token: rootState.session.token
+                    token: rootState.session.token,
+                    config: getters.config('*')
                 },
             },
             response => {
@@ -183,13 +187,21 @@ export default {
             commit('addAlert', alert)
             setTimeout(() => commit('shiftAlert'), state.alertLifeTime)
         },
-        async setupApp({dispatch}) {
+        async setupApp({commit, dispatch}) {
             await dispatch('session/loadToken', null, { root: true })
             await dispatch('session/authenticate', null, { root: true })
+
             await dispatch('loadConfig')
+
             await dispatch('presetManager/loadPresets', null, { root: true })
+                  dispatch('bots/openBots', null, { root: true })
+                  
+            await dispatch('friendManager/loadFriends', null, { root: true })
+            
             //await dispatch('loadSaleGuardItems')
             //await dispatch('loadItemsOnSale')
+
+            commit('setLoaded', true)
         }
     }
 }

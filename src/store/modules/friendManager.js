@@ -2,48 +2,56 @@ export default {
     namespaced: true,
     state: () => ({
         loaded: null,
-        presets: new Map([
+        friends: new Map([
             [0, 
                 {
-                    name: "default",
-                    deal: 15,
-                    dealMargin: 50,
-                    minPrice: 1.00,
-                    maxPrice: 10.00,
-                    toSpend: 20.00,
-                    runDelay: 4.0,
-                    search: ''
+                    shadowpay_id: 123456, 
+                    name: 'template'
                 }
             ]
         ])
     }),
     getters: {
-        preset: state => id => {
-            return state.presets.get(id)
+        friend: state => id => {
+            return state.friends.get(id)
         },
-        presetIds(state) {
-            return Array.from(state.presets.keys())
+        friendIds(state) {
+            return Array.from(state.friends.keys())
+        },
+        itemOwner: state => shadowpayId => {
+            let name = null
+
+            state.friends.forEach((friend, id) => {
+                if(id == 0) return
+
+                if(friend.shadowpay_id == shadowpayId) {
+                    name = friend.name
+                    return
+                }
+            })
+
+            return name
         }
     },
     mutations: {
         setLoaded(state, value) {
             state.loaded = value
         },
-        setPreset(state, {id, preset}) {
-            state.presets.set(id, preset)
+        setFriend(state, {id, friend}) {
+            state.friends.set(id, friend)
         },
-        removePreset(state, id) {
-            state.presets.delete(id)
+        removeFriend(state, id) {
+            state.friends.delete(id)
         }
     },
     actions: {
-        async loadPresets({rootState, commit}) {
+        async loadFriends({rootState, commit}) {
             const limit = 50
             let loopLimit = 1
 
             for(let i = 0; i < loopLimit; i++) {
                 await new Promise(resolve => chrome.runtime.sendMessage({
-                    action: 'get_presets', 
+                    action: 'get_friends', 
                     params: {
                         token: rootState.session.token,
                         offset: i * limit,
@@ -56,9 +64,12 @@ export default {
                     let loaded = false
 
                     if(success) {
-                        for(let preset of data) commit('setPreset', {
-                            id: preset.id,
-                            preset: preset.preset
+                        for(let friend of data) commit('setFriend', {
+                            id: friend.id,
+                            friend: {
+                                shadowpay_id: friend.shadowpay_id,
+                                name: friend.name
+                            }
                         })
 
                         if(data.length == limit) loopLimit++
@@ -71,12 +82,13 @@ export default {
                 }))
             }
         },
-        addPreset({rootState, commit, dispatch}, preset) {
+        addFriend({rootState, commit, dispatch}, friend) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'set_preset',
+                action: 'set_friend',
                 params: {
                     token: rootState.session.token,
-                    preset: preset
+                    shadowpay_id: friend.shadowpay_id,
+                    name: friend.name
                 }
             }, 
             response => {
@@ -84,12 +96,15 @@ export default {
 
                 const alert = {
                     type: rootState.app.alertTypes.SUCCESS,
-                    message: 'Preset created'
+                    message: 'Friend added'
                 }
 
-                if(success) commit('setPreset', {
+                if(success) commit('setFriend', {
                     id: data.id,
-                    preset: data.preset
+                    friend: {
+                        shadowpay_id: data.shadowpay_id,
+                        name: data.name
+                    }
                 })
                 else {
                     alert.type = rootState.app.alertTypes.ERROR,
@@ -100,13 +115,14 @@ export default {
                 resolve(response)
             }))
         },
-        updatePreset({rootState, commit, dispatch}, {id, preset}) {
+        updateFriend({rootState, commit, dispatch}, {id, friend}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'update_preset',
+                action: 'update_friend',
                 params: {
                     token: rootState.session.token,
                     id: id,
-                    preset: preset
+                    shadowpay_id: friend.shadowpay_id,
+                    name: friend.name
                 }
             }, 
             response => {
@@ -114,12 +130,15 @@ export default {
 
                 const alert = {
                     type: rootState.app.alertTypes.SUCCESS,
-                    message: 'Preset updated'
+                    message: 'Friend updated'
                 }
 
-                if(success) commit('setPreset', {
+                if(success) commit('setFriend', {
                     id: data.id,
-                    preset: data.preset
+                    friend: {
+                        shadowpay_id: data.shadowpay_id,
+                        name: data.name
+                    }
                 })
                 else {
                     alert.type = rootState.app.alertTypes.ERROR,
@@ -130,9 +149,9 @@ export default {
                 resolve(response)
             }))
         },
-        deletePreset({rootState, commit, dispatch}, id) {
+        deleteFriend({rootState, commit, dispatch}, id) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'delete_preset',
+                action: 'delete_friend',
                 params: {
                     token: rootState.session.token,
                     id: id
@@ -143,10 +162,10 @@ export default {
 
                 const alert = {
                     type: rootState.app.alertTypes.SUCCESS,
-                    message: 'Preset deleted'
+                    message: 'Friend deleted'
                 }
 
-                if(success) commit('removePreset', data.id)
+                if(success) commit('removeFriend', data.id)
                 else {
                     alert.type = rootState.app.alertTypes.ERROR,
                     alert.message = error_message

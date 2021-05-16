@@ -69,7 +69,7 @@
                 v-if="item.inspect_url" 
                 class="spb-item__stat"
             >
-                Owner's 
+                {{ friendOwner ? friendOwner + "'s" : "Owner's" }} 
                 <span class="spb--text-green spb--cursor-pointer">
                     <a 
                         target="_blank" 
@@ -112,7 +112,8 @@ export default {
         return {
             displayStatistics: this.$store.getters['app/config']('displayItemStatistics'),
             mutableProperties: {...this.$store.state.item.mutableProperties},
-            hideMoreStatisticsButton: false
+            hideMoreStatisticsButton: false,
+            friendOwner: null
         }
     },
     computed: {
@@ -145,6 +146,9 @@ export default {
         itemOwnerSteamId(inspectLink) {
             return this.$store.getters['item/itemOwnerSteamId'](inspectLink)
         },
+        itemOwnerFriend(shadowpayId) {
+            return this.$store.getters['friendManager/itemOwner'](shadowpayId)
+        },
         toggleDisplayStatistics() {
             this.displayStatistics = !this.displayStatistics
         },
@@ -164,6 +168,9 @@ export default {
                 this.mutableProperties._last_sold = DateFormat(new Date(data[0].last_sold), 'yyyy-mm-dd H:MM:ss')
             })
         }
+    },
+    beforeMount() {
+        this.friendOwner = this.itemOwnerFriend(this.item.user_id)
     }
 }
 </script>
