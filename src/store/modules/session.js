@@ -26,7 +26,7 @@ export default {
                 token: state.token
             })
         },
-        authenticate({commit, state}) {
+        authenticate({rootState, commit, state, dispatch}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'authenticate', 
                 params: {
@@ -39,14 +39,25 @@ export default {
                     authenticated: false
                 }
 
-                const {success, data} = response
+                const alert = {
+                    type: rootState.app.alertTypes.SUCCESS,
+                    message: 'Authenticated'
+                }
+
+                const {success, data, error_message} = response
 
                 if(success) {
                     session.user = data.name
                     session.authenticated = true
                 }
+                else {
+                    alert.type = rootState.app.alertTypes.ERROR,
+                    alert.message = error_message
+                }
 
                 commit('setSession', session)
+
+                dispatch('app/updateAlerts', alert, { root: true })
                 resolve(response)
             }))
         }

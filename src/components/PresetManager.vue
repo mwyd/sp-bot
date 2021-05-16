@@ -149,6 +149,7 @@ export default {
     components: {
         InputField
     },
+    emits: ['statusUpdate'],
     data() {
         return {
             views: Object.freeze({
@@ -164,11 +165,16 @@ export default {
         currentView(value) {
             if(value == this.views.ADD) this.changePreset(0)
             else this.changePreset(parseInt(this.$refs.presetSelect.value))
+        },
+        presetsLoaded(value) {
+            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
         }
     },
     computed: {
         ...mapState({
-            presets: state => state.presetManager.presets
+            presets: state => state.presetManager.presets,
+            presetsLoaded: state => state.presetManager.loaded,
+            tabStates: state => state.app.tabStates
         }),
         ...mapGetters({
             presetsId: 'presetManager/presetsId'
@@ -241,6 +247,8 @@ export default {
 }
 
 .spb-preset-manager__button-delete {
+    width: auto;
+    min-width: 70px;
     margin-left: 4px;
 }
 </style>

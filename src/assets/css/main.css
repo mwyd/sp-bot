@@ -7,8 +7,6 @@
     height: 32px;
     width: 100%;
     color: var(--main-text-color);
-    background-size: 200% auto;
-    transition: 0.2s linear;
 }
 
 .spb-button-tiny {
@@ -98,7 +96,7 @@
 }
 
 .spb-button--green:hover {
-    background-position: right center;
+    background: linear-gradient(to left, var(--button-gradient-green-light), var(--button-gradient-green-dark));
 }
 
 .spb-button--red {
@@ -106,7 +104,7 @@
 }
 
 .spb-button--red:hover {
-    background-position: right center;
+    background: linear-gradient(to left, var(--button-gradient-red-light), var(--button-gradient-red-dark));
 }
 
 .spb--theme-dark {

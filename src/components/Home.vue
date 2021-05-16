@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import Item from './Item.vue'
 import InputField from './InputField.vue'
 
@@ -104,6 +104,9 @@ export default {
     watch: {
         pendingItems(items) {
             if(this.currentView != this.views.BUY_HISTORY && items.length > 0) this.statusUpdate(this.tabStates.PENDING)
+        },
+        botsRunning(value) {
+            this.statusUpdate(value ? this.tabStates.RUNNING : this.tabStates.IDLE)
         }
     },
     computed: {
@@ -111,6 +114,9 @@ export default {
             itemTypes: state => state.bots.itemTypes,
             tabStates: state => state.app.tabStates,
             finishedItems: state => state.bots.items.finished
+        }),
+        ...mapGetters({
+            botsRunning: 'bots/running'
         }),
         toConfirmItems() {
             let items = this.frozenToConfirm ? this.itemsCache.toConfirm : this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)
@@ -169,6 +175,7 @@ export default {
 
 .spb-home__items-header {
     display: flex;
+    padding-top: 6px;
 }
 
 .spb-home__items {

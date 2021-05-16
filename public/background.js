@@ -23,7 +23,7 @@ const apiFetch = (path, token, callback, config = {}) => {
         .then(data => callback(data))
         .catch(err => callback({
             success: false, 
-            error_message: err
+            error_message: `${err}`
         })
     )
 }

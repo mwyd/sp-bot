@@ -1,6 +1,7 @@
 export default {
     namespaced: true,
     state: () => ({
+        loaded: null,
         presets: new Map([
             [0, 
                 {
@@ -25,6 +26,9 @@ export default {
         }
     },
     mutations: {
+        setLoaded(state, value) {
+            state.loaded = value
+        },
         setPreset(state, {id, preset}) {
             state.presets.set(id, preset)
         },
@@ -49,6 +53,8 @@ export default {
                 response => {
                     const {success, data} = response
 
+                    let loaded = false
+
                     if(success) {
                         for(let preset of data) commit('setPreset', {
                             id: preset.id,
@@ -56,8 +62,11 @@ export default {
                         })
 
                         if(data.length == limit) loopLimit++
+
+                        loaded = true
                     }
 
+                    commit('setLoaded', loaded)
                     resolve(response)
                 }))
             }

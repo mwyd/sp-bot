@@ -154,14 +154,30 @@ export default {
                 resolve(response)
             }))
         },
-        saveConfig({rootState, getters}) {
-            chrome.runtime.sendMessage({
+        saveConfig({rootState, getters, dispatch}) {
+            return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'set_config', 
                 params: {
                     config: getters.config('*'),
                     token: rootState.session.token
+                },
+            },
+            response => {
+                const {success, error_message} = response
+
+                const alert = {
+                    type: rootState.app.alertTypes.SUCCESS,
+                    message: 'Config saved'
                 }
-            })
+
+                if(!success) {
+                    alert.type = rootState.app.alertTypes.ERROR,
+                    alert.message = error_message
+                }
+
+                dispatch('app/updateAlerts', alert, { root: true })
+                resolve(response)
+            }))
         },
         updateAlerts({state, commit}, alert) {
             commit('addAlert', alert)

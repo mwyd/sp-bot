@@ -17,6 +17,18 @@ export default {
             let merged = []
             state.instances.forEach(instance => merged.push(...instance.items[type]))
             return merged.filter((item, index, array) => array.findIndex(_item => _item.id == item.id) == index) 
+        },
+        running(state) {
+            let running = false
+
+            state.instances.forEach(instance => {
+                if(instance.isRunning) {
+                    running = true
+                    return
+                }
+            })
+
+            return running
         }
     },
     mutations: {

@@ -31,7 +31,7 @@ export default {
     min-height: 40px;
     margin: 4px 0px;
     color: var(--main-text-color);
-    box-shadow: 0 0 70px rgb(0 0 0 / 60%);
+    padding: 4px;
 }
 
 .spb-alert--info {
