@@ -102,21 +102,7 @@ export default {
             _avg_discount: null,
             _sold: null,
             _last_sold: null
-        },
-        sortBy: Object.assign({
-            REAL_DISCOUNT: {
-                id: 0,
-                name: 'Real discount'
-            },
-            SHADOWPAY_DISCOUNT: {
-                id: 1,
-                name: 'Shadowpay discount'
-            },
-            ITEM_FLOAT: {
-                id: 2,
-                name: 'Item float'
-            }
-        })
+        }
     }),
     getters: {
         interestingFloat: state => float =>  {

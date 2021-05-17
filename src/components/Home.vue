@@ -36,7 +36,7 @@
                 <select 
                     class="spb-home__sort-by spb-input-field spb-input-field--ok spb--font-size-medium spb--rounded-small"
                     v-model="sortByModel"
-                    @change="updateSorter(sortByModel)"
+                    @change="updateSortFunction(sortByModel)"
                 >
                     <option v-for="sort in Object.values(sortBy)"
                         :key="'sort-' + sort.id"
@@ -120,7 +120,21 @@ export default {
             search: '',
             frozenToConfirm: false,
             sortByModel: 0,
-            sorter: null,
+            sortBy: Object.assign({
+                REAL_DISCOUNT: {
+                    id: 0,
+                    name: 'Real discount'
+                },
+                SHADOWPAY_DISCOUNT: {
+                    id: 1,
+                    name: 'Shadowpay discount'
+                },
+                ITEM_FLOAT: {
+                    id: 2,
+                    name: 'Item float'
+                }
+            }),
+            sortFunction: null,
             sortDirAsc: false
         }
     },
@@ -136,8 +150,7 @@ export default {
         ...mapState({
             itemTypes: state => state.bots.itemTypes,
             tabStates: state => state.app.tabStates,
-            finishedItems: state => state.bots.items.finished,
-            sortBy: state => state.item.sortBy
+            finishedItems: state => state.bots.items.finished
         }),
         ...mapGetters({
             botsRunning: 'bots/running'
@@ -145,7 +158,7 @@ export default {
         toConfirmItems() {
             let items = this.frozenToConfirm ? this.itemsCache.toConfirm : this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)
             return items
-                .sort(this.sorter)
+                .sort(this.sortFunction)
                 .filter(item => item._search_steam_hash_name
                     .search(this.search.toLowerCase()) 
                     > -1
@@ -173,24 +186,24 @@ export default {
                 this.$emit('statusUpdate', this.botsRunning ? this.tabStates.RUNNING : this.tabStates.IDLE)
             }
         },
-        updateSorter(id) {
+        updateSortFunction(id) {
             switch(id) {
                 case 1:
-                    this.sorter = (a, b) => (b.discount - a.discount) * (this.sortDirAsc ? -1 : 1)
+                    this.sortFunction = (a, b) => (b.discount - a.discount) * (this.sortDirAsc ? -1 : 1)
                     break
 
                 case 2:
-                    this.sorter = (a, b) => (b.floatvalue - a.floatvalue) * (this.sortDirAsc ? -1 : 1)
+                    this.sortFunction = (a, b) => (b.floatvalue - a.floatvalue) * (this.sortDirAsc ? -1 : 1)
                     break
 
                 default:
-                    this.sorter = (a, b) => (b._real_discount - a._real_discount) * (this.sortDirAsc ? -1 : 1)
+                    this.sortFunction = (a, b) => (b._real_discount - a._real_discount) * (this.sortDirAsc ? -1 : 1)
                     break
             }
         }
     },
     beforeMount() {
-        this.updateSorter(this.sortByModel)
+        this.updateSortFunction(this.sortByModel)
     }
 }
 </script>
