@@ -148,6 +148,17 @@ export default {
     },
     mutations: {},
     actions: {
+        getBlueGem({rootState}, {itemType, paintSeed}) {
+            return new Promise(resolve => chrome.runtime.sendMessage({
+                action: 'get_blue_gem', 
+                params: {
+                    token: rootState.session.token,
+                    item_type: itemType,
+                    paint_seed: paintSeed
+                }
+            }, 
+            response => resolve(response)))
+        },
         loadShadowpayStatistics({rootState}, hashName) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'get_shadowpay_sold_item', 

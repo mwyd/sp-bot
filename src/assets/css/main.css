@@ -96,6 +96,10 @@
     color: var(--highlight-text-color);
 }
 
+.spb--text-blue {
+    color: var(--blue-text-color);
+}
+
 .spb--text-green {
     color: var(--button-gradient-green-light);
 }
@@ -121,6 +125,7 @@
     --secondary-background-color: #323940;
     --alternative-dark-background-color: #282f36;
     --main-text-color: #eef0f2;
+    --blue-text-color: #00c4ff;
     --alternative-background-color: #495159;
     --active-tab-background-color: #009c66;
     --alternative-text-color: #FF9200;

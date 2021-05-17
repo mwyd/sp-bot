@@ -58,6 +58,15 @@
                 </span>
             </div>
             <div 
+                v-if="blueGem" 
+                class="spb-item__stat"
+            > 
+                Gem
+                <span :class="blueGem == 'Gold' ? 'spb--text-highlight' : 'spb--text-blue'">
+                    {{ blueGem }}
+                </span>
+            </div>
+            <div 
                 v-for="key in existingInterestingProperties"
                 class="spb-item__stat" 
                 :key="'item.' + key"
@@ -113,6 +122,7 @@ export default {
             displayStatistics: this.$store.getters['app/config']('displayItemStatistics'),
             mutableProperties: {...this.$store.state.item.mutableProperties},
             hideMoreStatisticsButton: false,
+            blueGem: null,
             friendOwner: null
         }
     },
@@ -146,14 +156,25 @@ export default {
         itemOwnerSteamId(inspectLink) {
             return this.$store.getters['item/itemOwnerSteamId'](inspectLink)
         },
-        itemOwnerFriend(shadowpayId) {
-            return this.$store.getters['friendManager/itemOwner'](shadowpayId)
+        loadFriendOwner() {
+            this.friendOwner = this.$store.getters['friendManager/itemOwner'](this.item.user_id)
         },
         toggleDisplayStatistics() {
             this.displayStatistics = !this.displayStatistics
         },
         overBuyButton(value) {
             this.$emit('overBuyButton', value)
+        },
+        loadBlueGem() {
+            if(this.item._search_steam_hash_name.search('case hardened') < 0) return
+
+            this.$store.dispatch('item/getBlueGem', {
+                itemType: this.item.subcategory_name,
+                paintSeed: this.item.paintseed
+            })
+            .then(({success, data}) => {
+                if(success && data?.length > 0) this.blueGem = data[0].gem_type
+            })
         },
         loadShadowpayStatistics() {
             this.hideMoreStatisticsButton = true
@@ -170,7 +191,8 @@ export default {
         }
     },
     beforeMount() {
-        this.friendOwner = this.itemOwnerFriend(this.item.user_id)
+        this.loadBlueGem()
+        this.loadFriendOwner()
     }
 }
 </script>

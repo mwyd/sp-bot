@@ -7,7 +7,8 @@ const apiEndpoints = Object.freeze({
     FRIENDS: '/shadowpay-friends',
     STEAM_MARKET: '/steam-market-csgo-items',
     SHADOWPAY_MARKET: '/shadowpay-sold-items',
-    SALE_GUARD: '/shadowpay-sale-guard-items'
+    SALE_GUARD: '/shadowpay-sale-guard-items',
+    BLUE_GEM_ITEMS: '/csgo-blue-gem-items'
 })
 
 const apiFetch = (path, token, callback, config = {}) => {
@@ -221,6 +222,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     break
                 // shadowpay
 
+                // sale guard
                 case 'get_saleguard_items':
                     apiFetch(
                         `${apiEndpoints.SALE_GUARD}?offset=${params.offset}&limit=${params.limit}`,
@@ -267,6 +269,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         {
                             method: 'DELETE'
                         }
+                    )
+                    break
+                // sale guard
+
+                // blue gems
+                case 'get_blue_gem':
+                    apiFetch(
+                        `${apiEndpoints.BLUE_GEM_ITEMS}?search=${params.item_type}&paint_seed=${params.paint_seed}`,
+                        params.token,
+                        data => sendResponse(data)
                     )
                     break
             }
