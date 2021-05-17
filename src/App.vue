@@ -144,5 +144,6 @@ export default {
     top: 0;
     height: auto;
     width: 250px;
+    padding: 4px;
 }
 </style>

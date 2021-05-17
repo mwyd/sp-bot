@@ -29,7 +29,7 @@ export default {
 .spb-alert {
     width: 100%;
     min-height: 40px;
-    margin: 4px 0px;
+    margin-bottom: 4px;
     color: var(--main-text-color);
     padding: 4px;
 }

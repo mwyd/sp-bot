@@ -108,7 +108,7 @@
 
 <script>
 import DateFormat from 'dateformat'
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 
 export default {
     name: 'Item',
@@ -133,7 +133,8 @@ export default {
             steamUserProfileUrl: state => state.app.steam.resources.USER_PROFILE,
             interestingProperties: state => state.item.interestingProperites,
             shadowpayStatistics: state => state.item.shadowpayStatistics,
-            itemTypes: state => state.bots.itemTypes
+            itemTypes: state => state.bots.itemTypes,
+            alertTypes: state => state.app.alertTypes
         }),
         stateClass() {
             const className = 'spb-item__row spb--rounded-small';
@@ -150,6 +151,9 @@ export default {
         }
     },
     methods: {
+        ...mapActions({
+            updateAlerts: 'app/updateAlerts'
+        }),
         interestingFloat(float) {
             return this.$store.getters['item/interestingFloat'](float)
         },
@@ -173,7 +177,13 @@ export default {
                 paintSeed: this.item.paintseed
             })
             .then(({success, data}) => {
-                if(success && data?.length > 0) this.blueGem = data[0].gem_type
+                if(success && data?.length > 0) {
+                    this.blueGem = data[0].gem_type
+                    this.updateAlerts({
+                        type: this.alertTypes.INFO,
+                        message: `${this.blueGem} Gem ${this.item.steam_market_hash_name}`
+                    })
+                }
             })
         },
         loadShadowpayStatistics() {
