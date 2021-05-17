@@ -42,6 +42,7 @@
                     <InputField 
                         v-model="preset.search"
                         :type="'text'" 
+                        :placeholder="'Search...'"
                         :modelUpdated="() => updateUrl = true"
                     >
                     </InputField>
@@ -353,10 +354,12 @@ export default {
                         this.items.filtered.sort((a, b) => b.price_market_usd - a.price_market_usd)
 
                         for(let item of this.items.filtered) {
-                            item._updated = false
-
                             if(this.items.toConfirm.findIndex(_item => _item.id == item.id) > -1) continue
                             if(item.phase) item.steam_market_hash_name = this.clearDopplerHashName(item.steam_market_hash_name)
+
+                            item.discount = Math.round(item.discount)
+                            item._updated = false
+                            item._search_steam_hash_name = item.steam_market_hash_name.toLowerCase()
 
                             chrome.runtime.sendMessage({
                                 action: 'get_steam_market_csgo_item', 
@@ -367,7 +370,6 @@ export default {
                             }, 
                             response => {
                                 const {success, data} = response
-                                item.discount = Math.round(item.discount)
 
                                 if(success) {
                                     item._steam_price = data.price

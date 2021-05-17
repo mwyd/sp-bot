@@ -60,6 +60,6 @@ export default {
 }
 
 .spb-tab__window--hidden {
-    left: calc(-100% - 50px);
+    left: -200%;
 }
 </style>

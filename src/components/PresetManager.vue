@@ -65,6 +65,7 @@
                     <InputField 
                         v-model="currentPreset.search"
                         :type="'text'" 
+                        :placeholder="'Search...'"
                     >
                     </InputField>
                 </div> 

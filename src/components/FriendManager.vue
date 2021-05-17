@@ -44,7 +44,7 @@
             <div class="spb-option">
                 <span class="spb-option__description">Name</span>
                 <InputField 
-                    v-model.number="currentFriend.name"
+                    v-model="currentFriend.name"
                     :type="'text'" 
                 >
                 </InputField>

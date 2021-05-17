@@ -4,6 +4,7 @@
             v-model="internalModel"
             :class="inputClass"
             :type="type"
+            :placeholder="placeholder"
             @input="e => synchronized = (e.target.value == modelValue)"
             @focusout="rollbackInternalModel"
             @keydown.enter="validateInternalModel"
@@ -17,6 +18,11 @@ export default {
     props: {
         type: String,
         modelValue: [String, Number],
+        placeholder: {
+            type: String,
+            default: '',
+            required: false
+        },
         validator: {
             type: Function,
             default: () => true,

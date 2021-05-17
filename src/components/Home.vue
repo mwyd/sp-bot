@@ -24,12 +24,32 @@
             v-if="currentView == views.ACTIVE"
             class="spb-option"
         >
-            <span class="spb-option__description">Search</span>
-            <InputField 
-                v-model.number="search"
-                :type="'text'"
-            >
-            </InputField>
+            <span class="spb-option__description">Manage</span>
+            <div class="spb--flex">
+                <InputField 
+                    v-model="search"
+                    class="spb-home__search"
+                    :type="'text'"
+                    :placeholder="'Search...'"
+                >
+                </InputField>
+                <select 
+                    class="spb-home__sort-by spb-input-field spb-input-field--ok spb--font-size-medium spb--rounded-small"
+                    v-model="sortByModel"
+                    @change="updateSorter(sortByModel)"
+                >
+                    <option v-for="sort in Object.values(sortBy)"
+                        :key="'sort-' + sort.id"
+                        :value="sort.id"
+                    >
+                        {{ sort.name }}
+                    </option>
+                </select>
+                <div 
+                    :class="sortDirClass"
+                    @click="() => sortDirAsc = !sortDirAsc"
+                ></div>
+            </div>
         </div>  
         <div class="spb-home__items-header">
             <div class="spb-item__column spb-item__name">Item</div>
@@ -98,7 +118,10 @@ export default {
                 toConfirm: []
             },
             search: '',
-            frozenToConfirm: false
+            frozenToConfirm: false,
+            sortByModel: 0,
+            sorter: null,
+            sortDirAsc: false
         }
     },
     watch: {
@@ -113,7 +136,8 @@ export default {
         ...mapState({
             itemTypes: state => state.bots.itemTypes,
             tabStates: state => state.app.tabStates,
-            finishedItems: state => state.bots.items.finished
+            finishedItems: state => state.bots.items.finished,
+            sortBy: state => state.item.sortBy
         }),
         ...mapGetters({
             botsRunning: 'bots/running'
@@ -121,9 +145,8 @@ export default {
         toConfirmItems() {
             let items = this.frozenToConfirm ? this.itemsCache.toConfirm : this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)
             return items
-                .sort((a, b) => b._real_discount - a._real_discount)
-                .filter(item => item.steam_market_hash_name
-                    .toLowerCase()
+                .sort(this.sorter)
+                .filter(item => item._search_steam_hash_name
                     .search(this.search.toLowerCase()) 
                     > -1
                 )
@@ -131,6 +154,10 @@ export default {
         pendingItems() {
             return this.$store.getters['bots/items'](this.itemTypes.PENDING)
         },
+        sortDirClass() {
+            const className = 'spb-home__sort-dir spb--rounded-small spb--background-image-center spb--cursor-pointer'
+            return className + (this.sortDirAsc ? ' spb-home__sort-dir--asc' : ' spb-home__sort-dir--desc')
+        }
     },
     methods: {
         viewClass(view) {
@@ -145,7 +172,25 @@ export default {
             if(this.$parent.$parent.status == this.tabStates.PENDING) {
                 this.$emit('statusUpdate', this.botsRunning ? this.tabStates.RUNNING : this.tabStates.IDLE)
             }
+        },
+        updateSorter(id) {
+            switch(id) {
+                case 1:
+                    this.sorter = (a, b) => (b.discount - a.discount) * (this.sortDirAsc ? -1 : 1)
+                    break
+
+                case 2:
+                    this.sorter = (a, b) => (b.floatvalue - a.floatvalue) * (this.sortDirAsc ? -1 : 1)
+                    break
+
+                default:
+                    this.sorter = (a, b) => (b._real_discount - a._real_discount) * (this.sortDirAsc ? -1 : 1)
+                    break
+            }
         }
+    },
+    beforeMount() {
+        this.updateSorter(this.sortByModel)
     }
 }
 </script>
@@ -160,6 +205,34 @@ export default {
 .spb-home__views-wrapper {
     width: 100%;
     padding: 10px 0px;
+}
+
+.spb-home__search {
+    width: 100%;
+    margin-right: 4px;
+}
+
+.spb-home__sort-by {
+    margin: 0 4px;
+    width: 150px;
+    flex-shrink: 0;
+}
+
+.spb-home__sort-dir {
+    margin-left: 4px;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    background-color: var(--secondary-background-color);
+    background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/arrow.svg');
+}
+
+.spb-home__sort-dir--desc {
+    transform: rotate(90deg);
+}
+
+.spb-home__sort-dir--asc {
+    transform: rotate(-90deg);
 }
 
 .spb-home__views {
