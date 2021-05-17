@@ -18,6 +18,9 @@ export default {
     props: {
         type: String,
         modelValue: [String, Number],
+        modelModifiers: {
+            default: () => ({})
+        },
         placeholder: {
             type: String,
             default: '',
