@@ -25,7 +25,7 @@
                 <div class="spb-option">
                     <span class="spb-option__description">Preset</span>
                         <select 
-                            class="spb-input-field spb-input-field--ok spb--font-size-medium spb--rounded-small"
+                            class="spb-bot__preset-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
                             v-model="presetIdModel"
                         >
                             <option 
@@ -90,7 +90,7 @@
         </div>
         <button 
             :class="'spb-bot__run-button spb-button ' + (isRunning ? 'spb-button--red' : 'spb-button--green')"
-            @click="toggleStart" 
+            @click="toggleIsRunning" 
         >
         {{ isRunning ? 'stop' : 'start' }}
         </button>
@@ -98,7 +98,7 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex'
+import { mapState, mapMutations, mapActions } from 'vuex'
 import DateFormat from 'dateformat'
 import InputField from './InputField.vue'
 
@@ -136,6 +136,7 @@ export default {
         ...mapState({
             csrfCookie: state => state.app.shadowpay.csrfCookie,
             notificationSound: state => state.app.notificationSound,
+            alertTypes: state => state.app.alertTypes,
             tabStates: state => state.app.tabStates,
             buyItemUrl: state => state.app.shadowpay.api.BUY_ITEM,
             getBuyHistoryUrl: state => state.app.shadowpay.api.BUY_HISTORY,
@@ -160,10 +161,13 @@ export default {
             startTrack: 'bots/addBot',
             stopTrack: 'bots/closeBot'
         }),
+        ...mapActions({
+           updateAlerts: 'app/updateAlerts' 
+        }),
         getPreset(id) {
             return this.$store.getters['presetManager/preset'](id)
         },
-        toggleStart() {
+        toggleIsRunning() {
             if(this.isRunning) {
                 this.isRunning = false
                 clearTimeout(this.timeoutId)
@@ -239,14 +243,16 @@ export default {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: `id=${item.id}&price=${item.price_market_usd}&csrf_token=${this.csrfCookie}`
+                body: `id=${item.id}` +
+                    `&price=${item.price_market_usd}` +
+                    `&csrf_token=${this.csrfCookie}`
             })
             .then(res => res.json())
             .then(data => {
                 switch(data.status) {
                     case "error":
                         switch(data.error_message) {
-                            case 'wrong_token':``
+                            case 'wrong_token':
                                 this.setCsrfCookie(data.token)
                                 this.buyItem(item, true)
                                 break
@@ -265,6 +271,7 @@ export default {
                         chrome.runtime.sendMessage({
                             action: 'buy_item'
                         })
+
                         this.notificationSound.play()
                         break
                 }
@@ -290,7 +297,14 @@ export default {
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: `page=1&limit=${res.data}&sort_column=time_finished&sort_dir=desc&custom_id=&date_start=${DateFormat(new Date(this.initDate - (2 * 60 * 60 * 1000)), 'yyyy-mm-dd H:MM:ss')}&date_end=&state=all`
+                    body: `page=1` +
+                        `&limit=${res.data}` +
+                        `&sort_column=time_finished` +
+                        `&sort_dir=desc` +
+                        `&custom_id=` +
+                        `&date_start=${DateFormat(new Date(this.initDate - (2 * 60 * 60 * 1000)), 'yyyy-mm-dd H:MM:ss')}` +
+                        `&date_end=` +
+                        `&state=all`
                 })
                 .then(res => res.json())
                 .then(data => {
@@ -323,7 +337,13 @@ export default {
                                         this.items.pending.splice(i, 1)
                                         this.finishedItems.push(item)
     
-                                        if(this.items.pending.length == 0 && Math.abs(this.moneySpent - this.preset.toSpend) < this.preset.minPrice) this.toggleStart()
+                                        if(this.items.pending.length == 0 && Math.abs(this.moneySpent - this.preset.toSpend) < this.preset.minPrice) {
+                                            this.toggleIsRunning()
+                                            this.updateAlerts({
+                                                type: this.alertTypes.INFO,
+                                                message: `Bot #${this.id} terminated - to spend limit reached`
+                                            })
+                                        }
                                         break
                                     }
                             }
@@ -346,7 +366,7 @@ export default {
                     let data = await response.json()
 
                     if(data.status == "success") {
-                        this.items.filtered = Array.from(data.items)
+                        this.items.filtered = data.items
             
                         this.items.filtered = this.items.filtered.filter(item => !item.is_my_item)
                         this.items.filtered = this.items.filtered.filter(item => (item.discount >= this.preset.deal && item.price_market_usd >= this.preset.minPrice))
@@ -364,8 +384,8 @@ export default {
                             chrome.runtime.sendMessage({
                                 action: 'get_steam_market_csgo_item', 
                                 params: {
-                                    hash_name: item.steam_market_hash_name,
-                                    token: this.token
+                                    token: this.token,
+                                    hash_name: item.steam_market_hash_name
                                 }
                             }, 
                             response => {
@@ -417,6 +437,11 @@ export default {
     flex-direction: column;
     width: 365px;
     position: relative;
+}
+
+.spb-bot__preset-select {
+    background-color: var(--secondary-background-color);
+    height: 32px;
 }
 
 .spb-bot__wrapper {

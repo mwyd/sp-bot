@@ -1,10 +1,11 @@
 <template>
-    <div>
+    <div class="spb-input spb--font-size-medium spb--rounded-small">
         <input 
             v-model="internalModel"
             :class="inputClass"
             :type="type"
             :placeholder="placeholder"
+            :disabled="disabled"
             @input="e => synchronized = (e.target.value == modelValue)"
             @focusout="rollbackInternalModel"
             @keydown.enter="validateInternalModel"
@@ -18,6 +19,7 @@ export default {
     props: {
         type: String,
         modelValue: [String, Number],
+        disabled: Boolean,
         modelModifiers: {
             default: () => ({})
         },
@@ -51,8 +53,10 @@ export default {
     },
     computed: {
         inputClass() {
-            const className = `spb-input-field spb--font-size-medium spb--rounded-small`
-            return className + (this.synchronized ? ' spb-input-field--ok' : ' spb-input-field--wrong')
+            const className = `spb-input__field`
+            return className + 
+                (this.synchronized ? ' spb-input__field--ok' : ' spb-input__field--wrong') +
+                (this.disabled ? ' spb--cursor-not-allowed' : '')
         }
     },
     methods: {
@@ -67,28 +71,35 @@ export default {
             this.synchronized = true
             this.$emit('update:modelValue', this.internalModel)
             this.modelUpdated()
-        },
+        }
     }
 }
 </script>
 
 <style>
-.spb-input-field  {
-    width: 100%;
+.spb-input {
+    background-color: var(--secondary-background-color);
+    color: var(--main-text-color);
     height: 32px;
+}
+
+.spb-input__field  {
+    width: 100%;
+    height: 100%;
     padding-left: 10px;
     box-shadow: none;
     outline: none;
     border: none;
-    background-color: var(--secondary-background-color);
-    color: var(--main-text-color);
+    background: transparent;
+    color: inherit;
+    border-radius: inherit;
 }
 
-.spb-input-field--ok {
+.spb-input__field--ok {
     border-left: 2px solid var(--accepted-color);
 }
 
-.spb-input-field--wrong {
+.spb-input__field--wrong {
     border-left: 2px solid var(--cancelled-color);
 }
 </style>

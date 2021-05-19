@@ -20,10 +20,7 @@
                 </div>
             </div>
         </div>
-        <div 
-            v-if="currentView == views.ACTIVE"
-            class="spb-option"
-        >
+        <div class="spb-option">
             <span class="spb-option__description">Manage</span>
             <div class="spb--flex">
                 <InputField 
@@ -34,15 +31,14 @@
                 >
                 </InputField>
                 <select 
-                    class="spb-home__sort-by spb-input-field spb-input-field--ok spb--font-size-medium spb--rounded-small"
+                    class="spb-home__sort-by spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
                     v-model="sortByModel"
-                    @change="updateSortFunction(sortByModel)"
                 >
-                    <option v-for="sort in Object.values(sortBy)"
-                        :key="'sort-' + sort.id"
-                        :value="sort.id"
+                    <option v-for="sortById in Object.values(sortByTypes)"
+                        :key="'sort-' + sortById"
+                        :value="sortById"
                     >
-                        {{ sort.name }}
+                        {{ sortBy.get(sortById).name }}
                     </option>
                 </select>
                 <div 
@@ -64,7 +60,7 @@
                 class="spb-home__items-active"
             >
                 <Item 
-                    v-for="item in toConfirmItems"  
+                    v-for="item in filteredItems(itemTypes.TO_CONFIRM)"  
                     :type="itemTypes.TO_CONFIRM" 
                     :item="item" 
                     :key="'item-' + item.id"
@@ -77,14 +73,14 @@
                 class="spb-home__items-buy-history"
             >
                 <Item 
-                    v-for="item in pendingItems" 
+                    v-for="item in filteredItems(itemTypes.PENDING)" 
                     :type="itemTypes.PENDING" 
                     :item="item" 
                     :key="'item-' + item.id"
                 >
                 </Item> 
                 <Item 
-                    v-for="item in finishedItems" 
+                    v-for="item in filteredItems(itemTypes.FINISHED)" 
                     :type="itemTypes.FINISHED" 
                     :item="item" 
                     :key="'item-' + item.id"
@@ -120,21 +116,6 @@ export default {
             search: '',
             frozenToConfirm: false,
             sortByModel: 0,
-            sortBy: Object.assign({
-                REAL_DISCOUNT: {
-                    id: 0,
-                    name: 'Real discount'
-                },
-                SHADOWPAY_DISCOUNT: {
-                    id: 1,
-                    name: 'Shadowpay discount'
-                },
-                ITEM_FLOAT: {
-                    id: 2,
-                    name: 'Item float'
-                }
-            }),
-            sortFunction: null,
             sortDirAsc: false
         }
     },
@@ -148,6 +129,8 @@ export default {
     },
     computed: {
         ...mapState({
+            sortByTypes: state => state.item.sortByTypes,
+            sortBy: state => state.item.sortBy,
             itemTypes: state => state.bots.itemTypes,
             tabStates: state => state.app.tabStates,
             finishedItems: state => state.bots.items.finished
@@ -156,13 +139,7 @@ export default {
             botsRunning: 'bots/running'
         }),
         toConfirmItems() {
-            let items = this.frozenToConfirm ? this.itemsCache.toConfirm : this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)
-            return items
-                .sort(this.sortFunction)
-                .filter(item => item._search_steam_hash_name
-                    .search(this.search.toLowerCase()) 
-                    > -1
-                )
+            return this.frozenToConfirm ? this.itemsCache.toConfirm : this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)
         },
         pendingItems() {
             return this.$store.getters['bots/items'](this.itemTypes.PENDING)
@@ -173,6 +150,27 @@ export default {
         }
     },
     methods: {
+        filteredItems(type) {
+            let items = []
+
+            switch(type) {
+                case this.itemTypes.TO_CONFIRM:
+                    items = this.toConfirmItems
+                    break
+
+                case this.itemTypes.PENDING:
+                    items = this.pendingItems
+                    break
+
+                case this.itemTypes.FINISHED:
+                    items = this.finishedItems
+                    break
+            }
+
+            return items
+                .filter(item => item._search_steam_hash_name.search(this.search.toLowerCase()) > -1)
+                .sort(this.sortBy.get(this.sortByModel).func(this.sortDirAsc))
+        },
         viewClass(view) {
             const className = 'spb-home__view spb--rounded-small'
             return className + (this.currentView == view ? ` spb-home__view--active` : '')
@@ -185,25 +183,7 @@ export default {
             if(this.$parent.$parent.status == this.tabStates.PENDING) {
                 this.$emit('statusUpdate', this.botsRunning ? this.tabStates.RUNNING : this.tabStates.IDLE)
             }
-        },
-        updateSortFunction(id) {
-            switch(id) {
-                case 1:
-                    this.sortFunction = (a, b) => (b.discount - a.discount) * (this.sortDirAsc ? -1 : 1)
-                    break
-
-                case 2:
-                    this.sortFunction = (a, b) => (b.floatvalue - a.floatvalue) * (this.sortDirAsc ? -1 : 1)
-                    break
-
-                default:
-                    this.sortFunction = (a, b) => (b._real_discount - a._real_discount) * (this.sortDirAsc ? -1 : 1)
-                    break
-            }
         }
-    },
-    beforeMount() {
-        this.updateSortFunction(this.sortByModel)
     }
 }
 </script>
@@ -226,8 +206,10 @@ export default {
 }
 
 .spb-home__sort-by {
+    background-color: var(--secondary-background-color);
     margin: 0 4px;
     width: 150px;
+    height: 32px;
     flex-shrink: 0;
 }
 

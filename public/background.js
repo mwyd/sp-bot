@@ -202,26 +202,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     break
                 //friends
 
-                // steam
-                case 'get_steam_market_csgo_item':
-                    apiFetch(
-                        `${apiEndpoints.STEAM_MARKET}/${params.hash_name}`,
-                        params.token,
-                        data => sendResponse(data)
-                    )
-                    break
-                // steam
-
-                // shadowpay
-                case 'get_shadowpay_sold_item':
-                    apiFetch(
-                        `${apiEndpoints.SHADOWPAY_MARKET}?search=${params.hash_name}`,
-                        params.token,
-                        data => sendResponse(data)
-                    )
-                    break
-                // shadowpay
-
                 // sale guard
                 case 'get_saleguard_items':
                     apiFetch(
@@ -248,7 +228,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
                 case 'update_saleguard_item':
                     apiFetch(
-                        `${apiEndpoints.SALE_GUARD}/${params.conduitId}`,
+                        `${apiEndpoints.SALE_GUARD}/${params.id}`,
                         params.token,
                         data => sendResponse(data),
                         {
@@ -263,7 +243,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
                 case 'delete_saleguard_item':
                     apiFetch(
-                        `${apiEndpoints.SALE_GUARD}/${params.conduitId}`,
+                        `${apiEndpoints.SALE_GUARD}/${params.id}`,
                         params.token,
                         data => sendResponse(data),
                         {
@@ -272,6 +252,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     )
                     break
                 // sale guard
+
+                // steam
+                case 'get_steam_market_csgo_item':
+                    apiFetch(
+                        `${apiEndpoints.STEAM_MARKET}/${params.hash_name}`,
+                        params.token,
+                        data => sendResponse(data)
+                    )
+                    break
+                // steam
+
+                // shadowpay
+                case 'get_shadowpay_sold_item':
+                    apiFetch(
+                        `${apiEndpoints.SHADOWPAY_MARKET}?search=${params.hash_name}`,
+                        params.token,
+                        data => sendResponse(data)
+                    )
+                    break
+                // shadowpay
 
                 // blue gems
                 case 'get_blue_gem':

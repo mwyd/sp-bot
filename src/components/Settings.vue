@@ -28,27 +28,65 @@
             </div>
             <div class="spb-option spb--font-size-big">
                 <span class="spb-option__description spb--clear-padding">Config</span>
-                    <div class="spb--flex spb-option__row spb--font-size-medium">
-                        <div>Display item statistics</div>
-                        <input v-model="displayItemStatistics" type="checkbox">
-                    </div>
-                    <div class="spb--flex spb-option__row spb--font-size-medium">
-                        <div>Display tab preview</div>
-                        <input v-model="displayTabPreview" type="checkbox">
-                    </div>
-                    <div class="spb--flex spb-option__row spb--font-size-medium">
-                        <div>Display interface on top</div>
-                        <input v-model="displayInterfaceOnTop" type="checkbox">
-                    </div>
-                    <div class="spb--flex spb-option__row spb--font-size-medium">
-                        <div>Open tabs at startup</div>
-                        <input v-model="openTabsAtStartup" type="checkbox">
-                    </div>
+                <div class="spb--flex spb-option__row spb--font-size-medium">
+                    <div>Display item statistics</div>
+                    <input v-model="displayItemStatistics" type="checkbox">
+                </div>
+                <div class="spb--flex spb-option__row spb--font-size-medium">
+                    <div>Display tab preview</div>
+                    <input v-model="displayTabPreview" type="checkbox">
+                </div>
+                <div class="spb--flex spb-option__row spb--font-size-medium">
+                    <div>Display interface on top</div>
+                    <input v-model="displayInterfaceOnTop" type="checkbox">
+                </div>
+                <div class="spb--flex spb-option__row spb--font-size-medium">
+                    <div>Open tabs at startup</div>
+                    <input v-model="openTabsAtStartup" type="checkbox">
                 </div>
             </div>
+            <div class="spb-option spb--font-size-big">
+                <span class="spb-option__description spb--clear-padding">Sale Guard</span>
+                <div class="spb--flex spb-option__row spb--font-size-medium">
+                    <div>Bid step</div>
+                    <InputField 
+                        v-model.number="bidStep"
+                        class="spb-settings__bid-step"
+                        :type="'number'"
+                        :validator="value => value >= 0.01 && value <= 100"
+                    >
+                    </InputField>
+                </div>
+                <div class="spb--flex spb-option__row spb--font-size-medium">
+                    <div>Safe discount</div>
+                    <InputField 
+                        v-model.number="safeDiscount"
+                        class="spb-settings__safe-discount"
+                        :type="'number'"
+                        :validator="value => value >= 1 && value <= 100"
+                    >
+                    </InputField>
+                </div>
+                <div class="spb--flex spb-option__row spb--font-size-medium">
+                    <div>Item update delay</div>
+                    <InputField 
+                        v-model.number="itemUpdateDelay"
+                        class="spb-settings__item-update-delay"
+                        :type="'number'"
+                        :validator="value => value >= 0 && value <= 1200"
+                    >
+                    </InputField>
+                </div>
+            </div>
+        </div>
         <button 
             class="spb-settings__save-button spb-button spb-button--green"
-            @click="saveConfig"
+            :disabled="buttonsDisabled"
+            @click="() => {
+                buttonsDisabled = true
+                saveConfig()
+                .then(() => buttonsDisabled = false)
+            }"
         >
         save
         </button>
@@ -64,6 +102,11 @@ export default {
     emits: ['statusUpdate'],
     components: {
         InputField
+    },
+    data() {
+        return {
+            buttonsDisabled: false
+        }
     },
     watch: {
         authenticated(value) {
@@ -131,6 +174,39 @@ export default {
                     value: value
                 }) 
             }
+        },
+        bidStep: {
+            get() {
+                return this.$store.getters['app/config']('saleGuardBidStep')
+            },
+            set(value) {
+                this.$store.commit('app/setConfig', {
+                    type: 'saleGuardBidStep',
+                    value: value
+                })
+            }
+        },
+        safeDiscount: {
+            get() {
+                return this.$store.getters['app/config']('saleGuardSaleDiscount') * 100
+            },
+            set(value) {
+                this.$store.commit('app/setConfig', {
+                    type: 'saleGuardSaleDiscount',
+                    value: value / 100
+                })
+            }
+        },
+        itemUpdateDelay: {
+            get() {
+                return this.$store.getters['app/config']('saleGuardItemUpdateDelay') / 1000
+            },
+            set(value) {
+                this.$store.commit('app/setConfig', {
+                    type: 'saleGuardItemUpdateDelay',
+                    value: value * 1000
+                })
+            }
         }
     },
     methods: {
@@ -152,6 +228,12 @@ export default {
     display: flex;
     flex-direction: column;
     width: 365px;
+}
+
+.spb-settings__bid-step, .spb-settings__safe-discount, .spb-settings__item-update-delay {
+    width: 54px;
+    height: 18px;
+    font-size: 12px;
 }
 
 .spb-settings__save-button {

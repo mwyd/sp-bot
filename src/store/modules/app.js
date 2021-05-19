@@ -41,8 +41,8 @@ export default {
                 childComponent: 'Settings'
             }
         ],
-        tabReservedIds: Array.from(new Array(5).keys()),
-        tabFreeIds: Array.from(new Array(45).keys()).map(e => e += 5),
+        tabReservedIds: [...new Array(5).keys()],
+        tabFreeIds: [...new Array(45).keys()].map(e => e += 5),
         notificationSound: new Audio(chrome.runtime.getURL('/assets/audio/Jestem_zrujnowany.mp3')),
         alertTypes: Object.freeze({
             SUCCESS: 'success',
@@ -55,7 +55,10 @@ export default {
             displayItemStatistics: false,
             displayTabPreview: true,
             displayInterfaceOnTop: false,
-            openTabsAtStartup: false
+            openTabsAtStartup: false,
+            saleGuardBidStep: 0.01,
+            saleGuardSaleDiscount: 0.97,
+            saleGuardItemUpdateDelay: 4 * 1000
         },
         shadowpay: {
             csrfCookie: Cookies.get('csrf_cookie'),
@@ -198,8 +201,8 @@ export default {
                   
             await dispatch('friendManager/loadFriends', null, { root: true })
             
-            //await dispatch('loadSaleGuardItems')
-            //await dispatch('loadItemsOnSale')
+            await dispatch('saleGuard/loadSaleGuardItems', null, { root: true })
+            await dispatch('saleGuard/loadItemsOnSale', null, { root: true })
 
             commit('setLoaded', true)
         }

@@ -20,7 +20,7 @@
         <div v-show="currentView == views.MANAGE" class="spb-option">
             <span class="spb-option__description">Select preset</span>
             <select 
-                class="spb-input-field spb-input-field--ok spb--font-size-medium spb--rounded-small"
+                class="spb-preset-manager__preset-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
                 v-model="currentPresetIdModel"
             >
                 <option 
@@ -112,8 +112,13 @@
         <div class="spb-preset-manager__buttons-wrapper">
             <div v-if="currentView == views.ADD">
                 <button 
-                    class="spb-button spb-button--green" 
-                    @click="addPreset(currentPreset)"
+                    class="spb-button spb-button--green"
+                    :disabled="actionsDisabled" 
+                    @click="() => {
+                        actionsDisabled = true
+                        addPreset(currentPreset)
+                        .then(() => actionsDisabled = false)
+                    }"
                 >
                 add
                 </button>
@@ -121,17 +126,21 @@
             <div v-else class="spb--flex">
                 <button 
                     class="spb-preset-manager__button-update spb-button spb-button--green" 
-                    :disabled="currentPresetId == 0"
-                    @click="updatePreset({
-                        id: currentPresetId,
-                        preset: currentPreset
-                    })"
+                    :disabled="currentPresetId == 0 || actionsDisabled"
+                    @click="() => {
+                        actionsDisabled = true
+                        updatePreset({
+                            id: currentPresetId,
+                            preset: currentPreset
+                        })
+                        .then(() => actionsDisabled = false)
+                    }"
                 >
                 update
                 </button>
                 <button 
                     class="spb-preset-manager__button-delete spb-button spb-button--red" 
-                    :disabled="currentPresetId == 0"
+                    :disabled="currentPresetId == 0 || actionsDisabled"
                     @click="deletePreset(currentPresetId)"
                 >
                 delete
@@ -153,6 +162,7 @@ export default {
     emits: ['statusUpdate'],
     data() {
         return {
+            actionsDisabled: false,
             views: Object.freeze({
                 ADD: 'add',
                 MANAGE: 'manage'
@@ -202,11 +212,15 @@ export default {
             return this.$store.getters['presetManager/preset'](id)
         },
         deletePreset(id) {
+            this.actionsDisabled = true
+
             this.$store.dispatch('presetManager/deletePreset', id)
                 .then(({success}) => {
                     if(success) {
                         const {length} = this.presetIds
                         if(length > 1) this.currentPresetIdModel = this.presetIds[length - 1]
+
+                        this.actionsDisabled = false
                     }
                 })
         }
@@ -220,6 +234,11 @@ export default {
     flex-direction: column;
     width: 365px;
     position: relative;
+}
+
+.spb-preset-manager__preset-select {
+    background-color: var(--secondary-background-color);
+    height: 32px;
 }
 
 .spb-preset-manager__views-wrapper {

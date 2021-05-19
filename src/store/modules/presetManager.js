@@ -22,7 +22,7 @@ export default {
             return state.presets.get(id)
         },
         presetIds(state) {
-            return Array.from(state.presets.keys())
+            return [...state.presets.keys()]
         }
     },
     mutations: {
@@ -56,10 +56,12 @@ export default {
                     let loaded = false
 
                     if(success) {
-                        for(let preset of data) commit('setPreset', {
-                            id: preset.id,
-                            preset: preset.preset
-                        })
+                        for(let preset of data) {
+                            commit('setPreset', {
+                                id: preset.id,
+                                preset: preset.preset
+                            })
+                        }
 
                         if(data.length == limit) loopLimit++
 
@@ -87,10 +89,12 @@ export default {
                     message: 'Preset created'
                 }
 
-                if(success) commit('setPreset', {
-                    id: data.id,
-                    preset: data.preset
-                })
+                if(success) {
+                    commit('setPreset', {
+                        id: data.id,
+                        preset: data.preset
+                    })
+                }
                 else {
                     alert.type = rootState.app.alertTypes.ERROR,
                     alert.message = error_message
@@ -100,7 +104,7 @@ export default {
                 resolve(response)
             }))
         },
-        updatePreset({rootState, commit, dispatch}, {id, preset}) {
+        updatePreset({rootState, dispatch}, {id, preset}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'update_preset',
                 params: {
@@ -110,18 +114,14 @@ export default {
                 }
             }, 
             response => {
-                const {success, data, error_message} = response
+                const {success, error_message} = response
 
                 const alert = {
                     type: rootState.app.alertTypes.SUCCESS,
                     message: 'Preset updated'
                 }
 
-                if(success) commit('setPreset', {
-                    id: data.id,
-                    preset: data.preset
-                })
-                else {
+                if(!success) {
                     alert.type = rootState.app.alertTypes.ERROR,
                     alert.message = error_message
                 }

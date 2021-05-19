@@ -20,7 +20,7 @@
         <div v-show="currentView == views.MANAGE" class="spb-option">
             <span class="spb-option__description">Select friend</span>
             <select 
-                class="spb-input-field spb-input-field--ok spb--font-size-medium spb--rounded-small"
+                class="spb-friend-manager__friend-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
                 v-model="currentFriendIdModel"
             >
                 <option 
@@ -38,6 +38,7 @@
                 <InputField 
                     v-model.number="currentFriend.shadowpay_id"
                     :type="'number'"
+                    :placeholder="'Enter id...'"
                 >
                 </InputField>
             </div>  
@@ -46,6 +47,7 @@
                 <InputField 
                     v-model="currentFriend.name"
                     :type="'text'" 
+                    :placeholder="'Enter name...'"
                 >
                 </InputField>
             </div>
@@ -54,7 +56,12 @@
             <div v-if="currentView == views.ADD">
                 <button 
                     class="spb-button spb-button--green" 
-                    @click="addFriend(currentFriend)"
+                    :disabled="actionsDisabled"
+                    @click="() => {
+                        actionsDisabled = true
+                        addFriend(currentFriend)
+                        .then(() => actionsDisabled = false)
+                    }"
                 >
                 add
                 </button>
@@ -62,17 +69,21 @@
             <div v-else class="spb--flex">
                 <button 
                     class="spb-friend-manager__button-update spb-button spb-button--green" 
-                    :disabled="currentFriendId == 0"
-                    @click="updateFriend({
-                        id: currentFriendId,
-                        friend: currentFriend
-                    })"
+                    :disabled="currentFriendId == 0 || actionsDisabled"
+                    @click="() => {
+                        actionsDisabled = true
+                        updateFriend({
+                            id: currentFriendId,
+                            friend: currentFriend
+                        })
+                        .then(() => actionsDisabled = false)
+                    }"
                 >
                 update
                 </button>
                 <button 
                     class="spb-friend-manager__button-delete spb-button spb-button--red" 
-                    :disabled="currentFriendId == 0"
+                    :disabled="currentFriendId == 0 || actionsDisabled"
                     @click="deleteFriend(currentFriendId)"
                 >
                 delete
@@ -94,6 +105,7 @@ export default {
     emits: ['statusUpdate'],
     data() {
         return {
+            actionsDisabled: false,
             views: Object.freeze({
                 ADD: 'add',
                 MANAGE: 'manage'
@@ -143,11 +155,15 @@ export default {
             return this.$store.getters['friendManager/friend'](id)
         },
         deleteFriend(id) {
+            this.actionsDisabled = true
+
             this.$store.dispatch('friendManager/deleteFriend', id)
                 .then(({success}) => {
                     if(success) {
                         const {length} = this.friendIds
                         if(length > 0) this.currentFriendIdModel = this.friendIds[length - 1]
+
+                        this.actionsDisabled = false
                     }
                 })
         }
@@ -161,6 +177,11 @@ export default {
     flex-direction: column;
     width: 250px;
     position: relative;
+}
+
+.spb-friend-manager__friend-select {
+    background-color: var(--secondary-background-color);
+    height: 32px;
 }
 
 .spb-friend-manager__views-wrapper {

@@ -12,10 +12,11 @@
 
 <script>
 import Home from './Home.vue'
-import Settings from './Settings.vue'
-import Bot from './Bot.vue'
+import SaleGuard from './SaleGuard.vue'
 import PresetManager from './PresetManager.vue'
 import FriendManager from './FriendManager.vue'
+import Settings from './Settings.vue'
+import Bot from './Bot.vue'
 
 export default {
     name: 'TabWindow',
@@ -27,9 +28,10 @@ export default {
     emits: ['statusUpdate'],
     components: {
         Home,
-        Settings,
+        SaleGuard,
         PresetManager,
         FriendManager,
+        Settings,
         Bot
     },
     computed: {

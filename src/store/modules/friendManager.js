@@ -5,8 +5,8 @@ export default {
         friends: new Map([
             [0, 
                 {
-                    shadowpay_id: 123456, 
-                    name: 'template'
+                    shadowpay_id: null, 
+                    name: 'default'
                 }
             ]
         ])
@@ -16,7 +16,7 @@ export default {
             return state.friends.get(id)
         },
         friendIds(state) {
-            return Array.from(state.friends.keys())
+            return [...state.friends.keys()]
         },
         itemOwner: state => shadowpayId => {
             let name = null
@@ -64,13 +64,15 @@ export default {
                     let loaded = false
 
                     if(success) {
-                        for(let friend of data) commit('setFriend', {
-                            id: friend.id,
-                            friend: {
-                                shadowpay_id: friend.shadowpay_id,
-                                name: friend.name
-                            }
-                        })
+                        for(let friend of data) {
+                            commit('setFriend', {
+                                id: friend.id,
+                                friend: {
+                                    shadowpay_id: friend.shadowpay_id,
+                                    name: friend.name
+                                }
+                            })
+                        }
 
                         if(data.length == limit) loopLimit++
 
@@ -99,13 +101,15 @@ export default {
                     message: 'Friend added'
                 }
 
-                if(success) commit('setFriend', {
-                    id: data.id,
-                    friend: {
-                        shadowpay_id: data.shadowpay_id,
-                        name: data.name
-                    }
-                })
+                if(success) {
+                    commit('setFriend', {
+                        id: data.id,
+                        friend: {
+                            shadowpay_id: data.shadowpay_id,
+                            name: data.name
+                        }
+                    })
+                }
                 else {
                     alert.type = rootState.app.alertTypes.ERROR,
                     alert.message = error_message
@@ -115,7 +119,7 @@ export default {
                 resolve(response)
             }))
         },
-        updateFriend({rootState, commit, dispatch}, {id, friend}) {
+        updateFriend({rootState, dispatch}, {id, friend}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'update_friend',
                 params: {
@@ -126,21 +130,14 @@ export default {
                 }
             }, 
             response => {
-                const {success, data, error_message} = response
+                const {success, error_message} = response
 
                 const alert = {
                     type: rootState.app.alertTypes.SUCCESS,
                     message: 'Friend updated'
                 }
 
-                if(success) commit('setFriend', {
-                    id: data.id,
-                    friend: {
-                        shadowpay_id: data.shadowpay_id,
-                        name: data.name
-                    }
-                })
-                else {
+                if(!success) {
                     alert.type = rootState.app.alertTypes.ERROR,
                     alert.message = error_message
                 }

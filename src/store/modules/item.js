@@ -58,7 +58,7 @@ export default {
                 name: '',
                 unit: ''
             },
-            price_real: {
+            steam_price_en: {
                 name: 'Suggested price',
                 unit: '$'
             },
@@ -102,7 +102,47 @@ export default {
             _avg_discount: null,
             _sold: null,
             _last_sold: null
-        }
+        },
+        sortByTypes: Object.assign({
+            REAL_DISCOUNT: 0,
+            SHADOWPAY_DISCOUNT: 1,
+            ITEM_FLOAT: 2,
+            MARKET_PRICE: 3
+        }),
+        sortBy: new Map([
+            [0, 
+                {
+                    name: 'Steam discount',
+                    func: function(asc) { 
+                        return (a, b) => (b._real_discount - a._real_discount) * (asc ? -1 : 1)
+                    }
+                }
+            ],
+            [1, 
+                {
+                    name: 'Shadowpay discount',
+                    func: function(asc) { 
+                        return (a, b) => (b.discount - a.discount) * (asc ? -1 : 1)
+                    }
+                }
+            ],
+            [2,
+                {
+                    name: 'Item float',
+                    func: function(asc) { 
+                        return (a, b) => (b.floatvalue - a.floatvalue) * (asc ? -1 : 1)
+                    }  
+                }
+            ],
+            [3, 
+                {
+                    name: 'Market price',
+                    func: function(asc) { 
+                        return (a, b) => (b.price_market_usd - a.price_market_usd) * (asc ? -1 : 1)
+                    }  
+                }
+            ]
+        ])
     }),
     getters: {
         interestingFloat: state => float =>  {

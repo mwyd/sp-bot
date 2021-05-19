@@ -9,7 +9,8 @@ export default {
         },
         itemTypes: Object.freeze({
             TO_CONFIRM: 'toConfirm',
-            PENDING: 'pending'
+            PENDING: 'pending',
+            FINISHED: 'finished'
         })
     }),
     getters: {
