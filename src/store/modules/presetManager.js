@@ -104,7 +104,7 @@ export default {
                 resolve(response)
             }))
         },
-        updatePreset({rootState, dispatch}, {id, preset}) {
+        updatePreset({rootState, commit, dispatch}, {id, preset}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'update_preset',
                 params: {
@@ -114,14 +114,20 @@ export default {
                 }
             }, 
             response => {
-                const {success, error_message} = response
+                const {success, data, error_message} = response
 
                 const alert = {
                     type: rootState.app.alertTypes.SUCCESS,
                     message: 'Preset updated'
                 }
 
-                if(!success) {
+                if(success) {
+                    commit('setPreset', {
+                        id: data.id,
+                        preset: data.preset
+                    })
+                }
+                else {
                     alert.type = rootState.app.alertTypes.ERROR,
                     alert.message = error_message
                 }

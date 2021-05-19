@@ -119,7 +119,7 @@ export default {
                 resolve(response)
             }))
         },
-        updateFriend({rootState, dispatch}, {id, friend}) {
+        updateFriend({rootState, commit, dispatch}, {id, friend}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'update_friend',
                 params: {
@@ -130,14 +130,23 @@ export default {
                 }
             }, 
             response => {
-                const {success, error_message} = response
+                const {success, data, error_message} = response
 
                 const alert = {
                     type: rootState.app.alertTypes.SUCCESS,
                     message: 'Friend updated'
                 }
 
-                if(!success) {
+                if(success) {
+                    commit('setFriend', {
+                        id: data.id,
+                        friend: {
+                            shadowpay_id: data.shadowpay_id,
+                            name: data.name
+                        }
+                    }) 
+                }
+                else {
                     alert.type = rootState.app.alertTypes.ERROR,
                     alert.message = error_message
                 }
