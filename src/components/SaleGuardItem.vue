@@ -95,6 +95,19 @@
                 <span class="spb--text-green">{{ shadowpayStatistics[key].unit + ' ' + mutableProperties[key] }}</span>
             </div>
             <div 
+                v-if="item.inspect_url" 
+                class="spb-item__stat spb--cursor-pointer"
+                @click="copyInspectLink(item.inspect_url)"
+            >
+                Inspect
+                <span class="spb--text-green">
+                    <a 
+                        target="_blank" 
+                        class="spb--link"
+                    >Link</a>
+                </span>
+            </div>
+            <div 
                 @click="loadShadowpayStatistics" 
                 v-if="!hideMoreStatisticsButton" 
                 class="spb--cursor-pointer spb-item__stat"
@@ -173,7 +186,8 @@ export default {
     methods: {
         ...mapActions({
             startTrack: 'saleGuard/startTrack',
-            stopTrack: 'saleGuard/stopTrack'
+            stopTrack: 'saleGuard/stopTrack',
+            copyInspectLink: 'item/copyInspectLink'
         }),
         interestingFloat(float) {
             return this.$store.getters['item/interestingFloat'](float)

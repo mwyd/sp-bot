@@ -59,7 +59,9 @@ export default {
             const bidStep = rootGetters['app/config']('saleGuardBidStep')
             const saveItemPriceUrl = rootState.app.shadowpay.api.SAVE_ITEM_PRICE
             const getItemsUrl = new URL(rootState.app.shadowpay.api.MARKET_ITEMS)
+
             getItemsUrl.searchParams.set('sort_column', 'price')
+            getItemsUrl.searchParams.set('sort', 'asc')
 
             if(trackedItems.length == 0) {
                 dispatch('app/updateAlerts', {

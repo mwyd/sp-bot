@@ -76,15 +76,28 @@
             </div>
             <div 
                 v-if="item.inspect_url" 
-                class="spb-item__stat"
+                class="spb-item__stat spb--cursor-pointer"
             >
                 {{ friendOwner ? friendOwner + "'s" : "Owner's" }} 
-                <span class="spb--text-green spb--cursor-pointer">
+                <span class="spb--text-green">
                     <a 
                         target="_blank" 
                         class="spb--link"
                         :href="steamUserProfileUrl + itemOwnerSteamId(item.inspect_url)"
                     >Steam</a>
+                </span>
+            </div>
+            <div 
+                v-if="item.inspect_url" 
+                class="spb-item__stat spb--cursor-pointer"
+                @click="copyInspectLink(item.inspect_url)"
+            >
+                Inspect
+                <span class="spb--text-green">
+                    <a 
+                        target="_blank" 
+                        class="spb--link"
+                    >Link</a>
                 </span>
             </div>
             <div 
@@ -152,7 +165,8 @@ export default {
     },
     methods: {
         ...mapActions({
-            updateAlerts: 'app/updateAlerts'
+            updateAlerts: 'app/updateAlerts',
+            copyInspectLink: 'item/copyInspectLink'
         }),
         interestingFloat(float) {
             return this.$store.getters['item/interestingFloat'](float)

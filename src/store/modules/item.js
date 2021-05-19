@@ -174,6 +174,22 @@ export default {
     },
     mutations: {},
     actions: {
+        async copyInspectLink({rootState, dispatch}, inspectLink) {
+            const alert = {
+                type: rootState.app.alertTypes.SUCCESS,
+                message: 'Copied'
+            }
+
+            try {
+                await navigator.clipboard.writeText(inspectLink)
+            }
+            catch(err) {
+                alert.type = rootState.app.alertTypes.ERROR
+                alert.message = 'Copy error'
+            }
+
+            dispatch('app/updateAlerts', alert, { root: true })
+        },
         getBlueGem({rootState}, {itemType, paintSeed}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'get_blue_gem', 
