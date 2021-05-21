@@ -15,6 +15,9 @@ export default {
         friend: state => id => {
             return state.friends.get(id)
         },
+        sortedFriends: state => sortAsc => {
+            return [...state.friends].sort((a, b) => (a[1].shadowpay_id - b[1].shadowpay_id) * (sortAsc ? 1 : -1))
+        },
         friendIds(state) {
             return [...state.friends.keys()]
         },

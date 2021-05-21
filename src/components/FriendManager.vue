@@ -26,7 +26,7 @@
                 v-model="currentFriendIdModel"
             >
                 <option 
-                    v-for="pair in friends" 
+                    v-for="pair in sortedFriends(true)" 
                     :key="'friend-' + pair[0]" 
                     :value="pair[0]"
                 >
@@ -153,6 +153,9 @@ export default {
             return [
                 this.currentView == view ? 'spb-friend-manager__view--active' : ''
             ]
+        },
+        sortedFriends(sortAsc = true) {
+            return this.$store.getters['friendManager/sortedFriends'](sortAsc)
         },
         getFriend(id) {
             return this.$store.getters['friendManager/friend'](id)

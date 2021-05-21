@@ -63,26 +63,7 @@ export default {
         shadowpay: {
             csrfCookie: Cookies.get('csrf_cookie'),
             api: Object.freeze({
-                MARKET_ITEMS: `https://api.shadowpay.com/api/market/get_items` +
-                    `?types=[]` +
-                    `&exteriors=[]` +
-                    `&rarities=[]` +
-                    `&collections=[]` +
-                    `&item_subcategories=[]` +
-                    `&float={"from":0,"to":1}` +
-                    `&price_from=0` +
-                    `&price_to=20000` +
-                    `&game=csgo` +
-                    `&stickers=[]` +
-                    `&count_stickers=[]` +
-                    `&short_name=` +
-                    `&search=` +
-                    `&stack=false` +
-                    `&sort=desc` + 
-                    `&sort_dir=desc` +
-                    `&sort_column=price_rate` +
-                    `&limit=50` +
-                    `&offset=0`,
+                MARKET_ITEMS: `https://api.shadowpay.com/api/market/get_items`,
                 BUY_ITEM: 'https://api.shadowpay.com/api/market/buy_item',
                 BUY_HISTORY: 'https://api.shadowpay.com/en/profile/get_bought_history',
                 ITEMS_ON_SALE: 'https://api.shadowpay.com/api/market/list_items',

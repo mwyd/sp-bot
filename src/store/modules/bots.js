@@ -47,15 +47,15 @@ export default {
         openBots({rootGetters, commit}) {
             if(!rootGetters['app/config']('openTabsAtStartup')) return
 
-            rootGetters['presetManager/presetIds'].forEach(key => {
-                if(key == 0) return
+            rootGetters['presetManager/sortedPresets'](true).forEach(pair => {
+                if(pair[0] == 0) return
 
                 commit('app/addTab', {
                     isStatic: false,
                     name: 'Bot',
                     symbol: 'B',
                     childComponent: 'Bot',
-                    tabMounted: tab => tab.$refs.tabWindow.$refs.childComponent.presetIdModel = key
+                    tabMounted: tab => tab.$refs.tabWindow.$refs.childComponent.presetIdModel = pair[0]
                 }, { root: true })
             })
         }

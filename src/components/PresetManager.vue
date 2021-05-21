@@ -26,7 +26,7 @@
                 v-model="currentPresetIdModel"
             >
                 <option 
-                    v-for="pair in presets" 
+                    v-for="pair in sortedPresets(true)" 
                     :key="'preset-' + pair[0]" 
                     :value="pair[0]"
                 >
@@ -210,6 +210,9 @@ export default {
             return [
                 this.currentView == view ? `spb-preset-manager__view--active` : ''
             ]
+        },
+        sortedPresets(sortAsc = true) {
+            return this.$store.getters['presetManager/sortedPresets'](sortAsc)
         },
         getPreset(id) {
             return this.$store.getters['presetManager/preset'](id)

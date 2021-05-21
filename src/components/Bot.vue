@@ -19,7 +19,6 @@
                         v-model.number="preset.minPrice"
                         :type="'number'" 
                         :validator="value => (value >= 0 && value <= preset.maxPrice)"
-                        :modelUpdated="updateGetItemsUrl"
                     >
                     </InputField>
                 </div>
@@ -30,7 +29,7 @@
                             v-model="presetIdModel"
                         >
                             <option 
-                                v-for="pair in presets" 
+                                v-for="pair in sortedPresets(true)" 
                                 :key="'preset-' + pair[0]" 
                                 :value="pair[0]"
                             >
@@ -44,7 +43,6 @@
                         v-model="preset.search"
                         :type="'text'" 
                         :placeholder="'Search...'"
-                        :modelUpdated="updateGetItemsUrl"
                     >
                     </InputField>
                 </div> 
@@ -66,7 +64,6 @@
                         v-model.number="preset.maxPrice"
                         :type="'number'" 
                         :validator="value => (value >= preset.minPrice && value <= preset.toSpend)"
-                        :modelUpdated="updateGetItemsUrl"
                     >
                     </InputField>
                 </div>
@@ -126,9 +123,6 @@ export default {
             initDate: Date.now(),
             lastPendingUpdate: Date.now(),
             pendingUpdateDelay: 10,
-            apiUrls: {
-                getItems: new URL(this.$store.state.app.shadowpay.api.MARKET_ITEMS)
-            },
             items: {
                 filtered: [],
                 toConfirm: new Map(),
@@ -142,6 +136,7 @@ export default {
             notificationSound: state => state.app.notificationSound,
             alertTypes: state => state.app.alertTypes,
             tabStates: state => state.app.tabStates,
+            getItemsUrl: state => state.app.shadowpay.api.MARKET_ITEMS,
             buyItemUrl: state => state.app.shadowpay.api.BUY_ITEM,
             getBuyHistoryUrl: state => state.app.shadowpay.api.BUY_HISTORY,
             presets: state => state.presetManager.presets,
@@ -155,7 +150,6 @@ export default {
             set(value) {
                 this.presetId = value
                 this.preset = {...this.getPreset(this.presetId)}
-                this.updateGetItemsUrl()
                 this.checkToConfirm()
             }
         },
@@ -174,16 +168,14 @@ export default {
         ...mapActions({
            updateAlerts: 'app/updateAlerts' 
         }),
+        sortedPresets(sortAsc = true) {
+            return this.$store.getters['presetManager/sortedPresets'](sortAsc)
+        },
         getPreset(id) {
             return this.$store.getters['presetManager/preset'](id)
         },
         clearDopplerHashName(hashName) {
             return this.$store.getters['item/steamHashName'](hashName)
-        },
-        updateGetItemsUrl() {
-            this.apiUrls.getItems.searchParams.set('price_from', this.preset.minPrice)
-            this.apiUrls.getItems.searchParams.set('price_to', this.preset.maxPrice)
-            this.apiUrls.getItems.searchParams.set('search', this.preset.search)
         },
         clear() {
             clearTimeout(this.timeoutId)
@@ -208,10 +200,7 @@ export default {
             if(!this.isRunning) return
 
             this.items.toConfirm.forEach(item => {
-                if(item._updated
-                    && item._real_discount >= this.preset.deal + this.preset.dealMargin 
-                    && item._steam_volume > 10
-                ) this.buyItem(item)
+                if(this.canBuyItem(item)) this.buyItem(item)
             })
         }, 
         updateToConfirm() {
@@ -229,8 +218,13 @@ export default {
                     item.price_market = filteredItem.price_market
                     item.price_usd = filteredItem.price_usd
                     item.price_market_usd = filteredItem.price_market_usd
+
+                    if(this.canBuyItem(item)) this.buyItem(item)
                 }
             })       
+        },
+        canBuyItem(item) {
+            return item._updated && item._real_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume >= 10
         },
         buyItem(item) {
             if(this.items.pending.get(item.id) || item.price_market_usd + this.moneySpent > this.preset.toSpend) return
@@ -266,7 +260,6 @@ export default {
                         this.setCsrfCookie(token)
                         this.buyItem(item)
                     }
-
                     return
                 }
 
@@ -278,7 +271,6 @@ export default {
                     })
 
                     this.notificationSound.play()
-
                     return
                 }
             })
@@ -325,24 +317,26 @@ export default {
 
                         item.state = transaction.state
 
-                        if(item.state == 'cancelled' || item.state == 'finished') {
-                            this.items.pending.delete(item.id)
-                            this.finishedItems.push(item)
+                        switch(item.state) {
+                            case 'cancelled':
+                                this.items.pending.delete(item.id)
+                                this.finishedItems.push(item)
 
-                            if(item.state == 'cancelled' && item._current_run) {
-                                this.moneySpent -= item.price_market_usd
-                                return
-                            }
+                                if(item._current_run) this.moneySpent -= item.price_market_usd
+                                break
 
-                            if(item.state == 'finished' && this.items.pending.size == 0 && Math.abs(this.moneySpent - this.preset.toSpend) < this.preset.minPrice) {
-                                this.toggleIsRunning()
-                                this.updateAlerts({
-                                    type: this.alertTypes.INFO,
-                                    message: `Bot #${this.id} terminated - to spend limit reached`
-                                })
+                            case 'finished':
+                                this.items.pending.delete(item.id)
+                                this.finishedItems.push(item)
 
-                                return
-                            }
+                                if(this.items.pending.size == 0 && Math.abs(this.moneySpent - this.preset.toSpend) < this.preset.minPrice) {
+                                    this.toggleIsRunning()
+                                    this.updateAlerts({
+                                        type: this.alertTypes.INFO,
+                                        message: `Bot #${this.id} terminated - to spend limit reached`
+                                    })
+                                }
+                                break
                         }
                     })
                 })
@@ -354,7 +348,26 @@ export default {
         async run() {
             if(Math.abs(this.moneySpent - this.preset.toSpend) >= this.preset.minPrice) {
                 try {    
-                    const response = await fetch(this.apiUrls.getItems.toString(), {
+                    const response = await fetch(this.getItemsUrl +
+                        `?types=[]` +
+                        `&exteriors=[]` +
+                        `&rarities=[]` +
+                        `&collections=[]` +
+                        `&item_subcategories=[]` +
+                        `&float={"from":0,"to":1}` +
+                        `&price_from=${this.preset.minPrice}` +
+                        `&price_to=${this.preset.maxPrice}` +
+                        `&game=csgo` +
+                        `&stickers=[]` +
+                        `&count_stickers=[]` +
+                        `&short_name=` +
+                        `&search=${this.preset.search}` +
+                        `&stack=false` +
+                        `&sort=desc` + 
+                        `&sort_dir=desc` +
+                        `&sort_column=price_rate` +
+                        `&limit=50` +
+                        `&offset=0`, {
                         credentials: 'include'
                     })
 
@@ -398,7 +411,7 @@ export default {
                                         this.buyItem(item)
                                     }
 
-                                    if(item._real_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume > 10) this.buyItem(item)
+                                    if(this.canBuyItem(item)) this.buyItem(item)
                                 }
                                 
                                 if(this.isRunning) this.items.toConfirm.set(item.id, item)
