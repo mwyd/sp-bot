@@ -1,5 +1,8 @@
 <template>
-    <div :class="tabWindowClass">
+    <div 
+        class="spb-tab__window spb--rounded-medium"
+        :class="tabWindowClass"
+    >
         <component 
             ref="childComponent"
             :id="id"
@@ -36,8 +39,9 @@ export default {
     },
     computed: {
         tabWindowClass() {
-            const className = 'spb-tab__window spb--rounded-medium'
-            return className + (this.isOpen ? ' spb-tab__window--active' : ' spb-tab__window--hidden')
+            return [
+                this.isOpen ? 'spb-tab__window--active' : 'spb-tab__window--hidden'
+            ]
         }
     },
     methods: {

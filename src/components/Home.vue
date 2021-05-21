@@ -4,17 +4,19 @@
         <div class="spb-home__views-wrapper">
             <div class="spb-home__views spb--cursor-pointer spb--rounded-small spb--flex">
                 <div 
-                    @click="currentView = views.ACTIVE" 
+                    class="spb-home__view spb--rounded-small"
                     :class="viewClass(views.ACTIVE)"
+                    @click="currentView = views.ACTIVE" 
                 >
                     Active
                 </div>
                 <div 
+                    class="spb-home__view spb--rounded-small"
+                    :class="viewClass(views.BUY_HISTORY)"
                     @click="() => {
                         currentView = views.BUY_HISTORY
                         clearPendingStatus()
                     }" 
-                    :class="viewClass(views.BUY_HISTORY)"
                 >
                     Buy history
                 </div>
@@ -42,6 +44,7 @@
                     </option>
                 </select>
                 <div 
+                    class="spb-home__sort-dir spb--rounded-small spb--background-image-center spb--cursor-pointer"
                     :class="sortDirClass"
                     @click="() => sortDirAsc = !sortDirAsc"
                 ></div>
@@ -145,8 +148,9 @@ export default {
             return this.$store.getters['bots/items'](this.itemTypes.PENDING)
         },
         sortDirClass() {
-            const className = 'spb-home__sort-dir spb--rounded-small spb--background-image-center spb--cursor-pointer'
-            return className + (this.sortDirAsc ? ' spb-home__sort-dir--asc' : ' spb-home__sort-dir--desc')
+            return [
+                this.sortDirAsc ? 'spb-home__sort-dir--asc' : 'spb-home__sort-dir--desc'
+            ]
         }
     },
     methods: {
@@ -172,8 +176,9 @@ export default {
                 .sort(this.sortBy.get(this.sortByModel).func(this.sortDirAsc))
         },
         viewClass(view) {
-            const className = 'spb-home__view spb--rounded-small'
-            return className + (this.currentView == view ? ` spb-home__view--active` : '')
+            return [
+                this.currentView == view ? 'spb-home__view--active' : ''
+            ]
         },
         freezeToConfirm(value) {
             if(value) this.itemsCache.toConfirm = this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)

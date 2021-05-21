@@ -9,6 +9,7 @@
                         v-model.number="preset.deal"
                         :type="'number'"
                         :validator="value => (value >= 0 && value <= 100)"
+                        :modelUpdated="checkToConfirm"
                     >
                     </InputField>
                 </div>  
@@ -18,7 +19,7 @@
                         v-model.number="preset.minPrice"
                         :type="'number'" 
                         :validator="value => (value >= 0 && value <= preset.maxPrice)"
-                        :modelUpdated="() => updateUrl = true"
+                        :modelUpdated="updateGetItemsUrl"
                     >
                     </InputField>
                 </div>
@@ -43,7 +44,7 @@
                         v-model="preset.search"
                         :type="'text'" 
                         :placeholder="'Search...'"
-                        :modelUpdated="() => updateUrl = true"
+                        :modelUpdated="updateGetItemsUrl"
                     >
                     </InputField>
                 </div> 
@@ -55,6 +56,7 @@
                         v-model.number="preset.dealMargin"
                         :type="'number'" 
                         :validator="value => (value >= -preset.deal && value <= 100 - preset.deal)"
+                        :modelUpdated="checkToConfirm"
                     >
                     </InputField>
                 </div>  
@@ -64,7 +66,7 @@
                         v-model.number="preset.maxPrice"
                         :type="'number'" 
                         :validator="value => (value >= preset.minPrice && value <= preset.toSpend)"
-                        :modelUpdated="() => updateUrl = true"
+                        :modelUpdated="updateGetItemsUrl"
                     >
                     </InputField>
                 </div>
@@ -74,6 +76,7 @@
                         v-model.number="preset.toSpend"
                         :type="'number'" 
                         :validator="value => (value >= preset.maxPrice && value <= 1000000)"
+                        :modelUpdated="checkToConfirm"
                     >
                     </InputField>
                 </div>
@@ -89,7 +92,8 @@
             </div>
         </div>
         <button 
-            :class="'spb-bot__run-button spb-button ' + (isRunning ? 'spb-button--red' : 'spb-button--green')"
+            class="spb-bot__run-button spb-button"
+            :class="toggleIsRunningButtonClass"
             @click="toggleIsRunning" 
         >
         {{ isRunning ? 'stop' : 'start' }}
@@ -99,6 +103,7 @@
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
+import { SPB_LOG } from '../utils/index.js'
 import DateFormat from 'dateformat'
 import InputField from './InputField.vue'
 
@@ -118,17 +123,16 @@ export default {
             presetId: 0,
             preset: {},
             moneySpent: 0,
-            updateUrl: true,
             initDate: Date.now(),
             lastPendingUpdate: Date.now(),
             pendingUpdateDelay: 10,
             apiUrls: {
-                getItems: this.$store.state.app.shadowpay.api.MARKET_ITEMS
+                getItems: new URL(this.$store.state.app.shadowpay.api.MARKET_ITEMS)
             },
             items: {
                 filtered: [],
-                toConfirm: [],
-                pending: []
+                toConfirm: new Map(),
+                pending: new Map()
             }
         }
     },
@@ -150,9 +154,15 @@ export default {
             },
             set(value) {
                 this.presetId = value
-                this.updateUrl = true
                 this.preset = {...this.getPreset(this.presetId)}
+                this.updateGetItemsUrl()
+                this.checkToConfirm()
             }
+        },
+        toggleIsRunningButtonClass() {
+            return [
+                this.isRunning ? 'spb-button--red' : 'spb-button--green'
+            ]
         }
     },
     methods: {
@@ -167,10 +177,24 @@ export default {
         getPreset(id) {
             return this.$store.getters['presetManager/preset'](id)
         },
+        clearDopplerHashName(hashName) {
+            return this.$store.getters['item/steamHashName'](hashName)
+        },
+        updateGetItemsUrl() {
+            this.apiUrls.getItems.searchParams.set('price_from', this.preset.minPrice)
+            this.apiUrls.getItems.searchParams.set('price_to', this.preset.maxPrice)
+            this.apiUrls.getItems.searchParams.set('search', this.preset.search)
+        },
+        clear() {
+            clearTimeout(this.timeoutId)
+            this.items.filtered = []
+            this.items.pending.forEach(item => item._current_run = false)
+            this.items.toConfirm = new Map()
+            this.moneySpent = 0
+        },
         toggleIsRunning() {
             if(this.isRunning) {
                 this.isRunning = false
-                clearTimeout(this.timeoutId)
                 this.clear()
                 this.$emit('statusUpdate', this.tabStates.IDLE)
             }
@@ -180,62 +204,43 @@ export default {
                 this.$emit('statusUpdate', this.tabStates.RUNNING)
             }
         },
-        clear() {
-            for(let pendingItem of this.items.pending) pendingItem._current_run = false
-            this.items.toConfirm = []
-            this.moneySpent = 0
-        },
-        clearDopplerHashName(hashName) {
-            return this.$store.getters['item/steamHashName'](hashName)
-        },
-        updateGetItemsUrl() {
-            if(this.updateUrl) {
-                let getItemsURL = new URL(this.apiUrls.getItems)
+        checkToConfirm() {
+            if(!this.isRunning) return
 
-                getItemsURL.searchParams.set('price_from', this.preset.minPrice)
-                getItemsURL.searchParams.set('price_to', this.preset.maxPrice)
-                getItemsURL.searchParams.set('search', this.preset.search)
+            this.items.toConfirm.forEach(item => {
+                if(item._updated
+                    && item._real_discount >= this.preset.deal + this.preset.dealMargin 
+                    && item._steam_volume > 10
+                ) this.buyItem(item)
+            })
+        }, 
+        updateToConfirm() {
+            this.items.toConfirm.forEach(item => {
+                const filteredItem = this.items.filtered.find(filteredItem => filteredItem.id == item.id)
 
-                this.apiUrls.getItems = getItemsURL.toString()
-                this.updateUrl = false
-            }
-        },
-        addToConfirm(item) {
-            if(this.items.toConfirm.findIndex(_item => _item.id == item.id) != -1 || !this.isRunning) return
-            
-            item._onclick = () => {this.buyItem(item)}
-            this.items.toConfirm.push(item)
-        },
-        updateToConfirm() {       
-            for(let i = this.items.toConfirm.length - 1; i >= 0; i--) {
-                let tcItem = this.items.toConfirm[i]
-                let item = this.items.filtered.find(_item => _item.id == tcItem.id)
-                
-                if(item === undefined) {
-                    this.items.toConfirm.splice(i, 1)
-                    continue
-                }
-    
-                if(item.price_market_usd != tcItem.price_market_usd) {
-                    this.items.toConfirm.splice(i, 1)
-                    continue
+                if(filteredItem === undefined) {
+                    this.items.toConfirm.delete(item.id)
+                    return
                 }
 
-                if(tcItem._updated && tcItem._real_discount >= this.preset.deal + (this.preset.dealMargin) && tcItem._steam_volume > 10) this.buyItem(tcItem)
-            }
+                if(filteredItem.price_market_usd != item.price_market_usd) {
+                    item.discount = Math.round(filteredItem.discount)
+                    item.price = filteredItem.price
+                    item.price_market = filteredItem.price_market
+                    item.price_usd = filteredItem.price_usd
+                    item.price_market_usd = filteredItem.price_market_usd
+                }
+            })       
         },
-        buyItem(item, repurchase = false) {
-            if(!repurchase) {
-                if(this.items.pending.findIndex(_item => _item.id == item.id) != -1 || parseFloat(item.price_market_usd) + this.moneySpent > this.preset.toSpend) return
+        buyItem(item) {
+            if(this.items.pending.get(item.id) || item.price_market_usd + this.moneySpent > this.preset.toSpend) return
 
-                item._status = 'pending'
-                item._current_run = true
-                item._transaction_id = null
-                item._time_bought = Date.now()
+            item._current_run = true
+            item._transaction_id = null
+            item._time_bought = Date.now()
 
-                this.items.pending.push(item)
-                this.moneySpent += parseFloat(item.price_market_usd)
-            }
+            this.items.pending.set(item.id, item)
+            this.moneySpent += item.price_market_usd
     
             fetch(this.buyItemUrl, {
                 method: 'POST',
@@ -247,50 +252,50 @@ export default {
                     `&price=${item.price_market_usd}` +
                     `&csrf_token=${this.csrfCookie}`
             })
-            .then(res => res.json())
+            .then(response => response.json())
             .then(data => {
-                switch(data.status) {
-                    case "error":
-                        switch(data.error_message) {
-                            case 'wrong_token':
-                                this.setCsrfCookie(data.token)
-                                this.buyItem(item, true)
-                                break
+                SPB_LOG('Buy info', {...data, _item: item})
 
-                            default:
-                                this.moneySpent -= parseFloat(item.price_market_usd)
-                                item._status = 'error'
-                                break
-                        }
-                        break
-                        
-                    case "success":
-                        item._transaction_id = data.id
-                        item._status = 'success'
-                        
-                        chrome.runtime.sendMessage({
-                            action: 'buy_item'
-                        })
+                const {status, error_message, token, id} = data
 
-                        this.notificationSound.play()
-                        break
+                if(status == 'error') {
+                    this.items.pending.delete(item.id)
+                    this.moneySpent -= item.price_market_usd
+
+                    if(error_message == 'wrong_token') {
+                        this.setCsrfCookie(token)
+                        this.buyItem(item)
+                    }
+
+                    return
                 }
 
-                //spbLog('Buy info', {...data, _item: item});
+                if(status == 'success') {
+                    item._transaction_id = id
+                        
+                    chrome.runtime.sendMessage({
+                        action: 'buy_item'
+                    })
+
+                    this.notificationSound.play()
+
+                    return
+                }
             })
             .catch(err => {
-                item._status = 'error'
-                this.moneySpent -= parseFloat(item.price_market_usd)
-                console.log(err)
-                //spbLog('\n', new Error(err))
+                SPB_LOG('\n', new Error(err))
+
+                this.items.pending.delete(item.id)
+                this.moneySpent -= item.price_market_usd
             })
         },
         updatePending() {
-            if(this.items.pending.length == 0 || Date.now() - this.lastPendingUpdate < this.pendingUpdateDelay * 1000) return
+            if(this.items.pending.size == 0 || Date.now() - this.lastPendingUpdate < this.pendingUpdateDelay * 1000) return
             
             chrome.runtime.sendMessage({
                 action: 'get_bought_items_counter'
-            }, res => {
+            }, 
+            response => {
                 fetch(this.getBuyHistoryUrl, {
                     method: 'POST',
                     credentials: 'include',
@@ -298,7 +303,7 @@ export default {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: `page=1` +
-                        `&limit=${res.data}` +
+                        `&limit=${response.data}` +
                         `&sort_column=time_finished` +
                         `&sort_dir=desc` +
                         `&custom_id=` +
@@ -306,82 +311,73 @@ export default {
                         `&date_end=` +
                         `&state=all`
                 })
-                .then(res => res.json())
+                .then(response => response.json())
                 .then(data => {
                     this.lastPendingUpdate = Date.now()
 
-                    switch(data.status) {
-                        case 'success':
-                            for(let i = this.items.pending.length - 1; i >= 0 ; i--) {
-                                let item = this.items.pending[i]
+                    const {status, items} = data
 
-                                if(item._status == 'error') {
-                                    this.items.pending.splice(i, 1)
-                                    continue
-                                }
-    
-                                let historyItem = data.items.find(_item => _item.id == item._transaction_id)
-                                if(historyItem === undefined) continue
+                    if(status != 'success') return
 
-                                item.state = historyItem.state
-    
-                                switch(item.state) {
-                                    case 'cancelled':
-                                        this.items.pending.splice(i, 1)
-                                        this.finishedItems.push(item)
-    
-                                        if(item._current_run) this.moneySpent -= parseFloat(item.price_market_usd)
-                                        break
-    
-                                    case 'finished':
-                                        this.items.pending.splice(i, 1)
-                                        this.finishedItems.push(item)
-    
-                                        if(this.items.pending.length == 0 && Math.abs(this.moneySpent - this.preset.toSpend) < this.preset.minPrice) {
-                                            this.toggleIsRunning()
-                                            this.updateAlerts({
-                                                type: this.alertTypes.INFO,
-                                                message: `Bot #${this.id} terminated - to spend limit reached`
-                                            })
-                                        }
-                                        break
-                                    }
+                    this.items.pending.forEach(item => {    
+                        const transaction = items.find(transaction => transaction.id == item._transaction_id)
+                        if(transaction === undefined) return
+
+                        item.state = transaction.state
+
+                        if(item.state == 'cancelled' || item.state == 'finished') {
+                            this.items.pending.delete(item.id)
+                            this.finishedItems.push(item)
+
+                            if(item.state == 'cancelled' && item._current_run) {
+                                this.moneySpent -= item.price_market_usd
+                                return
                             }
-                            break
-                    }
+
+                            if(item.state == 'finished' && this.items.pending.size == 0 && Math.abs(this.moneySpent - this.preset.toSpend) < this.preset.minPrice) {
+                                this.toggleIsRunning()
+                                this.updateAlerts({
+                                    type: this.alertTypes.INFO,
+                                    message: `Bot #${this.id} terminated - to spend limit reached`
+                                })
+
+                                return
+                            }
+                        }
+                    })
                 })
                 .catch(err => {
-                    console.log(err)
-                    //spbLog('\n', new Error(err))
+                    SPB_LOG('\n', new Error(err))
                 })
             })
         },
         async run() {
-            this.updateGetItemsUrl()
-            this.items.filtered = []
-
             if(Math.abs(this.moneySpent - this.preset.toSpend) >= this.preset.minPrice) {
                 try {    
-                    const response = await fetch(this.apiUrls.getItems, {credentials: 'include'})
-                    let data = await response.json()
+                    const response = await fetch(this.apiUrls.getItems.toString(), {
+                        credentials: 'include'
+                    })
 
-                    if(data.status == "success") {
-                        this.items.filtered = data.items
+                    const {status, items} = await response.json()
+
+                    if(status == "success") {
+                        this.items.filtered = items
             
-                        this.items.filtered = this.items.filtered.filter(item => !item.is_my_item)
-                        this.items.filtered = this.items.filtered.filter(item => (item.discount >= this.preset.deal && item.price_market_usd >= this.preset.minPrice))
-            
-                        this.items.filtered.sort((a, b) => b.price_market_usd - a.price_market_usd)
+                        this.items.filtered = this.items.filtered.filter(item => !item.is_my_item 
+                            && item.discount >= this.preset.deal 
+                            && item.price_market_usd >= this.preset.minPrice
+                        )
 
                         for(let item of this.items.filtered) {
-                            if(this.items.toConfirm.findIndex(_item => _item.id == item.id) > -1) continue
-                            if(item.phase) item.steam_market_hash_name = this.clearDopplerHashName(item.steam_market_hash_name)
+                            if(this.items.toConfirm.get(item.id)) continue
 
                             item.discount = Math.round(item.discount)
+                            item.price_market_usd = parseFloat(item.price_market_usd)
                             item._updated = false
                             item._search_steam_hash_name = item.steam_market_hash_name.toLowerCase()
+                            if(item.phase) item.steam_market_hash_name = this.clearDopplerHashName(item.steam_market_hash_name)
 
-                            chrome.runtime.sendMessage({
+                            await new Promise(resolve => chrome.runtime.sendMessage({
                                 action: 'get_steam_market_csgo_item', 
                                 params: {
                                     token: this.token,
@@ -392,21 +388,27 @@ export default {
                                 const {success, data} = response
 
                                 if(success) {
+                                    item._updated = true
                                     item._steam_price = data.price
                                     item._steam_volume = data.volume
                                     item._app_income = ((0.87 * data.price) - item.price_market_usd).toFixed(2)
                                     item._app_income_percentage = 100 - Math.round((item.price_market_usd - item._app_income) * 100 / item.price_market_usd)
                                     item._real_discount = 100 - Math.round(item.price_market_usd * 100 / item._steam_price)
-                                    item._updated = true
+                                    item._onclick = () => {
+                                        this.buyItem(item)
+                                    }
+
+                                    if(item._real_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume > 10) this.buyItem(item)
                                 }
                                 
-                                this.addToConfirm(item)
-                            })
+                                if(this.isRunning) this.items.toConfirm.set(item.id, item)
+                                resolve(response)
+                            }))
                         }
                     }
                 }
                 catch(err) {
-                    //spbLog('\n', new Error(err))
+                    SPB_LOG('\n', new Error(err))
                 }
             }
 

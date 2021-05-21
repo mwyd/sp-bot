@@ -2,6 +2,7 @@
     <div class="spb-input spb--font-size-medium spb--rounded-small">
         <input 
             v-model="internalModel"
+            class="spb-input__field"
             :class="inputClass"
             :type="type"
             :placeholder="placeholder"
@@ -53,10 +54,10 @@ export default {
     },
     computed: {
         inputClass() {
-            const className = `spb-input__field`
-            return className + 
-                (this.synchronized ? ' spb-input__field--ok' : ' spb-input__field--wrong') +
-                (this.disabled ? ' spb--cursor-not-allowed' : '')
+            return [
+                this.synchronized ? 'spb-input__field--ok' : 'spb-input__field--wrong',
+                this.disabled ? 'spb--cursor-not-allowed' : ''
+            ]
         }
     },
     methods: {

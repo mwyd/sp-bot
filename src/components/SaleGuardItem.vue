@@ -48,6 +48,7 @@
             </div>
             <div class="spb-item__column spb-item__update">
                 <button 
+                    class="spb-button spb--font-size-small"
                     :class="updateButtonClass"
                     :disabled="actionsDisabled"
                     @click="toggleTracked"
@@ -155,8 +156,9 @@ export default {
             return Object.keys(this.shadowpayStatistics).filter(key => this.mutableProperties[key])
         },
         updateButtonClass() {
-            const className = 'spb-button spb--font-size-small'
-            return className + (this.metadata.tracked ? ' spb-button--red' : ' spb-button--green')
+            return [
+                this.metadata.tracked ? 'spb-button--red' : 'spb-button--green'
+            ]
         },
         minPrice: {
             get() {
@@ -233,7 +235,11 @@ export default {
             this.actionsDisabled = true
 
             const promise = this.metadata.tracked ? this.stopTrack(this.metadata.databaseId) : this.startTrack(this.item)
-            promise.then(() => this.actionsDisabled = false)
+            
+            return new Promise(resolve => promise.then(data => {
+                this.actionsDisabled = false
+                resolve(data)
+            }))
         }
     },
     beforeMount() {

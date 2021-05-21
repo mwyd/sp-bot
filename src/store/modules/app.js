@@ -69,7 +69,7 @@ export default {
                     `&rarities=[]` +
                     `&collections=[]` +
                     `&item_subcategories=[]` +
-                    `&float=%7B%22from%22:0,%22to%22:1%7D` +
+                    `&float={"from":0,"to":1}` +
                     `&price_from=0` +
                     `&price_to=20000` +
                     `&game=csgo` +
@@ -79,6 +79,7 @@ export default {
                     `&search=` +
                     `&stack=false` +
                     `&sort=desc` + 
+                    `&sort_dir=desc` +
                     `&sort_column=price_rate` +
                     `&limit=50` +
                     `&offset=0`,

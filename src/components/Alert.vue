@@ -1,5 +1,8 @@
 <template>
-    <div :class="alertClass">
+    <div 
+        class="spb-alert spb--rounded-small spb--font-weight-medium spb--font-size-medium spb--flex"
+        :class="alertClass"
+    >
         {{ message }}
     </div>
 </template>
@@ -18,8 +21,9 @@ export default {
             alertTypes: state => state.app.alertTypes
         }),
         alertClass() {
-            const className = 'spb-alert spb--rounded-small spb--font-weight-medium spb--font-size-medium spb--flex'
-            return `${className} spb-alert--${this.type}`
+            return [
+                `spb-alert--${this.type}`
+            ]
         }
     }
 }

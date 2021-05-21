@@ -19,6 +19,7 @@
                     <div class="spb--flex spb-option__row spb--font-size-medium">
                         <div>Toggle bots</div>
                         <button 
+                            class="spb-button spb-button-tiny"
                             :class="runBotsButtonClass"
                             @click="toggleRunBots" 
                         >
@@ -120,8 +121,9 @@ export default {
             runBots: state => state.bots.runBots
         }),
         runBotsButtonClass() {
-            const className = 'spb-button spb-button-tiny';
-            return className + (this.runBots ? ' spb-button--red' : ' spb-button--green');
+            return [
+                this.runBots ? 'spb-button--red' : 'spb-button--green'
+            ]
         },
         token: {
             get() {

@@ -4,14 +4,16 @@
         <div class="spb-friend-manager__views-wrapper">
             <div class="spb-friend-manager__views spb--cursor-pointer spb--rounded-small spb--flex">
                 <div 
-                    @click="currentView = views.ADD" 
+                    class="spb-friend-manager__view spb--rounded-small"
                     :class="viewClass(views.ADD)"
+                    @click="currentView = views.ADD" 
                 >
                     Add
                 </div>
                 <div 
-                    @click="currentView = views.MANAGE"
+                    class="spb-friend-manager__view spb--rounded-small"
                     :class="viewClass(views.MANAGE)"
+                    @click="currentView = views.MANAGE"
                 >
                     Manage
                 </div>
@@ -148,8 +150,9 @@ export default {
             updateFriend: 'friendManager/updateFriend'
         }),
         viewClass(view) {
-            const className = 'spb-friend-manager__view spb--rounded-small'
-            return className + (this.currentView == view ? ` spb-friend-manager__view--active` : '')
+            return [
+                this.currentView == view ? 'spb-friend-manager__view--active' : ''
+            ]
         },
         getFriend(id) {
             return this.$store.getters['friendManager/friend'](id)

@@ -23,6 +23,7 @@
                     </option>
                 </select>
                 <div 
+                    class="spb-sale-guard__sort-dir spb--rounded-small spb--background-image-center spb--cursor-pointer"
                     :class="sortDirClass"
                     @click="() => sortDirAsc = !sortDirAsc"
                 ></div>
@@ -48,6 +49,7 @@
         </div>
         <div class="spb--flex spb-sale-guard__footer">
             <button 
+                class="spb-sale-guard__toggle-button spb-button"
                 :class="toggleSaleGuardButtonClass"
                 :disabled="actionsDisabled"
                 @click="toggleSaleGuard"
@@ -101,8 +103,7 @@ export default {
             search: '',
             sortByModel: 3,
             sortDirAsc: false,
-            actionsDisabled: false,
-            toggleTrackedDelay: 0.2 * 1000
+            actionsDisabled: false
         }
     },
     watch: {
@@ -128,12 +129,14 @@ export default {
                 .sort((a, b) => this.sortBy.get(this.sortByModel).func(this.sortDirAsc)(a.item, b.item))
         },
         sortDirClass() {
-            const className = 'spb-sale-guard__sort-dir spb--rounded-small spb--background-image-center spb--cursor-pointer'
-            return className + (this.sortDirAsc ? ' spb-sale-guard__sort-dir--asc' : ' spb-sale-guard__sort-dir--desc')
+            return [
+                this.sortDirAsc ? 'spb-sale-guard__sort-dir--asc' : 'spb-sale-guard__sort-dir--desc'
+            ]
         },
         toggleSaleGuardButtonClass() {
-            const className = 'spb-sale-guard__toggle-button spb-button'
-            return className + (this.saleGuardRunning ? ' spb-button--red' : ' spb-button--green')
+            return [
+                this.saleGuardRunning ? 'spb-button--red' : 'spb-button--green'
+            ]
         }
     },
     methods: {
@@ -145,10 +148,7 @@ export default {
             this.actionsDisabled = true
 
             for(let saleGuardItem of Object.values(this.$refs)) {
-                if(!saleGuardItem.metadata.tracked) {
-                    saleGuardItem.toggleTracked()
-                    await new Promise(r => setTimeout(r, this.toggleTrackedDelay))
-                }
+                if(!saleGuardItem.metadata.tracked) await saleGuardItem.toggleTracked()
             }
 
             this.actionsDisabled = false
@@ -157,10 +157,7 @@ export default {
             this.actionsDisabled = true
 
             for(let saleGuardItem of Object.values(this.$refs)) {
-                if(saleGuardItem.metadata.tracked) {
-                    saleGuardItem.toggleTracked()
-                    await new Promise(r => setTimeout(r, this.toggleTrackedDelay))
-                }
+                if(saleGuardItem.metadata.tracked) await saleGuardItem.toggleTracked()
             }
 
             this.actionsDisabled = false

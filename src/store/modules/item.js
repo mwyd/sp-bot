@@ -13,7 +13,8 @@ export default {
             'Phase 4',
             'Emerald',
             'Ruby',
-            'Sapphire'
+            'Sapphire',
+            'Black Pearl'
         ], 
         interestingFloatRanges: [
             {

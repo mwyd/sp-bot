@@ -5,6 +5,7 @@
         @mouseleave="hideTabWindow"
     >
         <div 
+            class="spb-tab__button spb--cursor-pointer spb--rounded-medium spb--flex"
             :class="tabButtonClass"
             @click="toggleIsBound"
         >
@@ -14,7 +15,10 @@
                 @click="close(id)"
             >
             </div>
-            <div :class="statusClass"></div>
+            <div 
+                class="spb-tab__icon spb-tab__icon--left"
+                :class="statusClass">
+            </div>
             {{ symbol }}
         </div>
         <TabWindow
@@ -62,12 +66,14 @@ export default {
             return this.$store.getters['app/config']('displayTabPreview')
         },
         tabButtonClass() {
-            const className = 'spb-tab__button spb--cursor-pointer spb--rounded-medium spb--flex'
-            return className + (this.isBound ? ' spb-tab__button--bound' : '')
+            return [
+                this.isBound ? 'spb-tab__button--bound' : ''
+            ]
         },
         statusClass() {
-            const className = 'spb-tab__icon spb-tab__icon--left'
-            return className + ` spb-tab__icon--${this.status}`
+            return [
+                `spb-tab__icon--${this.status}`
+            ]
         }
     },
     methods: {

@@ -4,14 +4,16 @@
         <div class="spb-preset-manager__views-wrapper">
             <div class="spb-preset-manager__views spb--cursor-pointer spb--rounded-small spb--flex">
                 <div 
-                    @click="currentView = views.ADD" 
+                    class="spb-preset-manager__view spb--rounded-small"
                     :class="viewClass(views.ADD)"
+                    @click="currentView = views.ADD" 
                 >
                     Add
                 </div>
                 <div 
-                    @click="currentView = views.MANAGE"
+                    class="spb-preset-manager__view spb--rounded-small"
                     :class="viewClass(views.MANAGE)"
+                    @click="currentView = views.MANAGE"
                 >
                     Manage
                 </div>
@@ -205,8 +207,9 @@ export default {
             updatePreset: 'presetManager/updatePreset'
         }),
         viewClass(view) {
-            const className = 'spb-preset-manager__view spb--rounded-small'
-            return className + (this.currentView == view ? ` spb-preset-manager__view--active` : '')
+            return [
+                this.currentView == view ? `spb-preset-manager__view--active` : ''
+            ]
         },
         getPreset(id) {
             return this.$store.getters['presetManager/preset'](id)
@@ -218,7 +221,7 @@ export default {
                 .then(({success}) => {
                     if(success) {
                         const {length} = this.presetIds
-                        if(length > 1) this.currentPresetIdModel = this.presetIds[length - 1]
+                        if(length > 0) this.currentPresetIdModel = this.presetIds[length - 1]
 
                         this.actionsDisabled = false
                     }

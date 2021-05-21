@@ -15,8 +15,8 @@ export default {
     }),
     getters: {
         items: state => type => {
-            let merged = []
-            state.instances.forEach(instance => merged.push(...instance.items[type]))
+            const merged = []
+            state.instances.forEach(instance => merged.push(...instance.items[type]?.values()))
             return merged.filter((item, index, array) => array.findIndex(_item => _item.id == item.id) == index) 
         },
         running(state) {

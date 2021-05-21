@@ -1,5 +1,8 @@
 <template>
-    <div :class="stateClass">
+    <div 
+        class="spb-item__row spb--rounded-small" 
+        :class="stateClass"
+    >
         <div class="spb-item spb--flex">
             <div class="spb-item__column spb-item__name">
                 <a
@@ -78,14 +81,16 @@
                 v-if="item.inspect_url" 
                 class="spb-item__stat spb--cursor-pointer"
             >
-                {{ friendOwner ? friendOwner + "'s" : "Owner's" }} 
-                <span class="spb--text-green">
-                    <a 
-                        target="_blank" 
-                        class="spb--link"
-                        :href="steamUserProfileUrl + itemOwnerSteamId(item.inspect_url)"
-                    >Steam</a>
-                </span>
+                <a 
+                    target="_blank" 
+                    class="spb--link"
+                    :href="steamUserProfileUrl + itemOwnerSteamId(item.inspect_url)"
+                > 
+                    {{ friendOwner ? friendOwner + "'s" : "Owner's" }}
+                    <span class="spb--text-green">
+                        steam
+                    </span>
+                </a>
             </div>
             <div 
                 v-if="item.inspect_url" 
@@ -150,8 +155,9 @@ export default {
             alertTypes: state => state.app.alertTypes
         }),
         stateClass() {
-            const className = 'spb-item__row spb--rounded-small';
-            return className + (this.type != this.itemTypes.TO_CONFIRM ? ` spb-item__status--${this.item.state}` : '')
+            return [
+               this.type != this.itemTypes.TO_CONFIRM ? `spb-item__status--${this.item.state}` : ''
+            ]
         },
         timeBought() {
             return DateFormat(this.item._time_bought, 'yyyy-mm-dd H:MM:ss')
