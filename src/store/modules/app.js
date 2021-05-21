@@ -4,6 +4,7 @@ export default {
     namespaced: true,
     state: () => ({
         loaded: null,
+        backgroundMounted: false, 
         tabs: [
             {
                 id: 0,
@@ -94,6 +95,9 @@ export default {
         setLoaded(state, value) {
             state.loaded = value
         },
+        setBackgroundMounted(state, value) {
+            state.backgroundMounted = value
+        },
         setConfig(state, {type, value}) {
             type == '*' ? Object.assign(state.config, value) : state.config[type] = value
         },
@@ -172,7 +176,27 @@ export default {
             commit('addAlert', alert)
             setTimeout(() => commit('shiftAlert'), state.alertLifeTime)
         },
+        checkBackgroundMounted({rootState, commit, dispatch}) {
+            return new Promise(resolve => chrome.runtime.sendMessage({
+                action: 'get_bought_items_counter'
+            },
+            response => {
+                const {data} = response
+
+                if(data !== undefined) commit('setBackgroundMounted', true)
+                else {
+                    dispatch('app/updateAlerts', {
+                        type: rootState.app.alertTypes.ERROR,
+                        message: 'Background not mounted correctly - restart browser'
+                    }, { root: true })
+                }
+
+                resolve(response)
+            }))
+        },
         async setupApp({commit, dispatch}) {
+            await dispatch('checkBackgroundMounted')
+            
             await dispatch('session/loadToken', null, { root: true })
             await dispatch('session/authenticate', null, { root: true })
 
