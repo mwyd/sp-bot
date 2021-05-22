@@ -52,6 +52,8 @@ export default {
             const limit = 50
             let loopLimit = 1
 
+            let loaded = true
+
             for(let i = 0; i < loopLimit; i++) {
                 await new Promise(resolve => chrome.runtime.sendMessage({
                     action: 'get_friends', 
@@ -63,8 +65,6 @@ export default {
                 }, 
                 response => {
                     const {success, data} = response
-
-                    let loaded = false
 
                     if(success) {
                         for(let friend of data) {
@@ -78,14 +78,14 @@ export default {
                         }
 
                         if(data.length == limit) loopLimit++
-
-                        loaded = true
                     }
+                    else loaded = false
 
-                    commit('setLoaded', loaded)
                     resolve(response)
                 }))
             }
+
+            commit('setLoaded', loaded)
         },
         addFriend({rootState, commit, dispatch}, friend) {
             return new Promise(resolve => chrome.runtime.sendMessage({

@@ -44,6 +44,8 @@ export default {
             const limit = 50
             let loopLimit = 1
 
+            let loaded = true
+
             for(let i = 0; i < loopLimit; i++) {
                 await new Promise(resolve => chrome.runtime.sendMessage({
                     action: 'get_presets', 
@@ -56,8 +58,6 @@ export default {
                 response => {
                     const {success, data} = response
 
-                    let loaded = false
-
                     if(success) {
                         for(let preset of data) {
                             commit('setPreset', {
@@ -67,14 +67,14 @@ export default {
                         }
 
                         if(data.length == limit) loopLimit++
-
-                        loaded = true
                     }
+                    else loaded = false
 
-                    commit('setLoaded', loaded)
                     resolve(response)
                 }))
             }
+
+            commit('setLoaded', loaded)
         },
         addPreset({rootState, commit, dispatch}, preset) {
             return new Promise(resolve => chrome.runtime.sendMessage({
