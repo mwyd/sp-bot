@@ -115,7 +115,7 @@ export default {
                 {
                     name: 'Steam discount',
                     func: function(asc) { 
-                        return (a, b) => (b._real_discount - a._real_discount) * (asc ? -1 : 1)
+                        return (a, b) => ((b._real_discount ?? 0) - (a._real_discount ?? 0)) * (asc ? -1 : 1)
                     }
                 }
             ],
@@ -131,7 +131,7 @@ export default {
                 {
                     name: 'Item float',
                     func: function(asc) { 
-                        return (a, b) => (b.floatvalue - a.floatvalue) * (asc ? -1 : 1)
+                        return (a, b) => ((b.floatvalue || 1) - (a.floatvalue || 1)) * (asc ? -1 : 1)
                     }  
                 }
             ],
