@@ -1,4 +1,5 @@
-# sp-bot
+# SP-BOT v3
+supported
 
 ## Project setup
 ```
