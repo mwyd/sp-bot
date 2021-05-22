@@ -34,7 +34,8 @@
             <div class="spb-item__column spb-item__price">Price</div>
             <div class="spb-item__column spb-item__min-price">Min price</div>
             <div class="spb-item__column spb-item__max-price">Max price</div>
-            <div class="spb-item__column spb-item__update">Update</div>
+            <div class="spb-item__column spb-item__watch">Watch</div>
+            <div class="spb-item__column spb-item__info">Info</div>
         </div>
         <div class="spb-sale-guard__items">
             <div class="spb-sale-guard__margin-wrapper">
@@ -42,7 +43,6 @@
                     :key="'item-on-sale-' + data.item.id"
                     :item="data.item"
                     :metadata="data.metadata"
-                    :ref="'sale-guard-item-' + data.item.id"
                 >
                 </SaleGuardItem>
             </div>
@@ -50,11 +50,11 @@
         <div class="spb--flex spb-sale-guard__footer">
             <button 
                 class="spb-sale-guard__toggle-button spb-button"
-                :class="toggleSaleGuardButtonClass"
-                :disabled="actionsDisabled"
-                @click="toggleSaleGuard"
+                :class="toggleIsRunningButtonClass"
+                :disabled="actionsDisabled && !isRunning"
+                @click="toggleIsRunning"
             >
-                {{ saleGuardRunning ? 'stop' : 'start' }} 
+                {{ isRunning ? 'stop' : 'start' }} 
             </button>
             <div class="spb--flex spb--font-weight-light spb--font-size-medium">
                 <button 
@@ -81,13 +81,20 @@
                     <div class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-remove-all"></div>
                     <div class="spb-sale-guard__control-name">Remove all</div>
                 </button>
+                <div 
+                    class="spb-sale-guard__control spb--flex"
+                >
+                    <div class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-items"></div>
+                    <div class="spb-sale-guard__control-name">{{ itemsOnSale.size }} Items</div>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { mapState, mapMutations, mapActions } from 'vuex'
+import { SPB_LOG } from '../utils/index.js'
 import InputField from './InputField.vue'
 import SaleGuardItem from './SaleGuardItem.vue'
 
@@ -103,28 +110,39 @@ export default {
             search: '',
             sortByModel: 3,
             sortDirAsc: false,
+            timeoutId: null,
+            isRunning: false,
             actionsDisabled: false
         }
     },
     watch: {
-        saleGuardRunning(value) {
-            this.$emit('statusUpdate', value ? this.tabStates.RUNNING : this.saleGuardItemsLoaded ? this.tabStates.OK : this.tabStates.ERROR)
-        },
         saleGuardItemsLoaded(value) {
-            this.$emit('statusUpdate', value ? this.saleGuardRunning ? this.tabStates.RUNNING : this.tabStates.OK : this.tabStates.ERROR)
+            this.$emit('statusUpdate', value ? this.isRunning ? this.tabStates.RUNNING : this.tabStates.OK : this.tabStates.ERROR)
         }
     },
     computed: {
         ...mapState({
+            csrfCookie: state => state.app.shadowpay.csrfCookie,
             sortByTypes: state => state.item.sortByTypes,
             sortBy: state => state.item.sortBy,
-            saleGuardItems: state => state.saleGuard.items,
+            itemsOnSale: state => state.saleGuard.items,
             saleGuardItemsLoaded: state => state.saleGuard.loaded,
-            saleGuardRunning: state => state.saleGuard.isRunning,
-            tabStates: state => state.app.tabStates
+            tabStates: state => state.app.tabStates,
+            getItemsUrl: state => state.app.shadowpay.api.MARKET_ITEMS,
+            setItemPriceUrl: state => state.app.shadowpay.api.SAVE_ITEM_PRICE,
+            alertTypes: state => state.app.alertTypes
         }),
+        itemUpdateDelay() {
+            return this.$store.getters['app/config']('saleGuardItemUpdateDelay')
+        },
+        itemBidStep() {
+            return this.$store.getters['app/config']('saleGuardBidStep')
+        },
+        trackedItems() {
+            return this.$store.getters['saleGuard/trackedItems']
+        },
         filteredItems() {
-            return [...this.saleGuardItems.values()]
+            return [...this.itemsOnSale.values()]
                 .filter(data => data.item._search_steam_hash_name.search(this.search.toLowerCase()) > -1)
                 .sort((a, b) => this.sortBy.get(this.sortByModel).func(this.sortDirAsc)(a.item, b.item))
         },
@@ -133,34 +151,156 @@ export default {
                 this.sortDirAsc ? 'spb-sale-guard__sort-dir--asc' : 'spb-sale-guard__sort-dir--desc'
             ]
         },
-        toggleSaleGuardButtonClass() {
+        toggleIsRunningButtonClass() {
             return [
-                this.saleGuardRunning ? 'spb-button--red' : 'spb-button--green'
+                this.isRunning ? 'spb-button--red' : 'spb-button--green'
             ]
         }
     },
     methods: {
+        ...mapMutations({
+            setCsrfCookie: 'app/setCsrfCookie',
+            setItemMarketPrice: 'saleGuard/setItemMarketPrice'
+        }),
         ...mapActions({
             loadItemsOnSale: 'saleGuard/loadItemsOnSale',
-            toggleSaleGuard: 'saleGuard/toggleSaleGuard'
+            toggleSaleGuard: 'saleGuard/toggleSaleGuard',
+            stopTrack: 'saleGuard/stopTrack',
+            updateAlerts: 'app/updateAlerts'
         }),
         async startTrackAll() {
             this.actionsDisabled = true
-
-            for(let saleGuardItem of Object.values(this.$refs)) {
-                if(!saleGuardItem.metadata.tracked) await saleGuardItem.toggleTracked()
-            }
-
+            await this.$store.dispatch('saleGuard/startTrackAll')
             this.actionsDisabled = false
         },
         async stopTrackAll() {
             this.actionsDisabled = true
+            await this.$store.dispatch('saleGuard/stopTrackAll')
+            this.actionsDisabled = false
+        },
+        isFriendItem(userId) {
+            return this.$store.getters['friendManager/itemOwner'](userId)
+        },
+        toggleIsRunning() {
+            if(this.isRunning) {
+                this.isRunning = false
+                this.$emit('statusUpdate', this.saleGuardItemsLoaded ? this.tabStates.OK : this.tabStates.ERROR)
+                clearTimeout(this.timeoutId)
+            }
+            else {
+                this.isRunning = true
+                this.$emit('statusUpdate', this.tabStates.RUNNING)
+                this.run()
+            }
+        },
+        updateItemPrice(item, metadata, newPrice) {
+            fetch(this.setItemPriceUrl, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `id=${item.id}` +
+                    `&price=${newPrice}` +
+                    `&csrf_token=${this.csrfCookie}`
+            })
+            .then(response => response.json())
+            .then(({status, error_message, token}) => {
+                if(status == 'success') {
+                    this.setItemMarketPrice({
+                        id: item.id,
+                        price: newPrice
+                    })
+                }
+                else {
+                    switch(error_message) {
+                        case 'wrong_token':
+                            this.setCsrfCookie(token)
+                            this.updateItemPrice(item, metadata, newPrice)
+                            break
 
-            for(let saleGuardItem of Object.values(this.$refs)) {
-                if(saleGuardItem.metadata.tracked) await saleGuardItem.toggleTracked()
+                        case 'bid_item_not_exist':
+                            this.stopTrack({
+                                id: metadata.databaseId,
+                                showAlert: false
+                            })
+                            this.loadItemsOnSale()
+                            break
+                    }
+                }
+            })
+            .catch(err => SPB_LOG('Cant update price\n', err))
+        },
+        async run() {
+            if(this.trackedItems.length == 0) {
+                this.updateAlerts({
+                    type: this.alertTypes.INFO,
+                    message: 'Sale Guard terminated - empty set'
+                })
+
+                this.toggleIsRunning()
+                return
             }
 
-            this.actionsDisabled = false
+            try {
+                for(let {item, metadata} of this.trackedItems) {
+                    await new Promise(r => setTimeout(r, this.itemUpdateDelay))
+
+                    const response = await fetch(this.getItemsUrl +
+                            `?types=[]` +
+                            `&exteriors=[]` +
+                            `&rarities=[]` +
+                            `&collections=[]` +
+                            `&item_subcategories=[]` +
+                            `&float={"from":0,"to":1}` +
+                            `&price_from=${metadata.minPrice}` +
+                            `&price_to=${metadata.maxPrice}` +
+                            `&game=csgo` +
+                            `&stickers=[]` +
+                            `&count_stickers=[]` +
+                            `&short_name=` +
+                            `&search=${item._search_steam_hash_name}` +
+                            `&stack=false` +
+                            `&sort=asc` + 
+                            `&sort_dir=asc` +
+                            `&sort_column=price` +
+                            `&limit=50` +
+                            `&offset=0`, {
+                            credentials: 'include'
+                        })
+
+                    const {status, items} = await response.json()
+
+                    if(status != 'success') continue
+
+                    let newPrice = metadata.maxPrice
+
+                    for(let marketItem of items) {
+                        if(marketItem.is_my_item
+                            || marketItem.is_stattrak != item.is_stattrak
+                            || this.isFriendItem(marketItem.user_id)
+                        ) continue
+
+                        if(marketItem.price_market_usd - this.itemBidStep > metadata.minPrice) {
+                            newPrice = Math.round((marketItem.price_market_usd - this.itemBidStep) * 100) / 100
+                            break
+                        }
+                    }
+
+                    if(item.price_market_usd == newPrice) continue
+
+                    this.updateItemPrice(item, metadata, newPrice)
+                }
+            }
+            catch(err) {
+                SPB_LOG('\n', new Error(err))
+            }
+
+            if(this.isRunning) {
+                this.timeoutId = setTimeout(() => {
+                    this.run()
+                }, this.itemUpdateDelay)
+            }
         }
     }
 }
@@ -233,6 +373,7 @@ export default {
     background: transparent;
     border: none;
     outline: none;
+    font-weight: normal;
 }
 
 .spb-sale-guard__control-icon {
@@ -253,5 +394,9 @@ export default {
 .spb-sale-guard__control-remove-all {
     transform: rotate(90deg);
     background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/arrow.svg');
+}
+
+.spb-sale-guard__control-items {
+    background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/pack.svg');
 }
 </style>

@@ -91,6 +91,19 @@
                 </Item> 
             </div>
         </div>
+        <div class="spb-home__footer spb--font-size-medium">
+            <div 
+                class="spb--flex spb-home__control"
+            >
+                <div class="spb-home__control-icon spb--background-image-center spb-home__control-items"></div>
+                <div class="spb-home__control-name">
+                    {{ currentView == views.ACTIVE 
+                        ? itemsCount(itemTypes.TO_CONFIRM) 
+                        : itemsCount(itemTypes.PENDING) + finishedItems.length 
+                    }} Items
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -139,7 +152,8 @@ export default {
             finishedItems: state => state.bots.items.finished
         }),
         ...mapGetters({
-            botsRunning: 'bots/running'
+            botsRunning: 'bots/running',
+            itemsCount: 'bots/itemsCount'
         }),
         toConfirmItems() {
             return this.frozenToConfirm ? this.itemsCache.toConfirm : this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)
@@ -260,5 +274,27 @@ export default {
     max-height: 70vh;
     overflow-y: auto;
     overflow-x: hidden;
+}
+
+.spb-home__footer {
+    padding-top: 10px;
+    text-align: right;
+}
+
+.spb-home__control {
+    display: inline-flex;
+    margin: 0 8px;
+    color: inherit;
+    font-weight: normal;
+}
+
+.spb-home__control-icon {
+    margin-right: 4px;
+    height: 16px;
+    width: 16px;
+}
+
+.spb-home__control-items {
+    background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/pack.svg');
 }
 </style>

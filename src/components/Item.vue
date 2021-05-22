@@ -98,12 +98,7 @@
                 @click="copyInspectLink(item.inspect_url)"
             >
                 Inspect
-                <span class="spb--text-green">
-                    <a 
-                        target="_blank" 
-                        class="spb--link"
-                    >Link</a>
-                </span>
+                <span class="spb--text-green">link</span>
             </div>
             <div 
                 v-for="key in existingShadowpayStatistics"
@@ -303,12 +298,8 @@ export default {
     min-width: 90px;
 }
 
-.spb-item__update {
-    min-width: 120px;
-}
-
-.spb-item__update > button {
-    width: 80%;
+.spb-item__watch {
+    min-width: 80px;
 }
 
 .spb-item__info {

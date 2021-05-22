@@ -221,7 +221,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             },
-                            body: 'item=' + JSON.stringify(params.item)
+                            body: `shadowpay_item_id=${params.shadowpayItemId}` +
+                                `&min_price=${params.minPrice}` +
+                                `&max_price=${params.maxPrice}`
                         }
                     )
                     break
@@ -236,7 +238,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             },
-                            body: 'item=' + JSON.stringify(params.item)
+                            body: `shadowpay_item_id=${params.shadowpayItemId}` +
+                                `&min_price=${params.minPrice}` +
+                                `&max_price=${params.maxPrice}`
                         }
                     )
                     break

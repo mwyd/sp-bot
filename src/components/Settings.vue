@@ -21,7 +21,7 @@
                         <button 
                             class="spb-button spb-button-tiny"
                             :class="runBotsButtonClass"
-                            @click="toggleRunBots" 
+                            @click="toggleAllBots" 
                         >
                             {{ runBots ? 'stop' : 'start' }}
                         </button>
@@ -95,7 +95,7 @@
 </template>
 
 <script>
-import { mapState, mapMutations, mapActions } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import InputField from './InputField.vue'
 
 export default {
@@ -212,14 +212,12 @@ export default {
         }
     },
     methods: {
-        ...mapMutations({
-            toggleRunBots: 'bots/toggleRunBots'
-        }),
         ...mapActions({
             setupApp: 'app/setupApp',
             saveConfig: 'app/saveConfig',
             authenticate: 'session/authenticate',
-            saveToken: 'session/saveToken'
+            saveToken: 'session/saveToken',
+            toggleAllBots: 'bots/toggleAllInstances'
         })
     }
 }

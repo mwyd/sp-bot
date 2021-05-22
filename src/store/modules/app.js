@@ -207,8 +207,8 @@ export default {
                   
             await dispatch('friendManager/loadFriends', null, { root: true })
             
-            await dispatch('saleGuard/loadSaleGuardItems', null, { root: true })
             await dispatch('saleGuard/loadItemsOnSale', null, { root: true })
+            await dispatch('saleGuard/loadSaleGuardItems', null, { root: true })
 
             commit('setLoaded', true)
         }

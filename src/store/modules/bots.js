@@ -15,9 +15,22 @@ export default {
     }),
     getters: {
         items: state => type => {
-            const merged = []
-            state.instances.forEach(instance => merged.push(...instance.items[type]?.values()))
-            return merged.filter((item, index, array) => array.findIndex(_item => _item.id == item.id) == index) 
+            const merged = new Map()
+
+            state.instances.forEach(instance => {
+                instance.items[type].forEach(item => merged.set(item.id, item))
+            })
+
+            return [...merged.values()]
+        },
+        itemsCount: state => type => {
+            let count = 0
+
+            state.instances.forEach(instance => {
+                count += instance.items[type].size
+            })
+
+            return count
         },
         running(state) {
             let running = false
@@ -58,6 +71,13 @@ export default {
                     tabMounted: tab => tab.$refs.tabWindow.$refs.childComponent.presetIdModel = pair[0]
                 }, { root: true })
             })
+        },
+        toggleAllInstances({state, commit}) {
+            commit('toggleRunBots')
+
+            for(let instance of state.instances) {
+                if(state.runBots == !instance.isRunning) instance.toggleIsRunning()
+            }
         }
     }
 }

@@ -187,13 +187,13 @@ export default {
         toggleIsRunning() {
             if(this.isRunning) {
                 this.isRunning = false
-                this.clear()
                 this.$emit('statusUpdate', this.tabStates.IDLE)
+                this.clear()
             }
             else {
                 this.isRunning = true
-                this.run()
                 this.$emit('statusUpdate', this.tabStates.RUNNING)
+                this.run()
             }
         },
         checkToConfirm() {

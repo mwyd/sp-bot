@@ -31,8 +31,9 @@
                     class="spb-sale-guard-item__dark-input"
                     v-model="minPrice"
                     :type="'number'"
-                    :validator="value => value >= 0.01 && value <= item._max_price"
+                    :validator="value => value >= 0.01 && value <= metadata.maxPrice"
                     :disabled="actionsDisabled"
+                    :modelUpdated="updateTracked"
                 >
                 </InputField>
             </div>
@@ -41,21 +42,26 @@
                     class="spb-sale-guard-item__dark-input"
                     v-model="maxPrice"
                     :type="'number'"
-                    :validator="value => value >= item._min_price"
+                    :validator="value => value >= metadata.minPrice"
                     :disabled="actionsDisabled"
+                    :modelUpdated="updateTracked"
                 >
                 </InputField>
             </div>
-            <div class="spb-item__column spb-item__update">
+            <div class="spb-item__column spb-item__watch">
                 <button 
                     class="spb-button spb--font-size-small"
                     :class="updateButtonClass"
                     :disabled="actionsDisabled"
                     @click="toggleTracked"
                 >
-                    {{ metadata.tracked ? 'untrack' : 'track' }} 
+                    {{ metadata.tracked ? 'stop' : 'start' }} 
                 </button>
             </div>
+            <div 
+                class="spb-item__column spb-item__info spb-item__info--ico"
+                @click="toggleDisplayStatistics"
+            ></div>
         </div>
         <div 
             class="spb-item__stats spb--rounded-small" 
@@ -101,12 +107,7 @@
                 @click="copyInspectLink(item.inspect_url)"
             >
                 Inspect
-                <span class="spb--text-green">
-                    <a 
-                        target="_blank" 
-                        class="spb--link"
-                    >Link</a>
-                </span>
+                <span class="spb--text-green">link</span>
             </div>
             <div 
                 @click="loadShadowpayStatistics" 
@@ -162,26 +163,24 @@ export default {
         },
         minPrice: {
             get() {
-                return this.item._min_price
+                return this.metadata.minPrice
             },
             set(value) {
                 this.$store.commit('saleGuard/setItemMinPrice', {
                     id: this.item.id,
                     minPrice: value
                 })
-                this.updateTracked()
             }
         },
         maxPrice: {
             get() {
-                return this.item._max_price
+                return this.metadata.maxPrice
             },
             set(value) {
                 this.$store.commit('saleGuard/setItemMaxPrice', {
                     id: this.item.id,
                     maxPrice: value 
                 })
-                this.updateTracked()
             }
         }
     },
@@ -227,19 +226,29 @@ export default {
             this.actionsDisabled = true
             this.$store.dispatch('saleGuard/updateTracked', {
                 id: this.metadata.databaseId,
-                item: this.item
+                data: {
+                    shadowpayItemId: this.item.id,
+                    minPrice: this.metadata.minPrice,
+                    maxPrice: this.metadata.maxPrice
+                }
             })
             .then(() => this.actionsDisabled = false)
         },
         toggleTracked() {
             this.actionsDisabled = true
 
-            const promise = this.metadata.tracked ? this.stopTrack(this.metadata.databaseId) : this.startTrack(this.item)
+            const promise = this.metadata.tracked 
+                ? this.stopTrack({
+                    id: this.metadata.databaseId,
+                    showAlert: true
+                }) 
+                : this.startTrack({
+                    shadowpayItemId: this.item.id,
+                    minPrice: this.metadata.minPrice,
+                    maxPrice: this.metadata.maxPrice
+                })
             
-            return new Promise(resolve => promise.then(data => {
-                this.actionsDisabled = false
-                resolve(data)
-            }))
+            promise.then(() => this.actionsDisabled = false)
         }
     },
     beforeMount() {
