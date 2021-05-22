@@ -178,6 +178,7 @@ export default {
 
                     if(!itemOnSale) {
                         item.discount = Math.round(item.discount)
+                        item.price_market_usd = parseFloat(item.price_market_usd)
                         item._search_steam_hash_name = item.steam_market_hash_name.toLowerCase()
                         if(item.phase) item.steam_market_hash_name = rootGetters['item/steamHashName'](item.steam_market_hash_name)
 
