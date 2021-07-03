@@ -42,12 +42,13 @@ export default {
         }
     },
     actions: {
-        startTrack({rootState, commit, dispatch}, {shadowpayItemId, minPrice, maxPrice}) {
+        startTrack({rootState, commit, dispatch}, {shadowpayOfferId, hashName, minPrice, maxPrice}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'set_saleguard_item',
                 params: {
                     token: rootState.session.token,
-                    shadowpayItemId: shadowpayItemId,
+                    hashName: hashName,
+                    shadowpayOfferId: shadowpayOfferId,
                     minPrice: minPrice,
                     maxPrice: maxPrice
                 }
@@ -62,7 +63,7 @@ export default {
 
                 if(success) {
                     commit('setItemMetadata', {
-                        id: data.shadowpay_item_id,
+                        id: data.shadowpay_offer_id,
                         metadata: {
                             databaseId: data.id,
                             tracked: true,
@@ -83,7 +84,8 @@ export default {
         async startTrackAll({getters, dispatch}) {
             for(let {item, metadata} of getters.untrackedItems) {
                 await dispatch('startTrack', {
-                    shadowpayItemId: item.id,
+                    shadowpayOfferId: item.id,
+                    hashName: item.steam_market_hash_name,
                     minPrice: metadata.minPrice,
                     maxPrice: metadata.maxPrice
                 })
@@ -95,7 +97,7 @@ export default {
                 params: {
                     token: rootState.session.token,
                     id: id,
-                    shadowpayItemId: data.shadowpayItemId,
+                    shadowpayOfferId: data.shadowpayOfferId,
                     minPrice: data.minPrice,
                     maxPrice: data.maxPrice
                 }
@@ -135,7 +137,7 @@ export default {
 
                 if(success) {
                     commit('setItemMetadata', {
-                        id: data.shadowpay_item_id,
+                        id: data.shadowpay_offer_id,
                         metadata: {
                             databaseId: null,
                             tracked: false,
@@ -225,9 +227,9 @@ export default {
 
                     if(success) {
                         for(let item of data) {
-                            if(state.items.get(item.shadowpay_item_id)) {
+                            if(state.items.get(item.shadowpay_offer_id)) {
                                 commit('setItemMetadata', {
-                                    id: item.shadowpay_item_id,
+                                    id: item.shadowpay_offer_id,
                                     metadata: {
                                         databaseId: item.id,
                                         tracked: true,

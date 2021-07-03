@@ -227,7 +227,7 @@ export default {
             this.$store.dispatch('saleGuard/updateTracked', {
                 id: this.metadata.databaseId,
                 data: {
-                    shadowpayItemId: this.item.id,
+                    shadowpayOfferId: this.item.id,
                     minPrice: this.metadata.minPrice,
                     maxPrice: this.metadata.maxPrice
                 }
@@ -243,7 +243,8 @@ export default {
                     showAlert: true
                 }) 
                 : this.startTrack({
-                    shadowpayItemId: this.item.id,
+                    hashName: this.item.steam_market_hash_name,
+                    shadowpayOfferId: this.item.id,
                     minPrice: this.metadata.minPrice,
                     maxPrice: this.metadata.maxPrice
                 })

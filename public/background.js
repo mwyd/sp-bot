@@ -1,4 +1,4 @@
-const apiUrl = 'http://localhost/conduit-laravel/public/api'
+const apiUrl = 'http://localhost:8000/api/v1'
 
 const apiEndpoints = Object.freeze({
     USER: '/user',
@@ -221,7 +221,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             },
-                            body: `shadowpay_item_id=${params.shadowpayItemId}` +
+                            body: `shadowpay_offer_id=${params.shadowpayOfferId}` +
+                                `&hash_name=${params.hashName}` +
                                 `&min_price=${params.minPrice}` +
                                 `&max_price=${params.maxPrice}`
                         }
@@ -238,7 +239,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             },
-                            body: `shadowpay_item_id=${params.shadowpayItemId}` +
+                            body: `shadowpay_offer_id=${params.shadowpayOfferId}` +
                                 `&min_price=${params.minPrice}` +
                                 `&max_price=${params.maxPrice}`
                         }
