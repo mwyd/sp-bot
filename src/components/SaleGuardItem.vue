@@ -122,7 +122,6 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import DateFormat from 'dateformat'
 import InputField from './InputField.vue'
 
 export default {
@@ -214,10 +213,10 @@ export default {
             .then(({success, data}) => {
                 if(!success || data?.length == 0) return
 
-                this.mutableProperties._app_sell_price = (data[0].avg_sell_price * (1 - (data[0].avg_discount / 100))).toFixed(2)
+                this.mutableProperties._app_sell_price = (data[0].avg_suggested_price * (1 - (data[0].avg_discount / 100))).toFixed(2)
                 this.mutableProperties._avg_discount = data[0].avg_discount
                 this.mutableProperties._sold = data[0].sold
-                this.mutableProperties._last_sold = DateFormat(new Date(data[0].last_sold), 'yyyy-mm-dd H:MM:ss')
+                this.mutableProperties._last_sold = data[0].last_sold
             })
         },
         updateTracked() {
