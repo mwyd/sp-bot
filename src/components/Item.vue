@@ -17,8 +17,8 @@
             <div class="spb-item__stickers spb--flex">
                 <div class="spb-item__sticker" 
                     v-for="(sticker, index) in item.stickers"
-                    :spb-sticker-name="sticker.name"
-                    :spb-sticker-price="'$ ' + sticker.steam_price"
+                    :data-spb-sticker-name="sticker.name"
+                    :data-spb-sticker-price="'$ ' + sticker.steam_price"
                     :key="'item-sticker-' + index"
                 >
                     <img :src="steamItemImageUrl + sticker.icon_url">
@@ -267,7 +267,7 @@ export default {
 }
 
 .spb-item__sticker:hover::after {
-    content: attr(spb-sticker-name) "\A" attr(spb-sticker-price);
+    content: attr(data-spb-sticker-name) "\A" attr(data-spb-sticker-price);
     white-space: pre-wrap;
     display: block;
     font-size: 2px;
