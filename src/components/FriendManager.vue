@@ -38,7 +38,7 @@
             <div class="spb-option">
                 <span class="spb-option__description">Shadowpay id</span>
                 <InputField 
-                    v-model.number="currentFriend.shadowpay_id"
+                    v-model.number="currentFriend.shadowpayUserId"
                     :type="'number'"
                     :placeholder="'Enter id...'"
                 >

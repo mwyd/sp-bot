@@ -5,7 +5,7 @@ export default {
         friends: new Map([
             [0, 
                 {
-                    shadowpay_id: null, 
+                    shadowpayUserId: null, 
                     name: 'default'
                 }
             ]
@@ -16,18 +16,18 @@ export default {
             return state.friends.get(id)
         },
         sortedFriends: state => sortAsc => {
-            return [...state.friends].sort((a, b) => (a[1].shadowpay_id - b[1].shadowpay_id) * (sortAsc ? 1 : -1))
+            return [...state.friends].sort((a, b) => (a[1].shadowpayUserId - b[1].shadowpayUserId) * (sortAsc ? 1 : -1))
         },
         friendIds(state) {
             return [...state.friends.keys()]
         },
-        itemOwner: state => shadowpayId => {
+        itemOwner: state => shadowpayUserId => {
             let name = null
 
             state.friends.forEach((friend, id) => {
                 if(id == 0) return
 
-                if(friend.shadowpay_id == shadowpayId) {
+                if(friend.shadowpayUserId == shadowpayUserId) {
                     name = friend.name
                     return
                 }
@@ -71,7 +71,7 @@ export default {
                             commit('setFriend', {
                                 id: friend.id,
                                 friend: {
-                                    shadowpay_id: friend.shadowpay_id,
+                                    shadowpayUserId: friend.shadowpay_user_id,
                                     name: friend.name
                                 }
                             })
@@ -92,7 +92,7 @@ export default {
                 action: 'set_friend',
                 params: {
                     token: rootState.session.token,
-                    shadowpay_id: friend.shadowpay_id,
+                    shadowpayUserId: friend.shadowpayUserId,
                     name: friend.name
                 }
             }, 
@@ -108,7 +108,7 @@ export default {
                     commit('setFriend', {
                         id: data.id,
                         friend: {
-                            shadowpay_id: data.shadowpay_id,
+                            shadowpayUserId: data.shadowpay_user_id,
                             name: data.name
                         }
                     })
@@ -128,7 +128,7 @@ export default {
                 params: {
                     token: rootState.session.token,
                     id: id,
-                    shadowpay_id: friend.shadowpay_id,
+                    shadowpayUserId: friend.shadowpayUserId,
                     name: friend.name
                 }
             }, 
@@ -144,7 +144,7 @@ export default {
                     commit('setFriend', {
                         id: data.id,
                         friend: {
-                            shadowpay_id: data.shadowpay_id,
+                            shadowpayUserId: data.shadowpay_user_id,
                             name: data.name
                         }
                     }) 

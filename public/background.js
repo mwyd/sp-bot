@@ -170,7 +170,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             },
-                            body: `shadowpay_id=${params.shadowpay_id}&name=${params.name}`
+                            body: `shadowpay_user_id=${params.shadowpayUserId}&name=${params.name}`
                         }
                     )
                     break
@@ -185,7 +185,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             },
-                            body: `shadowpay_id=${params.shadowpay_id}&name=${params.name}`
+                            body: `shadowpay_user_id=${params.shadowpayUserId}&name=${params.name}`
                         }
                     )
                     break
