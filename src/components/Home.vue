@@ -59,7 +59,7 @@
         </div>
         <div class="spb-home__items">
             <div 
-                v-if="currentView == views.ACTIVE" 
+                v-show="currentView == views.ACTIVE" 
                 class="spb-home__items-active"
             >
                 <Item 
@@ -72,7 +72,7 @@
                 </Item>
             </div>
             <div 
-                v-else 
+                v-show="currentView == views.BUY_HISTORY" 
                 class="spb-home__items-buy-history"
             >
                 <Item 
