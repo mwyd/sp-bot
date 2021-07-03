@@ -29,7 +29,7 @@
             <div class="spb-item__column spb-item__min-price">
                 <InputField 
                     class="spb-sale-guard-item__dark-input"
-                    v-model="minPrice"
+                    v-model.number="minPrice"
                     :type="'number'"
                     :validator="value => value >= 0.01 && value <= metadata.maxPrice"
                     :disabled="actionsDisabled"
@@ -40,7 +40,7 @@
             <div class="spb-item__column spb-item__max-price">
                 <InputField 
                     class="spb-sale-guard-item__dark-input"
-                    v-model="maxPrice"
+                    v-model.number="maxPrice"
                     :type="'number'"
                     :validator="value => value >= metadata.minPrice"
                     :disabled="actionsDisabled"
