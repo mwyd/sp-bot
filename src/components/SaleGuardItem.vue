@@ -33,7 +33,7 @@
                     :type="'number'"
                     :validator="value => value >= 0.01 && value <= metadata.maxPrice"
                     :disabled="actionsDisabled"
-                    :modelUpdated="updateTracked"
+                    :model-updated="updateTracked"
                 >
                 </input-field>
             </div>
@@ -44,7 +44,7 @@
                     :type="'number'"
                     :validator="value => value >= metadata.minPrice"
                     :disabled="actionsDisabled"
-                    :modelUpdated="updateTracked"
+                    :model-updated="updateTracked"
                 >
                 </input-field>
             </div>

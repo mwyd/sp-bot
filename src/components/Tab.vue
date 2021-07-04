@@ -24,8 +24,8 @@
         <tab-window
             ref="tabWindow"
             :id="id"
-            :isOpen="isOpen"
-            :childComponent="childComponent"
+            :is-open="isOpen"
+            :child-component="childComponent"
             @statusUpdate="newStatus => status = newStatus"
         >
         </tab-window>

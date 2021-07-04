@@ -10,11 +10,11 @@
                 v-for="tab in staticTabs"
                 :key="'tab-' + tab.id"
                 :id="tab.id"
-                :isStatic="tab.isStatic"
+                :is-static="tab.isStatic"
                 :name="tab.name"
                 :symbol="tab.symbol"
-                :childComponent="tab.childComponent"
-                :tabMounted="tab.tabMounted"
+                :child-component="tab.childComponent"
+                :tab-mounted="tab.tabMounted"
             >
             </tab>
             <div class="spb-tab">
@@ -32,11 +32,11 @@
                 v-for="tab in dynamicTabs"
                 :key="'tab-' + tab.id"
                 :id="tab.id"
-                :isStatic="tab.isStatic"
+                :is-static="tab.isStatic"
                 :name="tab.name"
                 :symbol="tab.symbol"
-                :childComponent="tab.childComponent"
-                :tabMounted="tab.tabMounted"
+                :child-component="tab.childComponent"
+                :tab-mounted="tab.tabMounted"
             >
             </tab>
         </div>

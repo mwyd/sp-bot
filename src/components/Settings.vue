@@ -7,7 +7,7 @@
                     <input-field
                         v-model="token"
                         :type="'password'"
-                        :modelUpdated="() => {
+                        :model-updated="() => {
                             saveToken()
                             setupApp()
                         }"

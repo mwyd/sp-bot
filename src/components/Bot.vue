@@ -9,7 +9,7 @@
                         v-model.number="preset.deal"
                         :type="'number'"
                         :validator="value => (value >= 0 && value <= 100)"
-                        :modelUpdated="checkToConfirm"
+                        :model-updated="checkToConfirm"
                     >
                     </input-field>
                 </div>  
@@ -54,7 +54,7 @@
                         v-model.number="preset.dealMargin"
                         :type="'number'" 
                         :validator="value => (value >= -preset.deal && value <= 100 - preset.deal)"
-                        :modelUpdated="checkToConfirm"
+                        :model-updated="checkToConfirm"
                     >
                     </input-field>
                 </div>  
@@ -73,7 +73,7 @@
                         v-model.number="preset.toSpend"
                         :type="'number'" 
                         :validator="value => (value >= preset.maxPrice && value <= 1000000)"
-                        :modelUpdated="checkToConfirm"
+                        :model-updated="checkToConfirm"
                     >
                     </input-field>
                 </div>
