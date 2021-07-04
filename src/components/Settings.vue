@@ -100,6 +100,9 @@ import InputField from './InputField.vue'
 
 export default {
     name: 'Settings',
+    props: {
+        id: Number
+    },
     emits: ['statusUpdate'],
     components: {
         InputField

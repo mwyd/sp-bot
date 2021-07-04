@@ -118,6 +118,9 @@ export default {
         Item,
         InputField
     },
+    props: {
+        id: Number
+    },
     emits: ['statusUpdate'],
     data() {
         return {

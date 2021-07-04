@@ -161,6 +161,9 @@ export default {
     components: {
         InputField
     },
+    props: {
+        id: Number
+    },
     emits: ['statusUpdate'],
     data() {
         return {

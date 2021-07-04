@@ -104,6 +104,9 @@ export default {
         InputField,
         SaleGuardItem
     },
+    props: {
+        id: Number
+    },
     emits: ['statusUpdate'],
     data() {
         return {
