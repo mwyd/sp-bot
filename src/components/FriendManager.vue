@@ -37,21 +37,21 @@
         <div class="spb-friend-manager__options">
             <div class="spb-option">
                 <span class="spb-option__description">Shadowpay id</span>
-                <InputField 
+                <input-field 
                     v-model.number="currentFriend.shadowpayUserId"
                     :type="'number'"
                     :placeholder="'Enter id...'"
                 >
-                </InputField>
+                </input-field>
             </div>  
             <div class="spb-option">
                 <span class="spb-option__description">Name</span>
-                <InputField 
+                <input-field 
                     v-model="currentFriend.name"
                     :type="'text'" 
                     :placeholder="'Enter name...'"
                 >
-                </InputField>
+                </input-field>
             </div>
         </div>
         <div class="spb-friend-manager__buttons-wrapper">

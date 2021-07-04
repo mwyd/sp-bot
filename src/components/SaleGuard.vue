@@ -4,13 +4,13 @@
         <div class="spb-option">
             <span class="spb-option__description">Manage</span>
             <div class="spb--flex">
-                <InputField 
+                <input-field 
                     v-model="search"
                     class="spb-sale-guard__search"
                     :type="'text'"
                     :placeholder="'Search...'"
                 >
-                </InputField>
+                </input-field>
                 <select 
                     class="spb-sale-guard__sort-by spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
                     v-model="sortByModel"
@@ -39,12 +39,12 @@
         </div>
         <div class="spb-sale-guard__items">
             <div class="spb-sale-guard__margin-wrapper">
-                <SaleGuardItem v-for="data in filteredItems"
+                <sale-guard-item v-for="data in filteredItems"
                     :key="'item-on-sale-' + data.item.id"
                     :item="data.item"
                     :metadata="data.metadata"
                 >
-                </SaleGuardItem>
+                </sale-guard-item>
             </div>
         </div>
         <div class="spb--flex spb-sale-guard__footer">

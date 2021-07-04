@@ -21,14 +21,14 @@
             </div>
             {{ symbol }}
         </div>
-        <TabWindow
+        <tab-window
             ref="tabWindow"
             :id="id"
             :isOpen="isOpen"
             :childComponent="childComponent"
             @statusUpdate="newStatus => status = newStatus"
         >
-        </TabWindow>
+        </tab-window>
     </div>
 </template>
 

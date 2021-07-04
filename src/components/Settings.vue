@@ -4,7 +4,7 @@
         <div>
             <div class="spb-option spb--font-size-big">
                 <span class="spb-option__description">Token</span>
-                    <InputField
+                    <input-field
                         v-model="token"
                         :type="'password'"
                         :modelUpdated="() => {
@@ -12,7 +12,7 @@
                             setupApp()
                         }"
                     >
-                    </InputField>
+                    </input-field>
             </div>
             <div class="spb-option spb--font-size-big">
                 <span class="spb-option__description spb--clear-padding">Manage</span>
@@ -50,33 +50,33 @@
                 <span class="spb-option__description spb--clear-padding">Sale Guard</span>
                 <div class="spb--flex spb-option__row spb--font-size-medium">
                     <div>Bid step</div>
-                    <InputField 
+                    <input-field 
                         v-model.number="bidStep"
                         class="spb-settings__bid-step"
                         :type="'number'"
                         :validator="value => value >= 0.01 && value <= 100"
                     >
-                    </InputField>
+                    </input-field>
                 </div>
                 <div class="spb--flex spb-option__row spb--font-size-medium">
                     <div>Safe discount</div>
-                    <InputField 
+                    <input-field 
                         v-model.number="safeDiscount"
                         class="spb-settings__safe-discount"
                         :type="'number'"
                         :validator="value => value >= 1 && value <= 100"
                     >
-                    </InputField>
+                    </input-field>
                 </div>
                 <div class="spb--flex spb-option__row spb--font-size-medium">
                     <div>Item update delay</div>
-                    <InputField 
+                    <input-field 
                         v-model.number="itemUpdateDelay"
                         class="spb-settings__item-update-delay"
                         :type="'number'"
                         :validator="value => value >= 0 && value <= 1200"
                     >
-                    </InputField>
+                    </input-field>
                 </div>
             </div>
         </div>

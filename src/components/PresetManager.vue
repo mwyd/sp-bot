@@ -38,76 +38,76 @@
             <div>
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal</span>
-                    <InputField 
+                    <input-field 
                         v-model.number="currentPreset.deal"
                         :type="'number'"
                         :validator="value => (value >= 0 && value <= 100)"
                     >
-                    </InputField>
+                    </input-field>
                 </div>  
                 <div class="spb-option">
                     <span class="spb-option__description">$ Item min price</span>
-                    <InputField 
+                    <input-field 
                         v-model.number="currentPreset.minPrice"
                         :type="'number'" 
                         :validator="value => (value >= 0 && value <= currentPreset.maxPrice)"
                     >
-                    </InputField>
+                    </input-field>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">Name</span>
-                    <InputField 
+                    <input-field 
                         v-model="currentPreset.name"
                         :type="'text'" 
                     >
-                    </InputField>    
+                    </input-field>    
                 </div>  
                 <div class="spb-option">
                     <span class="spb-option__description">Search</span>
-                    <InputField 
+                    <input-field 
                         v-model="currentPreset.search"
                         :type="'text'" 
                         :placeholder="'Search...'"
                     >
-                    </InputField>
+                    </input-field>
                 </div> 
             </div>
             <div>
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal margin</span>
-                    <InputField 
+                    <input-field 
                         v-model.number="currentPreset.dealMargin"
                         :type="'number'" 
                         :validator="value => (value >= -currentPreset.deal && value <= 100 - currentPreset.deal)"
                     >
-                    </InputField>
+                    </input-field>
                 </div>  
                 <div class="spb-option">
                     <span class="spb-option__description">$ Item max price</span>
-                    <InputField 
+                    <input-field 
                         v-model.number="currentPreset.maxPrice"
                         :type="'number'" 
                         :validator="value => (value >= currentPreset.minPrice && value <= currentPreset.toSpend)"
                     >
-                    </InputField>
+                    </input-field>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">$ Money to spend</span>
-                    <InputField 
+                    <input-field 
                         v-model.number="currentPreset.toSpend"
                         :type="'number'" 
                         :validator="value => (value >= currentPreset.maxPrice && value <= 1000000)"
                     >
-                    </InputField>
+                    </input-field>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">Refresh time</span>
-                    <InputField
+                    <input-field
                         v-model.number="currentPreset.runDelay" 
                         :type="'number'" 
                         :validator="value => (value >= 0 && value <= 1200)"
                     >
-                    </InputField>
+                    </input-field>
                 </div>
             </div>
         </div>

@@ -34,8 +34,7 @@
                     :validator="value => value >= 0.01 && value <= metadata.maxPrice"
                     :disabled="actionsDisabled"
                     :modelUpdated="updateTracked"
-                >
-                </InputField>
+                />
             </div>
             <div class="spb-item__column spb-item__max-price">
                 <InputField 
@@ -45,8 +44,7 @@
                     :validator="value => value >= metadata.minPrice"
                     :disabled="actionsDisabled"
                     :modelUpdated="updateTracked"
-                >
-                </InputField>
+                />
             </div>
             <div class="spb-item__column spb-item__watch">
                 <button 

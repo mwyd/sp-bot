@@ -25,13 +25,13 @@
         <div class="spb-option">
             <span class="spb-option__description">Manage</span>
             <div class="spb--flex">
-                <InputField 
+                <input-field 
                     v-model="search"
                     class="spb-home__search"
                     :type="'text'"
                     :placeholder="'Search...'"
                 >
-                </InputField>
+                </input-field>
                 <select 
                     class="spb-home__sort-by spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
                     v-model="sortByModel"
@@ -62,33 +62,33 @@
                 v-show="currentView == views.ACTIVE" 
                 class="spb-home__items-active"
             >
-                <Item 
+                <item 
                     v-for="item in filteredItems(itemTypes.TO_CONFIRM)"  
                     :type="itemTypes.TO_CONFIRM" 
                     :item="item" 
                     :key="'item-' + item.id"
                     @overBuyButton="freezeToConfirm"
                 >
-                </Item>
+                </item>
             </div>
             <div 
                 v-show="currentView == views.BUY_HISTORY" 
                 class="spb-home__items-buy-history"
             >
-                <Item 
+                <item 
                     v-for="item in filteredItems(itemTypes.PENDING)" 
                     :type="itemTypes.PENDING" 
                     :item="item" 
                     :key="'item-' + item.id"
                 >
-                </Item> 
-                <Item 
+                </item> 
+                <item 
                     v-for="item in filteredItems(itemTypes.FINISHED)" 
                     :type="itemTypes.FINISHED" 
                     :item="item" 
                     :key="'item-' + item.id"
                 >
-                </Item> 
+                </item> 
             </div>
         </div>
         <div class="spb-home__footer spb--font-size-medium">

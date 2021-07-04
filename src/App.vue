@@ -6,7 +6,7 @@
             :class="tabBarLoaderClass"
         ></div>
         <div class="spb-tab-bar__wrapper">
-            <Tab 
+            <tab 
                 v-for="tab in staticTabs"
                 :key="'tab-' + tab.id"
                 :id="tab.id"
@@ -16,7 +16,7 @@
                 :childComponent="tab.childComponent"
                 :tabMounted="tab.tabMounted"
             >
-            </Tab>
+            </tab>
             <div class="spb-tab">
                 <div 
                     class="spb-tab__button spb--rounded-medium spb--cursor-pointer spb--flex"
@@ -28,7 +28,7 @@
                     })"
                 >+</div>
             </div>
-            <Tab 
+            <tab 
                 v-for="tab in dynamicTabs"
                 :key="'tab-' + tab.id"
                 :id="tab.id"
@@ -38,16 +38,16 @@
                 :childComponent="tab.childComponent"
                 :tabMounted="tab.tabMounted"
             >
-            </Tab>
+            </tab>
         </div>
         <div class="spb-alert-box">
-            <Alert
+            <alert
                 v-for="(alert, index) in alerts"
                 :key="'spb-alert-' + index"
                 :type="alert.type"
                 :message="alert.message"
             >
-            </Alert>
+            </alert>
         </div>
     </div>
 </template>
