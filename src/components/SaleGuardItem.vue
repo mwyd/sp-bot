@@ -27,24 +27,26 @@
                 </span>
             </div>
             <div class="spb-item__column spb-item__min-price">
-                <InputField 
+                <input-field 
                     class="spb-sale-guard-item__dark-input"
                     v-model.number="minPrice"
                     :type="'number'"
                     :validator="value => value >= 0.01 && value <= metadata.maxPrice"
                     :disabled="actionsDisabled"
                     :modelUpdated="updateTracked"
-                />
+                >
+                </input-field>
             </div>
             <div class="spb-item__column spb-item__max-price">
-                <InputField 
+                <input-field 
                     class="spb-sale-guard-item__dark-input"
                     v-model.number="maxPrice"
                     :type="'number'"
                     :validator="value => value >= metadata.minPrice"
                     :disabled="actionsDisabled"
                     :modelUpdated="updateTracked"
-                />
+                >
+                </input-field>
             </div>
             <div class="spb-item__column spb-item__watch">
                 <button 
