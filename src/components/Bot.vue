@@ -219,9 +219,15 @@ export default {
                     item.price_usd = filteredItem.price_usd
                     item.price_market_usd = filteredItem.price_market_usd
 
+                    if(item._updated) this.calculateIncome(item)
                     if(this.canBuyItem(item)) this.buyItem(item)
                 }
             })       
+        },
+        calculateIncome(item) {
+            item._app_income = ((0.87 * item._steam_price) - item.price_market_usd).toFixed(2)
+            item._app_income_percentage = 100 - Math.round((item.price_market_usd - item._app_income) * 100 / item.price_market_usd)
+            item._real_discount = 100 - Math.round(item.price_market_usd * 100 / item._steam_price)
         },
         canBuyItem(item) {
             return item._updated && item._real_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume >= 10
@@ -404,9 +410,9 @@ export default {
                                     item._updated = true
                                     item._steam_price = data.price
                                     item._steam_volume = data.volume
-                                    item._app_income = ((0.87 * data.price) - item.price_market_usd).toFixed(2)
-                                    item._app_income_percentage = 100 - Math.round((item.price_market_usd - item._app_income) * 100 / item.price_market_usd)
-                                    item._real_discount = 100 - Math.round(item.price_market_usd * 100 / item._steam_price)
+
+                                    this.calculateIncome(item)
+
                                     item._onclick = () => {
                                         this.buyItem(item)
                                     }
