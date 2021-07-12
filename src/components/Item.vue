@@ -164,6 +164,10 @@ export default {
             return Object.keys(this.shadowpayStatistics).filter(key => this.mutableProperties[key])
         }
     },
+    beforeMount() {
+        this.loadBlueGem()
+        this.loadFriendOwner()
+    },
     methods: {
         ...mapActions({
             updateAlerts: 'app/updateAlerts',
@@ -214,10 +218,6 @@ export default {
                 this.mutableProperties._last_sold = data[0].last_sold
             })
         }
-    },
-    beforeMount() {
-        this.loadBlueGem()
-        this.loadFriendOwner()
     }
 }
 </script>

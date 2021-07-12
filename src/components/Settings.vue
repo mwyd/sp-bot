@@ -100,21 +100,16 @@ import InputField from './InputField.vue'
 
 export default {
     name: 'Settings',
+    components: {
+        InputField
+    },
     props: {
         id: Number
     },
     emits: ['statusUpdate'],
-    components: {
-        InputField
-    },
     data() {
         return {
             buttonsDisabled: false
-        }
-    },
-    watch: {
-        authenticated(value) {
-            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
         }
     },
     computed: {
@@ -212,6 +207,11 @@ export default {
                     value: value * 1000
                 })
             }
+        }
+    },
+    watch: {
+        authenticated(value) {
+            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
         }
     },
     methods: {

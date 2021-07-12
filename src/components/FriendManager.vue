@@ -120,14 +120,6 @@ export default {
             currentFriend: {...this.getFriend(0)}
         }
     },
-    watch: {
-        currentView() {
-            this.currentFriendIdModel = 0
-        },
-        friendsLoaded(value) {
-            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
-        }
-    },
     computed: {
         ...mapState({
             friends: state => state.friendManager.friends,
@@ -145,6 +137,14 @@ export default {
                 this.currentFriendId = value
                 this.currentFriend = {...this.getFriend(this.currentFriendId)}
             }
+        }
+    },
+    watch: {
+        currentView() {
+            this.currentFriendIdModel = 0
+        },
+        friendsLoaded(value) {
+            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
         }
     },
     methods: {

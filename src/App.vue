@@ -63,20 +63,6 @@ export default {
         Tab,
         Alert
     },
-    watch: {
-        displayInterfaceOnTop(value) {
-            const root = document.querySelector('#spb-root')
-
-            if(value) {
-                root.classList.remove('spb--z-100')
-                root.classList.add('spb--z-1200')
-            }
-            else {
-                root.classList.remove('spb--z-1200')
-                root.classList.add('spb--z-100')
-            }
-        }
-    },
     computed: {
         ...mapState({
             tabs: state => state.app.tabs,
@@ -99,6 +85,23 @@ export default {
             ]
         }
     },
+    watch: {
+        displayInterfaceOnTop(value) {
+            const root = document.querySelector('#spb-root')
+
+            if(value) {
+                root.classList.remove('spb--z-100')
+                root.classList.add('spb--z-1200')
+            }
+            else {
+                root.classList.remove('spb--z-1200')
+                root.classList.add('spb--z-100')
+            }
+        }
+    },
+    created() {
+        this.setupApp()
+    },
     methods: {
         ...mapMutations({
             addTab: 'app/addTab'
@@ -106,9 +109,6 @@ export default {
         ...mapActions({
             setupApp: 'app/setupApp'
         })
-    },
-    created() {
-        this.setupApp()
     }
 }
 </script>

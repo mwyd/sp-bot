@@ -118,11 +118,6 @@ export default {
             actionsDisabled: false
         }
     },
-    watch: {
-        saleGuardItemsLoaded(value) {
-            this.$emit('statusUpdate', value ? this.isRunning ? this.tabStates.RUNNING : this.tabStates.OK : this.tabStates.ERROR)
-        }
-    },
     computed: {
         ...mapState({
             csrfCookie: state => state.app.shadowpay.csrfCookie,
@@ -158,6 +153,11 @@ export default {
             return [
                 this.isRunning ? 'spb-button--red' : 'spb-button--green'
             ]
+        }
+    },
+    watch: {
+        saleGuardItemsLoaded(value) {
+            this.$emit('statusUpdate', value ? this.isRunning ? this.tabStates.RUNNING : this.tabStates.OK : this.tabStates.ERROR)
         }
     },
     methods: {

@@ -159,6 +159,14 @@ export default {
             ]
         }
     },
+    beforeMount() {
+        this.presetIdModel = this.presetId
+        this.startTrack(this)
+    },
+    beforeUnmount() {
+        this.isRunning = false
+        this.stopTrack(this.id)
+    },
     methods: {
         ...mapMutations({
             setCsrfCookie: 'app/setCsrfCookie',
@@ -440,14 +448,6 @@ export default {
                 }, 1000 * this.preset.runDelay)
             }
         }
-    },
-    beforeMount() {
-        this.presetIdModel = this.presetId
-        this.startTrack(this)
-    },
-    beforeUnmount() {
-        this.isRunning = false
-        this.stopTrack(this.id)
     }
 }
 </script>

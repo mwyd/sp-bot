@@ -47,17 +47,17 @@ export default {
             synchronized: true
         }
     },
-    watch: {
-        modelValue(value) {
-            this.internalModel = value
-        }
-    },
     computed: {
         inputClass() {
             return [
                 this.synchronized ? 'spb-input__field--ok' : 'spb-input__field--wrong',
                 this.disabled ? 'spb--cursor-not-allowed' : ''
             ]
+        }
+    },
+    watch: {
+        modelValue(value) {
+            this.internalModel = value
         }
     },
     methods: {

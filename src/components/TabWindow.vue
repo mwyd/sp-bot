@@ -23,12 +23,6 @@ import Bot from './Bot.vue'
 
 export default {
     name: 'TabWindow',
-    props: {
-        id: Number,
-        isOpen: Boolean,
-        childComponent: String
-    },
-    emits: ['statusUpdate'],
     components: {
         Home,
         SaleGuard,
@@ -37,6 +31,12 @@ export default {
         Settings,
         Bot
     },
+    props: {
+        id: Number,
+        isOpen: Boolean,
+        childComponent: String
+    },
+    emits: ['statusUpdate'],
     computed: {
         tabWindowClass() {
             return [

@@ -138,14 +138,6 @@ export default {
             sortDirAsc: false
         }
     },
-    watch: {
-        pendingItems(items) {
-            if(this.currentView != this.views.BUY_HISTORY && items.length > 0) this.$emit('statusUpdate', this.tabStates.PENDING)
-        },
-        botsRunning(value) {
-            this.$emit('statusUpdate', value ? this.tabStates.RUNNING : this.tabStates.IDLE)
-        }
-    },
     computed: {
         ...mapState({
             sortByTypes: state => state.item.sortByTypes,
@@ -168,6 +160,14 @@ export default {
             return [
                 this.sortDirAsc ? 'spb-home__sort-dir--asc' : 'spb-home__sort-dir--desc'
             ]
+        }
+    },
+    watch: {
+        pendingItems(items) {
+            if(this.currentView != this.views.BUY_HISTORY && items.length > 0) this.$emit('statusUpdate', this.tabStates.PENDING)
+        },
+        botsRunning(value) {
+            this.$emit('statusUpdate', value ? this.tabStates.RUNNING : this.tabStates.IDLE)
         }
     },
     methods: {

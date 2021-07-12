@@ -76,6 +76,9 @@ export default {
             ]
         }
     },
+    mounted() {
+        this.tabMounted(this)
+    },
     methods: {
         ...mapMutations({
             close: 'app/closeTab'
@@ -104,9 +107,6 @@ export default {
             this.isOpen = this.isBound
             this.isMouseOver = false
         }
-    },
-    mounted() {
-        this.tabMounted(this)
     }
 }
 </script>

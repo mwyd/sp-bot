@@ -183,6 +183,9 @@ export default {
             }
         }
     },
+    beforeMount() {
+        this.loadBlueGem()
+    },
     methods: {
         ...mapActions({
             startTrack: 'saleGuard/startTrack',
@@ -250,9 +253,6 @@ export default {
             
             promise.then(() => this.actionsDisabled = false)
         }
-    },
-    beforeMount() {
-        this.loadBlueGem()
     }
 }
 </script>

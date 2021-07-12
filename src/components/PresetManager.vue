@@ -177,14 +177,6 @@ export default {
             currentPreset: {...this.getPreset(0)}
         }
     },
-    watch: {
-        currentView() {
-            this.currentPresetIdModel = 0
-        },
-        presetsLoaded(value) {
-            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
-        }
-    },
     computed: {
         ...mapState({
             presets: state => state.presetManager.presets,
@@ -202,6 +194,14 @@ export default {
                 this.currentPresetId = value
                 this.currentPreset = {...this.getPreset(this.currentPresetId)}
             }
+        }
+    },
+    watch: {
+        currentView() {
+            this.currentPresetIdModel = 0
+        },
+        presetsLoaded(value) {
+            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
         }
     },
     methods: {
