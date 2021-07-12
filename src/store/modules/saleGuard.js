@@ -185,7 +185,7 @@ export default {
                         if(item.phase) item.steam_market_hash_name = rootGetters['item/steamHashName'](item.steam_market_hash_name)
 
                         let minPrice = item.price_market_usd
-                        let maxPrice = Math.round(item.steam_price_en * rootGetters['app/config']('saleGuardSaleDiscount') * 100) / 100
+                        let maxPrice = Math.round(item.steam_price_en * rootGetters['app/config']('saleGuardSafeDiscount') * 100) / 100
                         if(maxPrice < minPrice) maxPrice = Math.round((minPrice + rootGetters['app/config']('saleGuardBidStep')) * 100) / 100
                     
                         updatedItems.set(item.id, {

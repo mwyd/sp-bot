@@ -58,7 +58,7 @@ export default {
             displayInterfaceOnTop: false,
             openTabsAtStartup: false,
             saleGuardBidStep: 0.01,
-            saleGuardSaleDiscount: 0.97,
+            saleGuardSafeDiscount: 0.97,
             saleGuardItemUpdateDelay: 4 * 1000
         },
         shadowpay: {

@@ -188,11 +188,11 @@ export default {
         },
         safeDiscount: {
             get() {
-                return this.$store.getters['app/config']('saleGuardSaleDiscount') * 100
+                return this.$store.getters['app/config']('saleGuardSafeDiscount') * 100
             },
             set(value) {
                 this.$store.commit('app/setConfig', {
-                    type: 'saleGuardSaleDiscount',
+                    type: 'saleGuardSafeDiscount',
                     value: value / 100
                 })
             }
