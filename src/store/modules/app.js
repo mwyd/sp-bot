@@ -169,11 +169,11 @@ export default {
                     alert.message = error_message
                 }
 
-                dispatch('app/updateAlerts', alert, { root: true })
+                dispatch('app/pushAlert', alert, { root: true })
                 resolve(response)
             }))
         },
-        updateAlerts({state, commit}, alert) {
+        pushAlert({state, commit}, alert) {
             commit('addAlert', alert)
             setTimeout(() => commit('shiftAlert'), state.alertLifeTime)
         },
@@ -186,7 +186,7 @@ export default {
 
                 if(data !== undefined) commit('setBackgroundMounted', true)
                 else {
-                    dispatch('app/updateAlerts', {
+                    dispatch('app/pushAlert', {
                         type: rootState.app.alertTypes.ERROR,
                         message: 'Background not mounted correctly - restart browser'
                     }, { root: true })

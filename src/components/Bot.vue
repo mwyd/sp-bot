@@ -174,7 +174,7 @@ export default {
             stopTrack: 'bots/closeBot'
         }),
         ...mapActions({
-           updateAlerts: 'app/updateAlerts' 
+           pushAlert: 'app/pushAlert' 
         }),
         sortedPresets(sortAsc = true) {
             return this.$store.getters['presetManager/sortedPresets'](sortAsc)
@@ -345,7 +345,7 @@ export default {
 
                                 if(this.items.pending.size == 0 && Math.abs(this.moneySpent - this.preset.toSpend) < this.preset.minPrice) {
                                     this.toggleIsRunning()
-                                    this.updateAlerts({
+                                    this.pushAlert({
                                         type: this.alertTypes.INFO,
                                         message: `Bot #${this.id} terminated - to spend limit reached`
                                     })

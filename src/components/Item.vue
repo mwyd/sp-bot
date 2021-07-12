@@ -170,7 +170,7 @@ export default {
     },
     methods: {
         ...mapActions({
-            updateAlerts: 'app/updateAlerts',
+            pushAlert: 'app/pushAlert',
             copyInspectLink: 'item/copyInspectLink'
         }),
         interestingFloat(float) {
@@ -198,7 +198,7 @@ export default {
             .then(({success, data}) => {
                 if(success && data?.length > 0) {
                     this.blueGem = data[0].gem_type
-                    this.updateAlerts({
+                    this.pushAlert({
                         type: this.alertTypes.INFO,
                         message: `${this.blueGem} Gem ${this.item.steam_market_hash_name}`
                     })

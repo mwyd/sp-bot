@@ -57,7 +57,7 @@ export default {
 
                 commit('setSession', session)
 
-                dispatch('app/updateAlerts', alert, { root: true })
+                dispatch('app/pushAlert', alert, { root: true })
                 resolve(response)
             }))
         }

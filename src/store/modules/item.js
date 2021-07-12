@@ -189,7 +189,7 @@ export default {
                 alert.message = 'Copy error'
             }
 
-            dispatch('app/updateAlerts', alert, { root: true })
+            dispatch('app/pushAlert', alert, { root: true })
         },
         getBlueGem({rootState}, {itemType, paintSeed}) {
             return new Promise(resolve => chrome.runtime.sendMessage({

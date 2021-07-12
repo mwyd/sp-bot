@@ -103,7 +103,7 @@ export default {
                     alert.message = error_message
                 }
 
-                dispatch('app/updateAlerts', alert, { root: true })
+                dispatch('app/pushAlert', alert, { root: true })
                 resolve(response)
             }))
         },
@@ -135,7 +135,7 @@ export default {
                     alert.message = error_message
                 }
 
-                dispatch('app/updateAlerts', alert, { root: true })
+                dispatch('app/pushAlert', alert, { root: true })
                 resolve(response)
             }))
         },
@@ -161,7 +161,7 @@ export default {
                     alert.message = error_message
                 }
 
-                dispatch('app/updateAlerts', alert, { root: true })
+                dispatch('app/pushAlert', alert, { root: true })
                 resolve(response)
             }))
         }

@@ -169,7 +169,7 @@ export default {
             loadItemsOnSale: 'saleGuard/loadItemsOnSale',
             toggleSaleGuard: 'saleGuard/toggleSaleGuard',
             stopTrack: 'saleGuard/stopTrack',
-            updateAlerts: 'app/updateAlerts'
+            pushAlert: 'app/pushAlert'
         }),
         async startTrackAll() {
             this.actionsDisabled = true
@@ -236,7 +236,7 @@ export default {
         },
         async run() {
             if(this.trackedItems.length == 0) {
-                this.updateAlerts({
+                this.pushAlert({
                     type: this.alertTypes.INFO,
                     message: 'Sale Guard terminated - empty set'
                 })
