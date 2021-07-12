@@ -256,6 +256,7 @@ export default {
                             `&game=csgo` +
                             `&stack=false` +
                             `&sort=asc` + 
+                            `&sort_dir=desc` +
                             `&sort_column=price` +
                             `&limit=50` +
                             `&offset=0`, {
