@@ -64,7 +64,8 @@ export default {
         shadowpay: {
             csrfCookie: Cookies.get('csrf_cookie'),
             api: Object.freeze({
-                MARKET_ITEMS: `https://api.shadowpay.com/api/market/get_items`,
+                MARKET_ITEMS: 'https://api.shadowpay.com/api/market/get_items',
+                STACKED_ITEMS: 'https://api.shadowpay.com/api/market/get_items_for_stacked',
                 BUY_ITEM: 'https://api.shadowpay.com/api/market/buy_item',
                 BUY_HISTORY: 'https://api.shadowpay.com/en/profile/get_bought_history',
                 ITEMS_ON_SALE: 'https://api.shadowpay.com/api/market/list_items',

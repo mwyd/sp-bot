@@ -131,7 +131,7 @@ export default {
             itemsOnSale: state => state.saleGuard.items,
             saleGuardItemsLoaded: state => state.saleGuard.loaded,
             tabStates: state => state.app.tabStates,
-            getItemsUrl: state => state.app.shadowpay.api.MARKET_ITEMS,
+            getStackedItems: state => state.app.shadowpay.api.STACKED_ITEMS,
             setItemPriceUrl: state => state.app.shadowpay.api.SAVE_ITEM_PRICE,
             alertTypes: state => state.app.alertTypes
         }),
@@ -249,23 +249,13 @@ export default {
                 for(let {item, metadata} of this.trackedItems) {
                     await new Promise(r => setTimeout(r, this.itemUpdateDelay))
 
-                    const response = await fetch(this.getItemsUrl +
-                            `?types=[]` +
-                            `&exteriors=[]` +
-                            `&rarities=[]` +
-                            `&collections=[]` +
-                            `&item_subcategories=[]` +
-                            `&float={"from":0,"to":1}` +
+                    const response = await fetch(this.getStackedItems +
+                            `?item_id=${item.item_id}` +
                             `&price_from=${metadata.minPrice}` +
                             `&price_to=${metadata.maxPrice}` +
                             `&game=csgo` +
-                            `&stickers=[]` +
-                            `&count_stickers=[]` +
-                            `&short_name=` +
-                            `&search=${item._search_steam_hash_name}` +
                             `&stack=false` +
                             `&sort=asc` + 
-                            `&sort_dir=asc` +
                             `&sort_column=price` +
                             `&limit=50` +
                             `&offset=0`, {
