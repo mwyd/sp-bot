@@ -3,7 +3,6 @@ export default {
     state: () => ({
         instances: [],
         runBots: false,
-        runBotsDelay: 4 * 1000,
         items: {
             finished: []
         },
