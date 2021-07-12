@@ -280,7 +280,7 @@ export default {
 
                     for(let marketItem of items) {
                         if(marketItem.is_my_item
-                            || marketItem.is_stattrak != item.is_stattrak
+                            || marketItem.item_id != item.item_id
                             || this.isFriendItem(marketItem.user_id)
                         ) continue
 
