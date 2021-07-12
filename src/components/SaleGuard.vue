@@ -147,7 +147,7 @@ export default {
         filteredItems() {
             return [...this.itemsOnSale.values()]
                 .filter(data => data.item._search_steam_hash_name.search(this.search.toLowerCase()) > -1)
-                .sort((a, b) => this.sortBy.get(this.sortByModel).func(this.sortDirAsc)(a.item, b.item))
+                .sort((a, b) => this.sortBy.get(this.sortByModel).callback(this.sortDirAsc)(a.item, b.item))
         },
         sortDirClass() {
             return [

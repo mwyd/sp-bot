@@ -114,7 +114,7 @@ export default {
             [0, 
                 {
                     name: 'Steam discount',
-                    func: function(asc) { 
+                    callback: function(asc) { 
                         return (a, b) => ((b._real_discount ?? 0) - (a._real_discount ?? 0)) * (asc ? -1 : 1)
                     }
                 }
@@ -122,7 +122,7 @@ export default {
             [1, 
                 {
                     name: 'Shadowpay discount',
-                    func: function(asc) { 
+                    callback: function(asc) { 
                         return (a, b) => (b.discount - a.discount) * (asc ? -1 : 1)
                     }
                 }
@@ -130,7 +130,7 @@ export default {
             [2,
                 {
                     name: 'Item float',
-                    func: function(asc) { 
+                    callback: function(asc) { 
                         return (a, b) => ((b.floatvalue || 1) - (a.floatvalue || 1)) * (asc ? -1 : 1)
                     }  
                 }
@@ -138,7 +138,7 @@ export default {
             [3, 
                 {
                     name: 'Market price',
-                    func: function(asc) { 
+                    callback: function(asc) { 
                         return (a, b) => (b.price_market_usd - a.price_market_usd) * (asc ? -1 : 1)
                     }  
                 }

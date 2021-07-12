@@ -190,7 +190,7 @@ export default {
 
             return items
                 .filter(item => item._search_steam_hash_name.search(this.search.toLowerCase()) > -1)
-                .sort(this.sortBy.get(this.sortByModel).func(this.sortDirAsc))
+                .sort(this.sortBy.get(this.sortByModel).callback(this.sortDirAsc))
         },
         viewClass(view) {
             return [
