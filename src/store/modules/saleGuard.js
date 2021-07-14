@@ -222,7 +222,7 @@ export default {
                         limit: limit
                     }
                 }, 
-                response => {
+                async response => {
                     const {success, data} = response
 
                     if(success) {
@@ -239,7 +239,7 @@ export default {
                                 })
                             }
                             else {
-                                dispatch('stopTrack', {
+                                await dispatch('stopTrack', {
                                     id: item.id,
                                     showAlert: false
                                 })
