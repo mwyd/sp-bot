@@ -241,7 +241,7 @@ export default {
             return item._updated && item._real_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume >= 10
         },
         buyItem(item) {
-            if(this.items.pending.get(item.id) || item.price_market_usd + this.moneySpent > this.preset.toSpend) return
+            if(this.items.pending.has(item.id) || item.price_market_usd + this.moneySpent > this.preset.toSpend) return
 
             item._current_run = true
             item._transaction_id = null
@@ -396,7 +396,7 @@ export default {
                         )
 
                         for(let item of this.items.filtered) {
-                            if(this.items.toConfirm.get(item.id)) continue
+                            if(this.items.toConfirm.has(item.id)) continue
 
                             item.discount = Math.round(item.discount)
                             item.price_market_usd = parseFloat(item.price_market_usd)
