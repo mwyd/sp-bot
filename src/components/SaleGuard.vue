@@ -270,13 +270,12 @@ export default {
                     let newPrice = metadata.maxPrice
 
                     for(let marketItem of items) {
-                        if(marketItem.is_my_item
-                            || marketItem.item_id != item.item_id
-                            || this.isFriendItem(marketItem.user_id)
-                        ) continue
+                        if(marketItem.is_my_item || marketItem.item_id != item.item_id) continue
 
                         if(marketItem.price_market_usd - this.itemBidStep > metadata.minPrice) {
-                            newPrice = Math.round((marketItem.price_market_usd - this.itemBidStep) * 100) / 100
+                            newPrice = this.isFriendItem(marketItem.user_id) 
+                                ? marketItem.price_market_usd
+                                : Math.round((marketItem.price_market_usd - this.itemBidStep) * 100) / 100
                             break
                         }
                     }
