@@ -49,7 +49,7 @@ export default {
         childComponent: String,
         tabMounted: {
             type: Function,
-            default: () => {},
+            default: null,
             required: false
         }
     },
@@ -77,7 +77,7 @@ export default {
         }
     },
     mounted() {
-        this.tabMounted(this)
+        this.tabMounted?.(this)
     },
     methods: {
         ...mapMutations({
