@@ -86,7 +86,7 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
-import disableActionsMixin from '../mixins/disableActionsMixin.js'
+import actionMixin from '../mixins/actionMixin.js'
 import InputField from './InputField'
 
 export default {
@@ -94,7 +94,7 @@ export default {
     components: {
         InputField
     },
-    mixins: [disableActionsMixin],
+    mixins: [actionMixin],
     props: {
         id: Number
     },

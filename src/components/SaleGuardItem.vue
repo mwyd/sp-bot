@@ -123,7 +123,7 @@
 <script>
 import { mapActions } from 'vuex'
 import InputField from './InputField.vue'
-import disableActionsMixin from '../mixins/disableActionsMixin.js'
+import actionMixin from '../mixins/actionMixin.js'
 import itemMixin from '../mixins/itemMixin.js'
 
 export default {
@@ -131,7 +131,7 @@ export default {
     components: {
         InputField
     },
-    mixins: [disableActionsMixin, itemMixin],
+    mixins: [actionMixin, itemMixin],
     props: {
         item: Object,
         metadata: Object
