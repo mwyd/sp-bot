@@ -100,9 +100,9 @@
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
+import InputField from './InputField.vue'
 import { SPB_LOG } from '../utils/index.js'
 import DateFormat from 'dateformat'
-import InputField from './InputField.vue'
 
 export default {
     name: 'Bot',

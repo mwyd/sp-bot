@@ -120,11 +120,13 @@
 </template>
 
 <script>
-import DateFormat from 'dateformat'
 import { mapState, mapActions } from 'vuex'
+import itemMixin from '../mixins/itemMixin.js'
+import DateFormat from 'dateformat'
 
 export default {
     name: 'Item',
+    mixins: [itemMixin],
     props: {
         type: String,
         item: Object
@@ -132,20 +134,12 @@ export default {
     emits: ['overBuyButton'],
     data() {
         return {
-            displayStatistics: this.$store.getters['app/config']('displayItemStatistics'),
-            mutableProperties: {...this.$store.state.item.mutableProperties},
-            hideMoreStatisticsButton: false,
-            blueGem: null,
             friendOwner: null
         }
     },
     computed: {
         ...mapState({
-            steamItemMarketUrl: state => state.app.steam.resources.ITEM_SELL_LISTINGS,
-            steamItemImageUrl: state => state.app.steam.resources.ITEM_IMAGE,
             steamUserProfileUrl: state => state.app.steam.resources.USER_PROFILE,
-            interestingProperties: state => state.item.interestingProperites,
-            shadowpayStatistics: state => state.item.shadowpayStatistics,
             itemTypes: state => state.bots.itemTypes,
             alertTypes: state => state.app.alertTypes
         }),
@@ -156,12 +150,6 @@ export default {
         },
         timeBought() {
             return DateFormat(this.item._time_bought, 'yyyy-mm-dd H:MM:ss')
-        },
-        existingInterestingProperties() {
-            return Object.keys(this.interestingProperties).filter(key => this.item[key])
-        },
-        existingShadowpayStatistics() {
-            return Object.keys(this.shadowpayStatistics).filter(key => this.mutableProperties[key])
         }
     },
     beforeMount() {
@@ -170,53 +158,16 @@ export default {
     },
     methods: {
         ...mapActions({
-            pushAlert: 'app/pushAlert',
-            copyInspectLink: 'item/copyInspectLink'
+            pushAlert: 'app/pushAlert'
         }),
-        interestingFloat(float) {
-            return this.$store.getters['item/interestingFloat'](float)
-        },
         itemOwnerSteamId(inspectLink) {
             return this.$store.getters['item/itemOwnerSteamId'](inspectLink)
         },
         loadFriendOwner() {
             this.friendOwner = this.$store.getters['friendManager/itemOwner'](this.item.user_id)
         },
-        toggleDisplayStatistics() {
-            this.displayStatistics = !this.displayStatistics
-        },
         overBuyButton(value) {
             this.$emit('overBuyButton', value)
-        },
-        loadBlueGem() {
-            if(this.item._search_steam_hash_name.search('case hardened') < 0) return
-
-            this.$store.dispatch('item/getBlueGem', {
-                itemType: this.item.subcategory_name,
-                paintSeed: this.item.paintseed
-            })
-            .then(({success, data}) => {
-                if(success && data?.length > 0) {
-                    this.blueGem = data[0].gem_type
-                    this.pushAlert({
-                        type: this.alertTypes.INFO,
-                        message: `${this.blueGem} Gem ${this.item.steam_market_hash_name}`
-                    })
-                }
-            })
-        },
-        loadShadowpayStatistics() {
-            this.hideMoreStatisticsButton = true
-
-            this.$store.dispatch('item/loadShadowpayStatistics', this.item.steam_market_hash_name)
-            .then(({success, data}) => {
-                if(!success || data?.length == 0) return
-
-                this.mutableProperties._app_sell_price = (data[0].avg_suggested_price * (1 - (data[0].avg_discount / 100))).toFixed(2)
-                this.mutableProperties._avg_discount = data[0].avg_discount
-                this.mutableProperties._sold = data[0].sold
-                this.mutableProperties._last_sold = data[0].last_sold
-            })
         }
     }
 }
