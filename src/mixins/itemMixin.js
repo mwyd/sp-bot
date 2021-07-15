@@ -37,7 +37,7 @@ export default {
             this.displayStatistics = !this.displayStatistics
         },
         loadBlueGem() {
-            if(this.item._search_steam_hash_name.search('case hardened') < 0) return
+            if(this.item.paintseed == null || this.item._search_steam_hash_name.search('case hardened') < 0) return
 
             this.$store.dispatch('item/getBlueGem', {
                 itemType: this.item.subcategory_name,
