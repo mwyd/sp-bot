@@ -95,7 +95,7 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import { SPB_LOG } from '../utils/index.js'
-import { actionsFreezer } from '../mixins/index.js'
+import disableActionsMixin from '../mixins/disableActionsMixin.js'
 import InputField from './InputField.vue'
 import SaleGuardItem from './SaleGuardItem.vue'
 
@@ -105,7 +105,7 @@ export default {
         InputField,
         SaleGuardItem
     },
-    mixins: [actionsFreezer],
+    mixins: [disableActionsMixin],
     props: {
         id: Number
     },

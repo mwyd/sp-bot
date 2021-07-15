@@ -143,7 +143,7 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
-import { actionsFreezer } from '../mixins/index.js'
+import disableActionsMixin from '../mixins/disableActionsMixin.js'
 import InputField from './InputField.vue'
 
 export default {
@@ -151,7 +151,7 @@ export default {
     components: {
         InputField
     },
-    mixins: [actionsFreezer],
+    mixins: [disableActionsMixin],
     props: {
         id: Number
     },

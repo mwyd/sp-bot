@@ -153,7 +153,6 @@ export default {
         }
     },
     beforeMount() {
-        this.loadBlueGem()
         this.loadFriendOwner()
     },
     methods: {

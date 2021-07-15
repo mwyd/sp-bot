@@ -23,6 +23,9 @@ export default {
             return Object.keys(this.shadowpayStatistics).filter(key => this.mutableProperties[key])
         }
     },
+    beforeMount() {
+        this.loadBlueGem()
+    },
     methods: {
         ...mapActions({
             copyInspectLink: 'item/copyInspectLink'

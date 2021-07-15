@@ -1,4 +1,4 @@
-const actionsFreezer = {
+export default {
     data() {
         return {
             actionsDisabled: false
@@ -11,5 +11,3 @@ const actionsFreezer = {
         }
     }
 }
-
-export { actionsFreezer }

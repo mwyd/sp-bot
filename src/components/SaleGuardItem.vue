@@ -123,7 +123,7 @@
 <script>
 import { mapActions } from 'vuex'
 import InputField from './InputField.vue'
-import { actionsFreezer } from '../mixins/index.js'
+import disableActionsMixin from '../mixins/disableActionsMixin.js'
 import itemMixin from '../mixins/itemMixin.js'
 
 export default {
@@ -131,7 +131,7 @@ export default {
     components: {
         InputField
     },
-    mixins: [actionsFreezer, itemMixin],
+    mixins: [disableActionsMixin, itemMixin],
     props: {
         item: Object,
         metadata: Object
@@ -164,9 +164,6 @@ export default {
                 })
             }
         }
-    },
-    beforeMount() {
-        this.loadBlueGem()
     },
     methods: {
         ...mapActions({
