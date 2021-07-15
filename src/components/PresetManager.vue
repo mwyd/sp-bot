@@ -116,11 +116,7 @@
                 <button 
                     class="spb-button spb-button--green"
                     :disabled="actionsDisabled" 
-                    @click="() => {
-                        actionsDisabled = true
-                        addPreset(currentPreset)
-                        .then(() => actionsDisabled = false)
-                    }"
+                    @click="disableActions(addPreset(currentPreset))"
                 >
                 add
                 </button>
@@ -129,21 +125,14 @@
                 <button 
                     class="spb-preset-manager__button-update spb-button spb-button--green" 
                     :disabled="currentPresetId == 0 || actionsDisabled"
-                    @click="() => {
-                        actionsDisabled = true
-                        updatePreset({
-                            id: currentPresetId,
-                            preset: currentPreset
-                        })
-                        .then(() => actionsDisabled = false)
-                    }"
+                    @click="disableActions(updatePreset({id: currentPresetId, preset: currentPreset}))"
                 >
                 update
                 </button>
                 <button 
                     class="spb-preset-manager__button-delete spb-button spb-button--red" 
                     :disabled="currentPresetId == 0 || actionsDisabled"
-                    @click="deletePreset(currentPresetId)"
+                    @click="disableActions(deletePreset(currentPresetId).then(shiftCurrentPresetIdModel))"
                 >
                 delete
                 </button>
@@ -154,6 +143,7 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
+import { actionsFreezer } from '../mixins/index.js'
 import InputField from './InputField.vue'
 
 export default {
@@ -161,13 +151,13 @@ export default {
     components: {
         InputField
     },
+    mixins: [actionsFreezer],
     props: {
         id: Number
     },
     emits: ['statusUpdate'],
     data() {
         return {
-            actionsDisabled: false,
             views: Object.freeze({
                 ADD: 'add',
                 MANAGE: 'manage'
@@ -207,7 +197,8 @@ export default {
     methods: {
         ...mapActions({
             addPreset: 'presetManager/addPreset',
-            updatePreset: 'presetManager/updatePreset'
+            updatePreset: 'presetManager/updatePreset',
+            deletePreset: 'presetManager/deletePreset'
         }),
         viewClass(view) {
             return [
@@ -220,18 +211,11 @@ export default {
         getPreset(id) {
             return this.$store.getters['presetManager/preset'](id)
         },
-        deletePreset(id) {
-            this.actionsDisabled = true
-
-            this.$store.dispatch('presetManager/deletePreset', id)
-                .then(({success}) => {
-                    if(success) {
-                        const {length} = this.presetIds
-                        if(length > 0) this.currentPresetIdModel = this.presetIds[length - 1]
-
-                        this.actionsDisabled = false
-                    }
-                })
+        shiftCurrentPresetIdModel({success}) {
+            if(success) {
+                const {length} = this.presetIds
+                if(length > 0) this.currentPresetIdModel = this.presetIds[length - 1]
+            }
         }
     }
 }

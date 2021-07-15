@@ -59,11 +59,7 @@
                 <button 
                     class="spb-button spb-button--green" 
                     :disabled="actionsDisabled"
-                    @click="() => {
-                        actionsDisabled = true
-                        addFriend(currentFriend)
-                        .then(() => actionsDisabled = false)
-                    }"
+                    @click="disableActions(addFriend(currentFriend))"
                 >
                 add
                 </button>
@@ -72,21 +68,14 @@
                 <button 
                     class="spb-friend-manager__button-update spb-button spb-button--green" 
                     :disabled="currentFriendId == 0 || actionsDisabled"
-                    @click="() => {
-                        actionsDisabled = true
-                        updateFriend({
-                            id: currentFriendId,
-                            friend: currentFriend
-                        })
-                        .then(() => actionsDisabled = false)
-                    }"
+                    @click="disableActions(updateFriend({id: currentFriendId, friend: currentFriend}))"
                 >
                 update
                 </button>
                 <button 
                     class="spb-friend-manager__button-delete spb-button spb-button--red" 
                     :disabled="currentFriendId == 0 || actionsDisabled"
-                    @click="deleteFriend(currentFriendId)"
+                    @click="disableActions(deleteFriend(currentFriendId).then(shiftCurrentFriendIdModel))"
                 >
                 delete
                 </button>
@@ -97,6 +86,7 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
+import { actionsFreezer } from '../mixins/index.js'
 import InputField from './InputField'
 
 export default {
@@ -104,13 +94,13 @@ export default {
     components: {
         InputField
     },
+    mixins: [actionsFreezer],
     props: {
         id: Number
     },
     emits: ['statusUpdate'],
     data() {
         return {
-            actionsDisabled: false,
             views: Object.freeze({
                 ADD: 'add',
                 MANAGE: 'manage'
@@ -150,7 +140,8 @@ export default {
     methods: {
         ...mapActions({
             addFriend: 'friendManager/addFriend',
-            updateFriend: 'friendManager/updateFriend'
+            updateFriend: 'friendManager/updateFriend',
+            deleteFriend: 'friendManager/deleteFriend'
         }),
         viewClass(view) {
             return [
@@ -163,18 +154,11 @@ export default {
         getFriend(id) {
             return this.$store.getters['friendManager/friend'](id)
         },
-        deleteFriend(id) {
-            this.actionsDisabled = true
-
-            this.$store.dispatch('friendManager/deleteFriend', id)
-                .then(({success}) => {
-                    if(success) {
-                        const {length} = this.friendIds
-                        if(length > 0) this.currentFriendIdModel = this.friendIds[length - 1]
-
-                        this.actionsDisabled = false
-                    }
-                })
+        shiftCurrentFriendIdModel({success}) {
+            if(success) {
+                const {length} = this.friendIds
+                if(length > 0) this.currentFriendIdModel = this.friendIds[length - 1]
+            }
         }
     }
 }

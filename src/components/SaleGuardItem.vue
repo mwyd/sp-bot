@@ -122,6 +122,7 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
+import { actionsFreezer } from '../mixins/index.js'
 import InputField from './InputField.vue'
 
 export default {
@@ -129,6 +130,7 @@ export default {
     components: {
         InputField
     },
+    mixins: [actionsFreezer],
     props: {
         item: Object,
         metadata: Object
@@ -138,7 +140,6 @@ export default {
             displayStatistics: this.$store.getters['app/config']('displayItemStatistics'),
             mutableProperties: {...this.$store.state.item.mutableProperties},
             hideMoreStatisticsButton: false,
-            actionsDisabled: false,
             blueGem: null
         }
     },
@@ -225,33 +226,31 @@ export default {
         updateTracked() {
             if(!this.metadata.tracked) return
 
-            this.actionsDisabled = true
-            this.$store.dispatch('saleGuard/updateTracked', {
-                id: this.metadata.databaseId,
-                data: {
-                    shadowpayOfferId: this.item.id,
-                    minPrice: this.metadata.minPrice,
-                    maxPrice: this.metadata.maxPrice
-                }
-            })
-            .then(() => this.actionsDisabled = false)
+            this.disableActions(
+                this.$store.dispatch('saleGuard/updateTracked', {
+                    id: this.metadata.databaseId,
+                    data: {
+                        shadowpayOfferId: this.item.id,
+                        minPrice: this.metadata.minPrice,
+                        maxPrice: this.metadata.maxPrice
+                    }
+                })
+            )
         },
         toggleTracked() {
-            this.actionsDisabled = true
-
-            const promise = this.metadata.tracked 
-                ? this.stopTrack({
-                    id: this.metadata.databaseId,
-                    showAlert: true
-                }) 
-                : this.startTrack({
-                    hashName: this.item.steam_market_hash_name,
-                    shadowpayOfferId: this.item.id,
-                    minPrice: this.metadata.minPrice,
-                    maxPrice: this.metadata.maxPrice
-                })
-            
-            promise.then(() => this.actionsDisabled = false)
+            this.disableActions(
+                this.metadata.tracked 
+                    ? this.stopTrack({
+                        id: this.metadata.databaseId,
+                        showAlert: true
+                    }) 
+                    : this.startTrack({
+                        hashName: this.item.steam_market_hash_name,
+                        shadowpayOfferId: this.item.id,
+                        minPrice: this.metadata.minPrice,
+                        maxPrice: this.metadata.maxPrice
+                    })
+            )
         }
     }
 }

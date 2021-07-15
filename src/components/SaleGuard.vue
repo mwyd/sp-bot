@@ -60,7 +60,7 @@
                 <button 
                     class="spb-sale-guard__control spb--flex"
                     :disabled="actionsDisabled"
-                    @click="loadItemsOnSale"
+                    @click="disableActions(loadItemsOnSale())"
                 >
                     <div class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-refresh"></div>
                     <div class="spb-sale-guard__control-name">Refresh</div>
@@ -68,7 +68,7 @@
                 <button 
                     class="spb-sale-guard__control spb--flex"
                     :disabled="actionsDisabled"
-                    @click="startTrackAll"
+                    @click="disableActions(startTrackAll())"
                 >
                     <div class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-add-all"></div>
                     <div class="spb-sale-guard__control-name">Add all</div>
@@ -76,7 +76,7 @@
                 <button 
                     class="spb-sale-guard__control spb--flex"
                     :disabled="actionsDisabled"
-                    @click="stopTrackAll"
+                    @click="disableActions(stopTrackAll())"
                 >
                     <div class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-remove-all"></div>
                     <div class="spb-sale-guard__control-name">Remove all</div>
@@ -95,6 +95,7 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import { SPB_LOG } from '../utils/index.js'
+import { actionsFreezer } from '../mixins/index.js'
 import InputField from './InputField.vue'
 import SaleGuardItem from './SaleGuardItem.vue'
 
@@ -104,6 +105,7 @@ export default {
         InputField,
         SaleGuardItem
     },
+    mixins: [actionsFreezer],
     props: {
         id: Number
     },
@@ -114,8 +116,7 @@ export default {
             sortByModel: 3,
             sortDirAsc: false,
             timeoutId: null,
-            isRunning: false,
-            actionsDisabled: false
+            isRunning: false
         }
     },
     computed: {
@@ -168,19 +169,11 @@ export default {
         ...mapActions({
             loadItemsOnSale: 'saleGuard/loadItemsOnSale',
             toggleSaleGuard: 'saleGuard/toggleSaleGuard',
+            startTrackAll: 'saleGuard/startTrackAll',
+            stopTrackAll: 'saleGuard/stopTrackAll',
             stopTrack: 'saleGuard/stopTrack',
             pushAlert: 'app/pushAlert'
         }),
-        async startTrackAll() {
-            this.actionsDisabled = true
-            await this.$store.dispatch('saleGuard/startTrackAll')
-            this.actionsDisabled = false
-        },
-        async stopTrackAll() {
-            this.actionsDisabled = true
-            await this.$store.dispatch('saleGuard/stopTrackAll')
-            this.actionsDisabled = false
-        },
         isFriendItem(userId) {
             return this.$store.getters['friendManager/itemOwner'](userId)
         },
