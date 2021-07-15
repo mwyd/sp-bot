@@ -93,7 +93,7 @@
 </template>
 
 <script>
-import { mapState, mapMutations, mapActions } from 'vuex'
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import { SPB_LOG } from '../utils/index.js'
 import InputField from './InputField.vue'
 import SaleGuardItem from './SaleGuardItem.vue'
@@ -130,14 +130,14 @@ export default {
             setItemPriceUrl: state => state.app.shadowpay.api.SAVE_ITEM_PRICE,
             alertTypes: state => state.app.alertTypes
         }),
+        ...mapGetters({
+            trackedItems: 'saleGuard/trackedItems'
+        }),
         itemUpdateDelay() {
             return this.$store.getters['app/config']('saleGuardItemUpdateDelay')
         },
         itemBidStep() {
             return this.$store.getters['app/config']('saleGuardBidStep')
-        },
-        trackedItems() {
-            return this.$store.getters['saleGuard/trackedItems']
         },
         filteredItems() {
             return [...this.itemsOnSale.values()]
