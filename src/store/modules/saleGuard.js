@@ -182,10 +182,12 @@ export default {
                         item.discount = Math.round(item.discount)
                         item.price_market_usd = parseFloat(item.price_market_usd)
                         item._search_steam_hash_name = item.steam_market_hash_name.toLowerCase()
+
                         if(item.phase) item.steam_market_hash_name = rootGetters['item/steamHashName'](item.steam_market_hash_name)
 
                         let minPrice = item.price_market_usd
                         let maxPrice = Math.round(item.steam_price_en * rootGetters['app/config']('saleGuardSafeDiscount') * 100) / 100
+                        
                         if(maxPrice < minPrice) maxPrice = Math.round((minPrice + rootGetters['app/config']('saleGuardBidStep')) * 100) / 100
                     
                         updatedItems.set(item.id, {
@@ -212,6 +214,7 @@ export default {
             let loopLimit = 1
 
             let loaded = true
+            let missingItems = []
 
             for(let i = 0; i < loopLimit; i++) {
                 await new Promise(resolve => chrome.runtime.sendMessage({
@@ -227,7 +230,7 @@ export default {
 
                     if(success) {
                         for(let item of data) {
-                            if(state.items.get(item.shadowpay_offer_id)) {
+                            if(state.items.has(item.shadowpay_offer_id)) {
                                 commit('setItemMetadata', {
                                     id: item.shadowpay_offer_id,
                                     metadata: {
@@ -238,12 +241,7 @@ export default {
                                     }
                                 })
                             }
-                            else {
-                                await dispatch('stopTrack', {
-                                    id: item.id,
-                                    showAlert: false
-                                })
-                            }
+                            else missingItems.push(item.id)
                         }
 
                         if(data.length == limit) loopLimit++
@@ -252,6 +250,13 @@ export default {
 
                     resolve(response)
                 }))
+            }
+
+            for(let id of missingItems) {
+                await dispatch('stopTrack', {
+                    id: id,
+                    showAlert: false
+                })
             }
 
             commit('setLoaded', loaded)
