@@ -60,7 +60,7 @@
                 <button 
                     class="spb-sale-guard__control spb--flex"
                     :disabled="actionsDisabled"
-                    @click="disableActions(loadItemsOnSale())"
+                    @click="disableActions(refreshItems())"
                 >
                     <div class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-refresh"></div>
                     <div class="spb-sale-guard__control-name">Refresh</div>
@@ -167,6 +167,7 @@ export default {
             setItemMarketPrice: 'saleGuard/setItemMarketPrice'
         }),
         ...mapActions({
+            loadSaleGuardItems: 'saleGuard/loadSaleGuardItems',
             loadItemsOnSale: 'saleGuard/loadItemsOnSale',
             toggleSaleGuard: 'saleGuard/toggleSaleGuard',
             startTrackAll: 'saleGuard/startTrackAll',
@@ -176,6 +177,10 @@ export default {
         }),
         isFriendItem(userId) {
             return this.$store.getters['friendManager/itemOwner'](userId)
+        },
+        async refreshItems() {
+            await this.loadItemsOnSale()
+            await this.loadSaleGuardItems()
         },
         toggleIsRunning() {
             if(this.isRunning) {

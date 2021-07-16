@@ -1,4 +1,4 @@
-const apiUrl = 'http://conduit.ddns.net/api/v1'
+const apiUrl = 'http://localhost:8000/api/v1'
 
 const apiEndpoints = Object.freeze({
     USER: '/user',
