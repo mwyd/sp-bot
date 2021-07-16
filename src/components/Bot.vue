@@ -5,22 +5,22 @@
             <div>
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal</span>
-                    <input-field 
+                    <app-input 
                         v-model.number="preset.deal"
                         :type="'number'"
                         :validator="value => (value >= 0 && value <= 100)"
                         :model-updated="checkToConfirm"
                     >
-                    </input-field>
+                    </app-input>
                 </div>  
                 <div class="spb-option">
                     <span class="spb-option__description">$ Item min price</span>
-                    <input-field 
+                    <app-input 
                         v-model.number="preset.minPrice"
                         :type="'number'" 
                         :validator="value => (value >= 0 && value <= preset.maxPrice)"
                     >
-                    </input-field>
+                    </app-input>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">Preset</span>
@@ -39,52 +39,52 @@
                 </div>  
                 <div class="spb-option">
                     <span class="spb-option__description">Search</span>
-                    <input-field 
+                    <app-input 
                         v-model="preset.search"
                         :type="'text'" 
                         :placeholder="'Search...'"
                     >
-                    </input-field>
+                    </app-input>
                 </div> 
             </div>
             <div>
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal margin</span>
-                    <input-field 
+                    <app-input 
                         v-model.number="preset.dealMargin"
                         :type="'number'" 
                         :validator="value => (value >= -preset.deal && value <= 100 - preset.deal)"
                         :model-updated="checkToConfirm"
                     >
-                    </input-field>
+                    </app-input>
                 </div>  
                 <div class="spb-option">
                     <span class="spb-option__description">$ Item max price</span>
-                    <input-field 
+                    <app-input 
                         v-model.number="preset.maxPrice"
                         :type="'number'" 
                         :validator="value => (value >= preset.minPrice && value <= preset.toSpend)"
                     >
-                    </input-field>
+                    </app-input>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">$ Money to spend</span>
-                    <input-field 
+                    <app-input 
                         v-model.number="preset.toSpend"
                         :type="'number'" 
                         :validator="value => (value >= preset.maxPrice && value <= 1000000)"
                         :model-updated="checkToConfirm"
                     >
-                    </input-field>
+                    </app-input>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">Refresh time</span>
-                    <input-field
+                    <app-input
                         v-model.number="preset.runDelay" 
                         :type="'number'" 
                         :validator="value => (value >= 0 && value <= 1200)"
                     >
-                    </input-field>
+                    </app-input>
                 </div>
             </div>
         </div>
@@ -100,14 +100,14 @@
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
-import InputField from './InputField.vue'
 import { SPB_LOG } from '../utils/index.js'
+import AppInput from './ui/AppInput.vue'
 import DateFormat from 'dateformat'
 
 export default {
     name: 'Bot',
     components: {
-        InputField
+        AppInput
     },
     props: {
         id: Number

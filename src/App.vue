@@ -6,7 +6,7 @@
             :class="tabBarLoaderClass"
         ></div>
         <div class="spb-tab-bar__wrapper">
-            <tab 
+            <app-tab 
                 v-for="tab in staticTabs"
                 :key="'tab-' + tab.id"
                 :id="tab.id"
@@ -16,7 +16,7 @@
                 :child-component="tab.childComponent"
                 :tab-mounted="tab.tabMounted"
             >
-            </tab>
+            </app-tab>
             <div class="spb-tab">
                 <div 
                     class="spb-tab__button spb--rounded-medium spb--cursor-pointer spb--flex"
@@ -28,7 +28,7 @@
                     })"
                 >+</div>
             </div>
-            <tab 
+            <app-tab 
                 v-for="tab in dynamicTabs"
                 :key="'tab-' + tab.id"
                 :id="tab.id"
@@ -38,30 +38,30 @@
                 :child-component="tab.childComponent"
                 :tab-mounted="tab.tabMounted"
             >
-            </tab>
+            </app-tab>
         </div>
         <div class="spb-alert-box">
-            <alert
+            <app-alert
                 v-for="(alert, index) in alerts"
                 :key="'spb-alert-' + index"
                 :type="alert.type"
                 :message="alert.message"
             >
-            </alert>
+            </app-alert>
         </div>
     </div>
 </template>
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
-import Tab from './components/Tab.vue'
-import Alert from './components/Alert.vue'
+import AppTab from './components/ui/AppTab.vue'
+import AppAlert from './components/ui/AppAlert.vue'
 
 export default {
     name: 'App',
     components: {
-        Tab,
-        Alert
+        AppTab,
+        AppAlert
     },
     computed: {
         ...mapState({

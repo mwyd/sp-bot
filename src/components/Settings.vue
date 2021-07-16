@@ -4,7 +4,7 @@
         <div>
             <div class="spb-option spb--font-size-big">
                 <span class="spb-option__description">Token</span>
-                    <input-field
+                    <app-input
                         v-model="token"
                         :type="'password'"
                         :model-updated="() => {
@@ -12,7 +12,7 @@
                             setupApp()
                         }"
                     >
-                    </input-field>
+                    </app-input>
             </div>
             <div class="spb-option spb--font-size-big">
                 <span class="spb-option__description spb--clear-padding">Manage</span>
@@ -50,33 +50,33 @@
                 <span class="spb-option__description spb--clear-padding">Sale Guard</span>
                 <div class="spb--flex spb-option__row spb--font-size-medium">
                     <div>Bid step</div>
-                    <input-field 
+                    <app-input 
                         v-model.number="bidStep"
                         class="spb-settings__bid-step"
                         :type="'number'"
                         :validator="value => value >= 0.01 && value <= 100"
                     >
-                    </input-field>
+                    </app-input>
                 </div>
                 <div class="spb--flex spb-option__row spb--font-size-medium">
                     <div>Safe discount</div>
-                    <input-field 
+                    <app-input 
                         v-model.number="safeDiscount"
                         class="spb-settings__safe-discount"
                         :type="'number'"
                         :validator="value => value >= 1 && value <= 100"
                     >
-                    </input-field>
+                    </app-input>
                 </div>
                 <div class="spb--flex spb-option__row spb--font-size-medium">
                     <div>Item update delay</div>
-                    <input-field 
+                    <app-input 
                         v-model.number="itemUpdateDelay"
                         class="spb-settings__item-update-delay"
                         :type="'number'"
                         :validator="value => value >= 0 && value <= 1200"
                     >
-                    </input-field>
+                    </app-input>
                 </div>
             </div>
         </div>
@@ -96,12 +96,12 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import InputField from './InputField.vue'
+import AppInput from './ui/AppInput.vue'
 
 export default {
     name: 'Settings',
     components: {
-        InputField
+        AppInput
     },
     props: {
         id: Number

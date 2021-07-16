@@ -4,13 +4,13 @@
         <div class="spb-option">
             <span class="spb-option__description">Manage</span>
             <div class="spb--flex">
-                <input-field 
+                <app-input 
                     v-model="search"
                     class="spb-sale-guard__search"
                     :type="'text'"
                     :placeholder="'Search...'"
                 >
-                </input-field>
+                </app-input>
                 <select 
                     class="spb-sale-guard__sort-by spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
                     v-model="sortByModel"
@@ -96,13 +96,13 @@
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import { SPB_LOG } from '../utils/index.js'
 import actionMixin from '../mixins/actionMixin.js'
-import InputField from './InputField.vue'
+import AppInput from './ui/AppInput.vue'
 import SaleGuardItem from './SaleGuardItem.vue'
 
 export default {
     name: 'SaleGuard',
     components: {
-        InputField,
+        AppInput,
         SaleGuardItem
     },
     mixins: [actionMixin],

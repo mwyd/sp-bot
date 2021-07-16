@@ -1,37 +1,22 @@
 <template>
     <div class="spb-home">
         <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">Home</h3>
-        <div class="spb-home__views-wrapper">
-            <div class="spb-home__views spb--cursor-pointer spb--rounded-small spb--flex">
-                <div 
-                    class="spb-home__view spb--rounded-small"
-                    :class="viewClass(views.ACTIVE)"
-                    @click="currentView = views.ACTIVE" 
-                >
-                    Active
-                </div>
-                <div 
-                    class="spb-home__view spb--rounded-small"
-                    :class="viewClass(views.BUY_HISTORY)"
-                    @click="() => {
-                        currentView = views.BUY_HISTORY
-                        clearPendingStatus()
-                    }" 
-                >
-                    Buy history
-                </div>
-            </div>
-        </div>
+        <app-multiple-switch
+            :options="Object.values(views)"
+            :selected="currentView"
+            @optionUpdate="updateView"
+        >
+        </app-multiple-switch>
         <div class="spb-option">
             <span class="spb-option__description">Manage</span>
             <div class="spb--flex">
-                <input-field 
+                <app-input 
                     v-model="search"
                     class="spb-home__search"
                     :type="'text'"
                     :placeholder="'Search...'"
                 >
-                </input-field>
+                </app-input>
                 <select 
                     class="spb-home__sort-by spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
                     v-model="sortByModel"
@@ -97,10 +82,7 @@
             >
                 <div class="spb-home__control-icon spb--background-image-center spb-home__control-items"></div>
                 <div class="spb-home__control-name">
-                    {{ currentView == views.ACTIVE 
-                        ? itemsCount(itemTypes.TO_CONFIRM) 
-                        : itemsCount(itemTypes.PENDING) + finishedItems.length 
-                    }} Items
+                    {{ countedItems }} Items
                 </div>
             </div>
         </div>
@@ -110,13 +92,15 @@
 <script>
 import { mapState, mapGetters } from 'vuex'
 import Item from './Item.vue'
-import InputField from './InputField.vue'
+import AppInput from './ui/AppInput.vue'
+import AppMultipleSwitch from './ui/AppMultipleSwitch.vue'
 
 export default {
     name: 'Home',
     components: {
         Item,
-        InputField
+        AppInput,
+        AppMultipleSwitch
     },
     props: {
         id: Number
@@ -125,10 +109,10 @@ export default {
     data() {
         return {
             views: Object.freeze({
-                ACTIVE: 'active',
-                BUY_HISTORY: 'buy_history'
+                ACTIVE: 'Active',
+                BUY_HISTORY: 'Buy history'
             }),
-            currentView: 'active',
+            currentView: 'Active',
             itemsCache: {
                 toConfirm: []
             },
@@ -150,6 +134,11 @@ export default {
             botsRunning: 'bots/running',
             itemsCount: 'bots/itemsCount'
         }),
+        countedItems() {
+            return this.currentView == this.views.ACTIVE 
+                ? this.itemsCount(this.itemTypes.TO_CONFIRM) 
+                : this.itemsCount(this.itemTypes.PENDING) + this.finishedItems.length 
+        },
         toConfirmItems() {
             return this.frozenToConfirm ? this.itemsCache.toConfirm : this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)
         },
@@ -171,6 +160,10 @@ export default {
         }
     },
     methods: {
+        updateView(view) {
+            this.currentView = view
+            if(view == this.views.BUY_HISTORY) this.clearPendingStatus()
+        },
         filteredItems(type) {
             let items = []
 
@@ -192,11 +185,6 @@ export default {
                 .filter(item => item._search_steam_hash_name.search(this.search.toLowerCase()) > -1)
                 .sort(this.sortBy.get(this.sortByModel).callback(this.sortDirAsc))
         },
-        viewClass(view) {
-            return [
-                this.currentView == view ? 'spb-home__view--active' : ''
-            ]
-        },
         freezeToConfirm(value) {
             if(value) this.itemsCache.toConfirm = this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)
             this.frozenToConfirm = value
@@ -215,11 +203,6 @@ export default {
     width: 80vw;
     min-width: 720px;
     max-width: 1024px;
-}
-
-.spb-home__views-wrapper {
-    width: 100%;
-    padding: 10px 0px;
 }
 
 .spb-home__search {
@@ -250,19 +233,6 @@ export default {
 
 .spb-home__sort-dir--asc {
     transform: rotate(-90deg);
-}
-
-.spb-home__views {
-    background-color: var(--alternative-background-color);
-}
-
-.spb-home__view {
-    text-align: center;
-    width: 100%;
-}
-
-.spb-home__view--active {
-    background-color: var(--secondary-background-color);
 }
 
 .spb-home__items-header {

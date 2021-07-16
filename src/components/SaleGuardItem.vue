@@ -27,7 +27,7 @@
                 </span>
             </div>
             <div class="spb-item__column spb-item__min-price">
-                <input-field 
+                <app-input 
                     class="spb-sale-guard-item__dark-input"
                     v-model.number="minPrice"
                     :type="'number'"
@@ -35,10 +35,10 @@
                     :disabled="actionsDisabled"
                     :model-updated="updateTracked"
                 >
-                </input-field>
+                </app-input>
             </div>
             <div class="spb-item__column spb-item__max-price">
-                <input-field 
+                <app-input 
                     class="spb-sale-guard-item__dark-input"
                     v-model.number="maxPrice"
                     :type="'number'"
@@ -46,7 +46,7 @@
                     :disabled="actionsDisabled"
                     :model-updated="updateTracked"
                 >
-                </input-field>
+                </app-input>
             </div>
             <div class="spb-item__column spb-item__watch">
                 <button 
@@ -122,14 +122,14 @@
 
 <script>
 import { mapActions } from 'vuex'
-import InputField from './InputField.vue'
 import actionMixin from '../mixins/actionMixin.js'
 import itemMixin from '../mixins/itemMixin.js'
+import AppInput from './ui/AppInput.vue'
 
 export default {
     name: 'SaleGuardItem',
     components: {
-        InputField
+        AppInput
     },
     mixins: [actionMixin, itemMixin],
     props: {

@@ -21,25 +21,25 @@
             </div>
             {{ symbol }}
         </div>
-        <tab-window
+        <app-tab-window
             ref="tabWindow"
             :id="id"
             :is-open="isOpen"
             :child-component="childComponent"
             @statusUpdate="newStatus => status = newStatus"
         >
-        </tab-window>
+        </app-tab-window>
     </div>
 </template>
 
 <script>
 import { mapMutations } from 'vuex'
-import TabWindow from './TabWindow.vue'
+import AppTabWindow from './AppTabWindow.vue'
 
 export default {
-    name: 'Tab',
+    name: 'AppTab',
     components: {
-        TabWindow
+        AppTabWindow
     },
     props: {
         id: Number,

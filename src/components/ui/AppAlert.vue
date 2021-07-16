@@ -11,7 +11,7 @@
 import { mapState } from 'vuex'
 
 export default {
-    name: 'Alert',
+    name: 'AppAlert',
     props: {
         type: String,
         message: String

@@ -1,24 +1,12 @@
 <template>
     <div class="spb-friend-manager">
         <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">Friend Manager</h3>
-        <div class="spb-friend-manager__views-wrapper">
-            <div class="spb-friend-manager__views spb--cursor-pointer spb--rounded-small spb--flex">
-                <div 
-                    class="spb-friend-manager__view spb--rounded-small"
-                    :class="viewClass(views.ADD)"
-                    @click="currentView = views.ADD" 
-                >
-                    Add
-                </div>
-                <div 
-                    class="spb-friend-manager__view spb--rounded-small"
-                    :class="viewClass(views.MANAGE)"
-                    @click="currentView = views.MANAGE"
-                >
-                    Manage
-                </div>
-            </div>
-        </div>
+        <app-multiple-switch
+            :options="Object.values(views)"
+            :selected="currentView"
+            @optionUpdate="view => currentView = view"
+        >
+        </app-multiple-switch>
         <div v-show="currentView == views.MANAGE" class="spb-option">
             <span class="spb-option__description">Select friend</span>
             <select 
@@ -37,21 +25,21 @@
         <div class="spb-friend-manager__options">
             <div class="spb-option">
                 <span class="spb-option__description">Shadowpay id</span>
-                <input-field 
+                <app-input 
                     v-model.number="currentFriend.shadowpayUserId"
                     :type="'number'"
                     :placeholder="'Enter id...'"
                 >
-                </input-field>
+                </app-input>
             </div>  
             <div class="spb-option">
                 <span class="spb-option__description">Name</span>
-                <input-field 
+                <app-input 
                     v-model="currentFriend.name"
                     :type="'text'" 
                     :placeholder="'Enter name...'"
                 >
-                </input-field>
+                </app-input>
             </div>
         </div>
         <div class="spb-friend-manager__buttons-wrapper">
@@ -87,12 +75,14 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
 import actionMixin from '../mixins/actionMixin.js'
-import InputField from './InputField'
+import AppInput from './ui/AppInput.vue'
+import AppMultipleSwitch from './ui/AppMultipleSwitch.vue'
 
 export default {
     name: 'FriendManager',
     components: {
-        InputField
+        AppInput,
+        AppMultipleSwitch
     },
     mixins: [actionMixin],
     props: {
@@ -102,10 +92,10 @@ export default {
     data() {
         return {
             views: Object.freeze({
-                ADD: 'add',
-                MANAGE: 'manage'
+                ADD: 'Add',
+                MANAGE: 'Manage'
             }),
-            currentView: 'add',
+            currentView: 'Add',
             currentFriendId: 0,
             currentFriend: {...this.getFriend(0)}
         }
@@ -143,11 +133,6 @@ export default {
             updateFriend: 'friendManager/updateFriend',
             deleteFriend: 'friendManager/deleteFriend'
         }),
-        viewClass(view) {
-            return [
-                this.currentView == view ? 'spb-friend-manager__view--active' : ''
-            ]
-        },
         sortedFriends(sortAsc = true) {
             return this.$store.getters['friendManager/sortedFriends'](sortAsc)
         },
@@ -175,23 +160,6 @@ export default {
 .spb-friend-manager__friend-select {
     background-color: var(--secondary-background-color);
     height: 32px;
-}
-
-.spb-friend-manager__views-wrapper {
-    padding: 10px 0px;
-}
-
-.spb-friend-manager__views {
-    background-color: var(--alternative-background-color);
-}
-
-.spb-friend-manager__view {
-    text-align: center;
-    width: 100%;
-}
-
-.spb-friend-manager__view--active {
-    background-color: var(--secondary-background-color);
 }
 
 .spb-friend-manager__buttons-wrapper {

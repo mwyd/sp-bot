@@ -16,7 +16,7 @@
 
 <script>
 export default {
-    name: 'InputField',
+    name: 'AppInput',
     props: {
         type: String,
         modelValue: [String, Number],
