@@ -1,8 +1,5 @@
 <template>
-    <div 
-        class="spb-item__row spb--rounded-small" 
-        :class="stateClass"
-    >
+    <div class="spb-item__row spb--rounded-small">
         <div class="spb-item spb--flex">
             <div class="spb-item__column spb-item__name">
                 <a
@@ -29,19 +26,7 @@
                     <sup>{{ (item._real_discount ? item._real_discount + '% | ': '') + item.discount }}%</sup>
                 </span>
             </div>
-            <div class="spb-item__column spb-item__status"> {{ item.state }}</div>
-            <div class="spb-item__column spb-item__date">
-                <button 
-                    class="spb-button spb--font-size-small spb-button--green"
-                    v-if="type == itemTypes.TO_CONFIRM" 
-                    @click="item._onclick" 
-                    @mouseenter="overBuyButton(true)" 
-                    @mouseleave="overBuyButton(false)" 
-                >
-                    Buy now
-                </button>
-                <span v-else>{{ timeBought }}</span>
-            </div>
+            <slot name="modal-columns"></slot>
             <div 
                 class="spb-item__column spb-item__info spb-item__info--ico"
                 @click="toggleDisplayStatistics"
@@ -78,20 +63,14 @@
                 <span class="spb--text-green">{{ interestingProperties[key].unit + ' ' + item[key] }}</span>
             </div>
             <div 
-                v-if="item.inspect_url" 
-                class="spb-item__stat spb--cursor-pointer"
+                v-for="key in existingShadowpayStatistics"
+                class="spb-item__stat" 
+                :key="'item.' + key"
             >
-                <a 
-                    target="_blank" 
-                    class="spb--link"
-                    :href="steamUserProfileUrl + itemOwnerSteamId(item.inspect_url)"
-                > 
-                    {{ friendOwner ? friendOwner + "'s" : "Owner's" }}
-                    <span class="spb--text-green">
-                        steam
-                    </span>
-                </a>
+                {{ shadowpayStatistics[key].name }} 
+                <span class="spb--text-green">{{ shadowpayStatistics[key].unit + ' ' + mutableProperties[key] }}</span>
             </div>
+            <slot name="modal-statistics"></slot>
             <div 
                 v-if="item.inspect_url" 
                 class="spb-item__stat spb--cursor-pointer"
@@ -99,14 +78,6 @@
             >
                 Inspect
                 <span class="spb--text-green">link</span>
-            </div>
-            <div 
-                v-for="key in existingShadowpayStatistics"
-                class="spb-item__stat" 
-                :key="'item.' + key"
-            >
-                {{ shadowpayStatistics[key].name }} 
-                <span class="spb--text-green">{{ shadowpayStatistics[key].unit + ' ' + mutableProperties[key] }}</span>
             </div>
             <div 
                 @click="loadShadowpayStatistics" 
@@ -121,52 +92,81 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import itemMixin from '../mixins/itemMixin.js'
-import DateFormat from 'dateformat'
 
 export default {
     name: 'Item',
-    mixins: [itemMixin],
     props: {
-        type: String,
         item: Object
     },
-    emits: ['overBuyButton'],
     data() {
         return {
-            friendOwner: null
+            displayStatistics: this.$store.getters['app/config']('displayItemStatistics'),
+            mutableProperties: {...this.$store.state.item.mutableProperties},
+            hideMoreStatisticsButton: false,
+            blueGem: null
         }
     },
     computed: {
         ...mapState({
-            steamUserProfileUrl: state => state.app.steam.resources.USER_PROFILE,
-            itemTypes: state => state.bots.itemTypes,
+            steamItemMarketUrl: state => state.app.steam.resources.ITEM_SELL_LISTINGS,
+            steamItemImageUrl: state => state.app.steam.resources.ITEM_IMAGE,
+            interestingProperties: state => state.item.interestingProperites,
+            shadowpayStatistics: state => state.item.shadowpayStatistics,
             alertTypes: state => state.app.alertTypes
         }),
-        stateClass() {
-            return [
-               this.type != this.itemTypes.TO_CONFIRM ? `spb-item__status--${this.item.state}` : ''
-            ]
+        existingInterestingProperties() {
+            return Object.keys(this.interestingProperties).filter(key => this.item[key])
         },
-        timeBought() {
-            return DateFormat(this.item._time_bought, 'yyyy-mm-dd H:MM:ss')
+        existingShadowpayStatistics() {
+            return Object.keys(this.shadowpayStatistics).filter(key => this.mutableProperties[key])
         }
     },
     beforeMount() {
-        this.loadFriendOwner()
+        this.loadBlueGem()
     },
     methods: {
         ...mapActions({
+            copyInspectLink: 'item/copyInspectLink',
             pushAlert: 'app/pushAlert'
         }),
-        itemOwnerSteamId(inspectLink) {
-            return this.$store.getters['item/itemOwnerSteamId'](inspectLink)
+        interestingFloat(float) {
+            return this.$store.getters['item/interestingFloat'](float)
         },
-        loadFriendOwner() {
-            this.friendOwner = this.$store.getters['friendManager/itemOwner'](this.item.user_id)
+        toggleDisplayStatistics() {
+            this.displayStatistics = !this.displayStatistics
         },
-        overBuyButton(value) {
-            this.$emit('overBuyButton', value)
+        loadBlueGem() {
+            if(this.item.paintseed == null || this.item._search_steam_hash_name.search('case hardened') < 0) return
+
+            this.$store.dispatch('item/getBlueGem', {
+                itemType: this.item.subcategory_name,
+                paintSeed: this.item.paintseed
+            })
+            .then(({success, data}) => {
+                if(success && data?.length > 0) {
+                    this.blueGem = data[0].gem_type
+
+                    if(!this.item.is_my_item) {
+                        this.pushAlert({
+                            type: this.alertTypes.INFO,
+                            message: `${this.blueGem} Gem ${this.item.steam_market_hash_name}`
+                        })
+                    }
+                }
+            })
+        },
+        loadShadowpayStatistics() {
+            this.hideMoreStatisticsButton = true
+
+            this.$store.dispatch('item/loadShadowpayStatistics', this.item.steam_market_hash_name)
+            .then(({success, data}) => {
+                if(!success || data?.length == 0) return
+
+                this.mutableProperties._app_sell_price = (data[0].avg_suggested_price * (1 - (data[0].avg_discount / 100))).toFixed(2)
+                this.mutableProperties._avg_discount = data[0].avg_discount
+                this.mutableProperties._sold = data[0].sold
+                this.mutableProperties._last_sold = data[0].last_sold
+            })
         }
     }
 }
@@ -230,26 +230,10 @@ export default {
     min-width: 150px;
 }
 
-.spb-item__min-price, .spb-item__max-price {
-    min-width: 120px;
-}
-
-.spb-item__min-price > .spb-input, .spb-item__max-price > .spb-input {
-    width: 80%;
-}
-
 .spb-item__price sup {
     vertical-align: sub;
     font-size: 1em;
     color: var(--alternative-text-color);
-}
-
-.spb-item__status {
-    min-width: 90px;
-}
-
-.spb-item__watch {
-    min-width: 80px;
 }
 
 .spb-item__info {
@@ -265,10 +249,6 @@ export default {
     background-repeat: no-repeat;
 }
 
-.spb-item__date {
-    min-width: 150px;
-}
-
 .spb-item__stats {
     display: flex;
     flex-wrap: wrap;
@@ -279,17 +259,5 @@ export default {
 
 .spb-item__stat {
     padding: 4px 10px;
-}
-
-.spb-item__status--active {
-    border-left: 2px solid var(--active-color);
-}
-
-.spb-item__status--cancelled {
-    border-left: 2px solid var(--cancelled-color);
-}
-
-.spb-item__status--finished {
-    border-left: 2px solid var(--accepted-color);
 }
 </style>

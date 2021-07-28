@@ -47,33 +47,33 @@
                 v-show="currentView == views.ACTIVE" 
                 class="spb-home__items-active"
             >
-                <item 
+                <home-item 
                     v-for="item in filteredItems(itemTypes.TO_CONFIRM)"  
                     :type="itemTypes.TO_CONFIRM" 
                     :item="item" 
                     :key="'item-' + item.id"
                     @overBuyButton="freezeToConfirm"
                 >
-                </item>
+                </home-item>
             </div>
             <div 
                 v-show="currentView == views.BUY_HISTORY" 
                 class="spb-home__items-buy-history"
             >
-                <item 
+                <home-item 
                     v-for="item in filteredItems(itemTypes.PENDING)" 
                     :type="itemTypes.PENDING" 
                     :item="item" 
                     :key="'item-' + item.id"
                 >
-                </item> 
-                <item 
+                </home-item> 
+                <home-item 
                     v-for="item in filteredItems(itemTypes.FINISHED)" 
                     :type="itemTypes.FINISHED" 
                     :item="item" 
                     :key="'item-' + item.id"
                 >
-                </item> 
+                </home-item> 
             </div>
         </div>
         <div class="spb-home__footer spb--font-size-medium">
@@ -91,14 +91,14 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import Item from './Item.vue'
+import HomeItem from './HomeItem.vue'
 import AppInput from './ui/AppInput.vue'
 import AppMultipleSwitch from './ui/AppMultipleSwitch.vue'
 
 export default {
     name: 'Home',
     components: {
-        Item,
+        HomeItem,
         AppInput,
         AppMultipleSwitch
     },

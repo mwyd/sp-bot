@@ -1,31 +1,6 @@
 <template>
-    <div class="spb-item__row spb--rounded-small">
-        <div class="spb-item spb--flex">
-            <div class="spb-item__column spb-item__name">
-                <a
-                    target="_blank" 
-                    class="spb--link"
-                    :href="steamItemMarketUrl + item.steam_market_hash_name"
-                >
-                    <img :src="steamItemImageUrl + item.steam_icon_url_large">
-                    {{ item.steam_market_hash_name }}
-                </a>
-            </div>
-            <div class="spb-item__stickers spb--flex">
-                <div class="spb-item__sticker" 
-                    v-for="(sticker, index) in item.stickers"
-                    :data-spb-sticker-name="sticker.name"
-                    :data-spb-sticker-price="'$ ' + sticker.steam_price"
-                    :key="'item-sticker-' + index"
-                >
-                    <img :src="steamItemImageUrl + sticker.icon_url">
-                </div>
-            </div>
-            <div class="spb-item__column spb-item__price">
-                <span class="spb--font-weight-light">$ {{ parseFloat(item.price_market_usd).toFixed(2) }}
-                    <sup>{{ item.discount }}%</sup>
-                </span>
-            </div>
+    <base-item :item="item">
+        <template #modal-columns>
             <div class="spb-item__column spb-item__min-price">
                 <app-input 
                     class="spb-sale-guard-item__dark-input"
@@ -58,80 +33,23 @@
                     {{ metadata.tracked ? 'stop' : 'start' }} 
                 </button>
             </div>
-            <div 
-                class="spb-item__column spb-item__info spb-item__info--ico"
-                @click="toggleDisplayStatistics"
-            ></div>
-        </div>
-        <div 
-            class="spb-item__stats spb--rounded-small" 
-            v-show="displayStatistics"
-        >
-            <div 
-                v-if="item.floatvalue" 
-                class="spb-item__stat"
-            >
-                Float 
-                <span :class="interestingFloat(item.floatvalue) ? 'spb--text-highlight' : 'spb--text-green'">
-                    {{ item.floatvalue }}
-                </span>
-            </div>
-            <div 
-                v-if="blueGem" 
-                class="spb-item__stat"
-            > 
-                Gem
-                <span :class="blueGem == 'Gold' ? 'spb--text-highlight' : 'spb--text-blue'">
-                    {{ blueGem }}
-                </span>
-            </div>
-            <div 
-                v-for="key in existingInterestingProperties"
-                class="spb-item__stat" 
-                :key="'item.' + key"
-            >
-                {{ interestingProperties[key].name }} 
-                <span class="spb--text-green">{{ interestingProperties[key].unit + ' ' + item[key] }}</span>
-            </div>
-            <div 
-                v-for="key in existingShadowpayStatistics"
-                class="spb-item__stat" 
-                :key="'item.' + key"
-            >
-                {{ shadowpayStatistics[key].name }} 
-                <span class="spb--text-green">{{ shadowpayStatistics[key].unit + ' ' + mutableProperties[key] }}</span>
-            </div>
-            <div 
-                v-if="item.inspect_url" 
-                class="spb-item__stat spb--cursor-pointer"
-                @click="copyInspectLink(item.inspect_url)"
-            >
-                Inspect
-                <span class="spb--text-green">link</span>
-            </div>
-            <div 
-                @click="loadShadowpayStatistics" 
-                v-if="!hideMoreStatisticsButton" 
-                class="spb--cursor-pointer spb-item__stat"
-            >
-                +
-            </div>
-        </div>
-    </div>
+        </template>
+    </base-item>
 </template>
 
 <script>
 import { mapActions } from 'vuex'
+import BaseItem from './base/BaseItem.vue'
 import actionMixin from '../mixins/actionMixin.js'
-import itemMixin from '../mixins/itemMixin.js'
 import AppInput from './ui/AppInput.vue'
 
 export default {
     name: 'SaleGuardItem',
     components: {
+        BaseItem,
         AppInput
     },
-    mixins: [actionMixin, itemMixin],
+    mixins: [actionMixin],
     props: {
         item: Object,
         metadata: Object
@@ -203,8 +121,20 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 .spb-sale-guard-item__dark-input {
     background-color: var(--alternative-dark-background-color);
+}
+
+.spb-item__min-price, .spb-item__max-price {
+    min-width: 120px;
+}
+
+.spb-item__min-price > .spb-input, .spb-item__max-price > .spb-input {
+    width: 80%;
+}
+
+.spb-item__watch {
+    min-width: 80px;
 }
 </style>
