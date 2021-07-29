@@ -34,6 +34,15 @@
                 </button>
             </div>
         </template>
+        <template #modal-statistics>
+            <div 
+                v-if="metadata.updatedAt" 
+                class="spb-item__stat"
+            >
+                Updated
+                <span class="spb--text-green">{{ updatedAtDays }} ago</span>
+            </div>
+        </template>
     </base-item>
 </template>
 
@@ -59,6 +68,15 @@ export default {
             return [
                 this.metadata.tracked ? 'spb-button--red' : 'spb-button--green'
             ]
+        },
+        updatedAtDays() {
+            const days = Math.floor((Date.now() - new Date(this.metadata.updatedAt)) / (1000 * 60 * 60 * 24))
+
+            return days < 1 
+                ? '< 1 day' 
+                : days == 1
+                    ? '1 day'
+                    : `${days} days`
         },
         minPrice: {
             get() {

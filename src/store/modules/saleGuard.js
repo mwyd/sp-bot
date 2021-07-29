@@ -68,7 +68,8 @@ export default {
                             databaseId: data.id,
                             tracked: true,
                             minPrice: data.min_price,
-                            maxPrice: data.max_price
+                            maxPrice: data.max_price,
+                            updatedAt: data.updated_at
                         }
                     })
                 }
@@ -142,7 +143,8 @@ export default {
                             databaseId: null,
                             tracked: false,
                             minPrice: data.min_price,
-                            maxPrice: data.max_price
+                            maxPrice: data.max_price,
+                            updatedAt: null
                         }
                     })
                 }
@@ -237,7 +239,8 @@ export default {
                                         databaseId: item.id,
                                         tracked: true,
                                         minPrice: item.min_price,
-                                        maxPrice: item.max_price
+                                        maxPrice: item.max_price,
+                                        updatedAt: item.updated_at
                                     }
                                 })
                             }
