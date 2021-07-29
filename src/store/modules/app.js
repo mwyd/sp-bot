@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie'
+import { v4 as uuidv4 } from 'uuid'
 
 export default {
     namespaced: true,
@@ -51,7 +52,7 @@ export default {
             ERROR: 'error'
         }),
         alertLifeTime: 2 * 1000,
-        alerts: [],
+        alerts: new Map(),
         config: {
             displayItemStatistics: false,
             displayTabPreview: true,
@@ -121,10 +122,10 @@ export default {
             state.tabs.splice(state.tabs.findIndex(tab => tab.id == id), 1)
         },
         addAlert(state, alert) {
-            state.alerts.push(alert)
+            state.alerts.set(alert.uuid, alert)
         },
-        shiftAlert(state) {
-            state.alerts.shift()
+        deleteAlert(state, uuid) {
+            state.alerts.delete(uuid)
         }
     },
     actions: {
@@ -174,8 +175,14 @@ export default {
             }))
         },
         pushAlert({state, commit}, alert) {
-            commit('addAlert', alert)
-            setTimeout(() => commit('shiftAlert'), state.alertLifeTime)
+            const uuid = uuidv4()
+
+            commit('addAlert', {
+                uuid: uuid, 
+                ...alert
+            })
+
+            if(!alert.persistent) setTimeout(() => commit('deleteAlert', uuid), state.alertLifeTime)
         },
         checkBackgroundMounted({rootState, commit, dispatch}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
@@ -188,6 +195,7 @@ export default {
                 else {
                     dispatch('app/pushAlert', {
                         type: rootState.app.alertTypes.ERROR,
+                        persistent: true,
                         message: 'Background not mounted correctly - restart browser'
                     }, { root: true })
                 }

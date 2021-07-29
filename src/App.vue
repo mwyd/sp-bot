@@ -42,8 +42,9 @@
         </div>
         <div class="spb-alert-box">
             <app-alert
-                v-for="(alert, index) in alerts"
-                :key="'spb-alert-' + index"
+                v-for="[uuid, alert] in alerts"
+                :key="'spb-alert-' + uuid"
+                :uuid="uuid"
                 :type="alert.type"
                 :message="alert.message"
             >

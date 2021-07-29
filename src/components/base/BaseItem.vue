@@ -149,6 +149,7 @@ export default {
                     if(!this.item.is_my_item) {
                         this.pushAlert({
                             type: this.alertTypes.INFO,
+                            persistent: true,
                             message: `${this.blueGem} Gem ${this.item.steam_market_hash_name}`
                         })
                     }
