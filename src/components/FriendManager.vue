@@ -14,11 +14,11 @@
                 v-model="currentFriendIdModel"
             >
                 <option 
-                    v-for="pair in sortedFriends(true)" 
-                    :key="'friend-' + pair[0]" 
-                    :value="pair[0]"
+                    v-for="[id, friend] in sortedFriends(true)" 
+                    :key="'friend-' + id" 
+                    :value="id"
                 >
-                    {{ pair[1].name }}
+                    {{ friend.name }}
                 </option>
             </select>
         </div>

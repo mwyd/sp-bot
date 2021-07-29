@@ -14,11 +14,11 @@
                 v-model="currentPresetIdModel"
             >
                 <option 
-                    v-for="pair in sortedPresets(true)" 
-                    :key="'preset-' + pair[0]" 
-                    :value="pair[0]"
+                    v-for="[id, preset] in sortedPresets(true)" 
+                    :key="'preset-' + id" 
+                    :value="id"
                 >
-                    {{ pair[1].name }}
+                    {{ preset.name }}
                 </option>
             </select>
         </div> 
