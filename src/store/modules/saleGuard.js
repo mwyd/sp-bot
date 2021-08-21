@@ -69,7 +69,7 @@ export default {
                             tracked: true,
                             minPrice: data.min_price,
                             maxPrice: data.max_price,
-                            updatedAt: data.updated_at
+                            createdAt: data.created_at
                         }
                     })
                 }
@@ -144,7 +144,7 @@ export default {
                             tracked: false,
                             minPrice: data.min_price,
                             maxPrice: data.max_price,
-                            updatedAt: null
+                            createdAt: null
                         }
                     })
                 }
@@ -240,7 +240,7 @@ export default {
                                         tracked: true,
                                         minPrice: item.min_price,
                                         maxPrice: item.max_price,
-                                        updatedAt: item.updated_at
+                                        createdAt: item.created_at
                                     }
                                 })
                             }

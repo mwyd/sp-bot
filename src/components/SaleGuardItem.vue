@@ -36,11 +36,11 @@
         </template>
         <template #modal-statistics>
             <div 
-                v-if="metadata.updatedAt" 
+                v-if="metadata.createdAt" 
                 class="spb-item__stat"
             >
-                Updated
-                <span class="spb--text-green">{{ updatedAtDays }} ago</span>
+                Watched for 
+                <span class="spb--text-green">{{ createdAtDays }}</span>
             </div>
         </template>
     </base-item>
@@ -69,8 +69,8 @@ export default {
                 this.metadata.tracked ? 'spb-button--red' : 'spb-button--green'
             ]
         },
-        updatedAtDays() {
-            const days = Math.floor((Date.now() - new Date(this.metadata.updatedAt)) / (1000 * 60 * 60 * 24))
+        createdAtDays() {
+            const days = Math.floor((Date.now() - new Date(this.metadata.createdAt)) / (1000 * 60 * 60 * 24))
 
             return days < 1 
                 ? '< 1 day' 
