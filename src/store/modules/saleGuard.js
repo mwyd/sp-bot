@@ -1,4 +1,4 @@
-import { SPB_LOG } from '../../utils/index.js'
+import { SPB_LOG, roundNumber } from '../../utils/index.js'
 
 export default {
     namespaced: true,
@@ -192,9 +192,9 @@ export default {
                         }
 
                         let minPrice = item.price_market_usd
-                        let maxPrice = Math.round(item.steam_price_en * rootGetters['app/config']('saleGuardSafeDiscount') * 100) / 100
+                        let maxPrice = roundNumber(item.steam_price_en * rootGetters['app/config']('saleGuardSafeDiscount'))
                         
-                        if(maxPrice < minPrice) maxPrice = Math.round((minPrice + rootGetters['app/config']('saleGuardBidStep')) * 100) / 100
+                        if(maxPrice < minPrice) maxPrice = roundNumber(minPrice + rootGetters['app/config']('saleGuardBidStep'))
                     
                         updatedItems.set(item.id, {
                             item: item,

@@ -1,3 +1,5 @@
+import { roundNumber } from '../../utils/index.js'
+
 export default {
     namespaced: true,
     state: () => ({
@@ -198,7 +200,7 @@ export default {
 
                 if(error) return
 
-                item.floatvalue = iteminfo.floatvalue
+                item.floatvalue = roundNumber(iteminfo.floatvalue, 7)
                 item.paintseed = iteminfo.paintseed
                 item.paintindex = iteminfo.paintindex
             }

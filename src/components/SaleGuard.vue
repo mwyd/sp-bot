@@ -94,7 +94,7 @@
 
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
-import { SPB_LOG } from '../utils/index.js'
+import { SPB_LOG, roundNumber } from '../utils/index.js'
 import actionMixin from '../mixins/actionMixin.js'
 import AppInput from './ui/AppInput.vue'
 import SaleGuardItem from './SaleGuardItem.vue'
@@ -273,7 +273,7 @@ export default {
                         if(marketItem.price_market_usd - this.itemBidStep > metadata.minPrice) {
                             newPrice = this.isFriendItem(marketItem.user_id) 
                                 ? marketItem.price_market_usd
-                                : Math.round((marketItem.price_market_usd - this.itemBidStep) * 100) / 100
+                                : roundNumber(marketItem.price_market_usd - this.itemBidStep)
                             break
                         }
                     }
