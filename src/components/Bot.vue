@@ -153,6 +153,9 @@ export default {
                 this.checkToConfirm()
             }
         },
+        steamVolumeLimit() {
+            return this.$store.getters['app/config']('steamVolumeLimit')
+        },
         toggleIsRunningButtonClass() {
             return [
                 this.isRunning ? 'spb-button--red' : 'spb-button--green'
@@ -246,7 +249,7 @@ export default {
             item._real_discount = 100 - Math.round(item.price_market_usd * 100 / item._steam_price)
         },
         canBuyItem(item) {
-            return item._updated && item._real_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume >= 10
+            return item._updated && item._real_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume >= this.steamVolumeLimit
         },
         buyItem(item) {
             if(this.items.pending.has(item.id) || item.price_market_usd + this.moneySpent > this.preset.toSpend) return

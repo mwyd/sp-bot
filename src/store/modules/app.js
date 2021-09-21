@@ -54,6 +54,7 @@ export default {
         alertLifeTime: 2 * 1000,
         alerts: new Map(),
         config: {
+            steamVolumeLimit: 10,
             displayItemStatistics: false,
             displayTabPreview: true,
             displayInterfaceOnTop: false,

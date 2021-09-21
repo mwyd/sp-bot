@@ -16,16 +16,16 @@
             </div>
             <div class="spb-option spb--font-size-big">
                 <span class="spb-option__description spb--clear-padding">Manage</span>
-                    <div class="spb--flex spb-option__row spb--font-size-medium">
-                        <div>Toggle bots</div>
-                        <button 
-                            class="spb-button spb-button-tiny"
-                            :class="runBotsButtonClass"
-                            @click="toggleAllBots" 
-                        >
-                            {{ runBots ? 'stop' : 'start' }}
-                        </button>
-                    </div>
+                <div class="spb--flex spb-option__row spb--font-size-medium">
+                    <div>Toggle bots</div>
+                    <button 
+                        class="spb-button spb-button-tiny"
+                        :class="runBotsButtonClass"
+                        @click="toggleAllBots" 
+                    >
+                        {{ runBots ? 'stop' : 'start' }}
+                    </button>
+                </div>
             </div>
             <div class="spb-option spb--font-size-big">
                 <span class="spb-option__description spb--clear-padding">Config</span>
@@ -44,6 +44,19 @@
                 <div class="spb--flex spb-option__row spb--font-size-medium">
                     <div>Open tabs at startup</div>
                     <input v-model="openTabsAtStartup" type="checkbox">
+                </div>
+            </div>
+            <div class="spb-option spb--font-size-big">
+                <span class="spb-option__description spb--clear-padding">Bot</span>
+                <div class="spb--flex spb-option__row spb--font-size-medium">
+                    <div>Steam volume limit</div>
+                    <app-input 
+                        v-model.number="steamVolumeLimit"
+                        class="spb-settings__safe-discount"
+                        :type="'number'"
+                        :validator="value => value >= 0 && value <= 100"
+                    >
+                    </app-input>
                 </div>
             </div>
             <div class="spb-option spb--font-size-big">
@@ -129,6 +142,17 @@ export default {
             },
             set(value) {
                 this.$store.commit('session/setToken', value)
+            }
+        },
+        steamVolumeLimit: {
+            get() {
+                return this.$store.getters['app/config']('steamVolumeLimit')
+            },
+            set(value) {
+                this.$store.commit('app/setConfig', {
+                    type: 'steamVolumeLimit',
+                    value: value
+                })
             }
         },
         displayItemStatistics: {
