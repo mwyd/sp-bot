@@ -22,6 +22,7 @@ export default {
             'Case Hardened',
             'Fade'
         ],
+        highRankFloat: Math.pow(10, -3),
         interestingFloatRanges: [
             {
                 min: 0, 
@@ -206,6 +207,14 @@ export default {
             }
 
             if(!getters.hasPaintSeedVariants(item.steam_short_name)) return
+
+            if(rootState.item.highRankFloat >= item.floatvalue) {
+                dispatch('app/pushAlert',{
+                    type: rootState.app.alertTypes.INFO,
+                    persistent: true,
+                    message: `${item.steam_market_hash_name} <br> ${item.floatvalue} <br> $ ${item.price_market_usd}`
+                }, { root: true })
+            }
 
             dispatch('getRarePaintSeedItems', item)
             .then(({success, data}) => {
