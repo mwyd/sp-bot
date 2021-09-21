@@ -402,13 +402,18 @@ export default {
                             item.price_market_usd = parseFloat(item.price_market_usd)
                             item._updated = false
                             item._search_steam_hash_name = item.steam_market_hash_name.toLowerCase()
-                            if(item.phase) item.steam_market_hash_name = this.clearDopplerHashName(item.steam_market_hash_name)
+                            item._conduit_hash_name = item.steam_market_hash_name
+
+                            if(item.phase) {
+                                item.steam_market_hash_name = this.clearDopplerHashName(item.steam_market_hash_name)
+                                item._conduit_hash_name = item.steam_market_hash_name.replace('(', `${item.phase} (`)
+                            }
 
                             await new Promise(resolve => chrome.runtime.sendMessage({
                                 action: 'get_steam_market_csgo_item', 
                                 params: {
                                     token: this.token,
-                                    hash_name: item.steam_market_hash_name
+                                    hash_name: item._conduit_hash_name
                                 }
                             }, 
                             response => {

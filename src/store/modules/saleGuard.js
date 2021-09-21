@@ -184,8 +184,12 @@ export default {
                         item.discount = Math.round(item.discount)
                         item.price_market_usd = parseFloat(item.price_market_usd)
                         item._search_steam_hash_name = item.steam_market_hash_name.toLowerCase()
+                        item._conduit_hash_name = item.steam_market_hash_name
 
-                        if(item.phase) item.steam_market_hash_name = rootGetters['item/steamHashName'](item.steam_market_hash_name)
+                        if(item.phase) {
+                            item.steam_market_hash_name = rootGetters['item/steamHashName'](item.steam_market_hash_name)
+                            item._conduit_hash_name = item.steam_market_hash_name.replace('(', `${item.phase} (`)
+                        }
 
                         let minPrice = item.price_market_usd
                         let maxPrice = Math.round(item.steam_price_en * rootGetters['app/config']('saleGuardSafeDiscount') * 100) / 100

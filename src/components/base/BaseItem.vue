@@ -159,7 +159,7 @@ export default {
         loadShadowpayStatistics() {
             this.hideMoreStatisticsButton = true
 
-            this.$store.dispatch('item/loadShadowpayStatistics', this.item.steam_market_hash_name)
+            this.$store.dispatch('item/loadShadowpayStatistics', this.item._conduit_hash_name)
             .then(({success, data}) => {
                 if(!success || data?.length == 0) return
 
