@@ -162,6 +162,11 @@ export default {
             ]
         }
     },
+    watch: {
+        steamVolumeLimit() {
+            this.checkToConfirm()
+        }
+    },
     beforeMount() {
         this.presetIdModel = this.presetId
         this.startTrack(this)
