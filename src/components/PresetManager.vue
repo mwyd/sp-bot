@@ -29,7 +29,7 @@
                     <app-input 
                         v-model.number="currentPreset.deal"
                         :type="'number'"
-                        :validator="value => (value >= 0 && value <= 100)"
+                        :validator="value => (value >= -1000 && value <= 100)"
                     >
                     </app-input>
                 </div>  
@@ -66,7 +66,7 @@
                     <app-input 
                         v-model.number="currentPreset.dealMargin"
                         :type="'number'" 
-                        :validator="value => (value >= -currentPreset.deal && value <= 100 - currentPreset.deal)"
+                        :validator="value => (value >= -currentPreset.deal && value <= 1000 - currentPreset.deal)"
                     >
                     </app-input>
                 </div>  

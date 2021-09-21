@@ -190,6 +190,8 @@ export default {
     mutations: {},
     actions: {
         async getItemInfo({rootState, getters, dispatch}, item) {
+            item._alerts = []
+
             if(!item.paintseed) {
                 const { error, iteminfo } = await new Promise(resolve => chrome.runtime.sendMessage({
                     action: 'get_csgo_float_info', 
@@ -214,6 +216,7 @@ export default {
                     persistent: true,
                     message: `${item.steam_market_hash_name} <br> ${item.floatvalue} <br> $ ${item.price_market_usd}`
                 }, { root: true })
+                .then(id => item._alerts.push(id))
             }
 
             dispatch('getRarePaintSeedItems', item)
@@ -226,7 +229,7 @@ export default {
                         persistent: true,
                         message: `${item.steam_market_hash_name} <br> ${item._variant} <br> $ ${item.price_market_usd}`
                     }, { root: true })
-                    .then(id => item._alert_id = id)
+                    .then(id => item._alerts.push(id))
                 }
             })
         },

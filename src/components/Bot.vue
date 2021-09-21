@@ -8,7 +8,7 @@
                     <app-input 
                         v-model.number="preset.deal"
                         :type="'number'"
-                        :validator="value => (value >= 0 && value <= 100)"
+                        :validator="value => (value >= -1000 && value <= 100)"
                         :model-updated="checkToConfirm"
                     >
                     </app-input>
@@ -53,7 +53,7 @@
                     <app-input 
                         v-model.number="preset.dealMargin"
                         :type="'number'" 
-                        :validator="value => (value >= -preset.deal && value <= 100 - preset.deal)"
+                        :validator="value => (value >= -preset.deal && value <= 1000 - preset.deal)"
                         :model-updated="checkToConfirm"
                     >
                     </app-input>
@@ -198,12 +198,13 @@ export default {
         clear() {
             clearTimeout(this.timeoutId)
 
-            this.items.filtered.forEach(v => {
-                if(v._alert_id) this.deleteAlert(v._alert_id)
-            })
-
             this.items.filtered = []
             this.items.pending.forEach(item => item._current_run = false)
+
+            this.items.toConfirm.forEach(v => {
+                v._alerts.forEach(id => this.deleteAlert(id))
+            })
+
             this.items.toConfirm = new Map()
             this.moneySpent = 0
         },
@@ -231,7 +232,7 @@ export default {
                 const filteredItem = this.items.filtered.find(filteredItem => filteredItem.id == item.id)
 
                 if(filteredItem === undefined) {
-                    if(item._alert_id) this.deleteAlert(item._alert_id)
+                    item._alerts.forEach(id => this.deleteAlert(id))
                     this.items.toConfirm.delete(item.id)
                     return
                 }
