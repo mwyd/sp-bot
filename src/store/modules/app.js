@@ -70,7 +70,8 @@ export default {
                 BUY_ITEM: 'https://api.shadowpay.com/api/market/buy_item',
                 BUY_HISTORY: 'https://api.shadowpay.com/en/profile/get_bought_history',
                 ITEMS_ON_SALE: 'https://api.shadowpay.com/api/market/list_items',
-                SAVE_ITEM_PRICE: 'https://api.shadowpay.com/api/market/save_item_price'
+                SAVE_ITEM_PRICE: 'https://api.shadowpay.com/api/market/save_item_price',
+                IS_LOGGED: 'https://api.shadowpay.com/api/market/is_logged'
             })
         },
         steam: {
@@ -203,8 +204,21 @@ export default {
                 resolve(response)
             }))
         },
-        async setupApp({commit, dispatch}) {
+        async setupApp({rootState, commit, dispatch}) {
             await dispatch('checkBackgroundMounted')
+            
+            const response = await fetch(rootState.app.shadowpay.api.IS_LOGGED, { credentials: 'include' })
+            const { is_logged } = await response.json()
+
+            if(!is_logged) {
+                dispatch('app/pushAlert', {
+                    type: rootState.app.alertTypes.ERROR,
+                    persistent: true,
+                    message: 'Shadowpay login required'
+                }, { root: true })
+
+                return
+            }
             
             await dispatch('session/loadToken', null, { root: true })
             await dispatch('session/authenticate', null, { root: true })
