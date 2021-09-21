@@ -8,7 +8,7 @@ const apiEndpoints = Object.freeze({
     STEAM_MARKET: '/steam-market-csgo-items',
     SHADOWPAY_MARKET: '/shadowpay-sold-items',
     SALE_GUARD: '/shadowpay-sale-guard-items',
-    BLUE_GEM_ITEMS: '/csgo-blue-gem-items'
+    RARE_PAINT_SEED_ITEMS: '/csgo-rare-paint-seed-items'
 })
 
 const apiFetch = (path, token, callback, config = {}) => {
@@ -278,10 +278,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     break
                 // shadowpay
 
-                // blue gems
-                case 'get_blue_gem':
+                // rare paint seed items
+                case 'get_rare_paint_seed_items':
                     apiFetch(
-                        `${apiEndpoints.BLUE_GEM_ITEMS}?search=${params.item_type}&paint_seed=${params.paint_seed}`,
+                        `${apiEndpoints.RARE_PAINT_SEED_ITEMS}?search=${params.item_name}&paint_seed=${params.paint_seed}`,
                         params.token,
                         data => sendResponse(data)
                     )

@@ -184,6 +184,8 @@ export default {
             })
 
             if(!alert.persistent) setTimeout(() => commit('deleteAlert', uuid), state.alertLifeTime)
+
+            return uuid
         },
         checkBackgroundMounted({rootState, commit, dispatch}) {
             return new Promise(resolve => chrome.runtime.sendMessage({

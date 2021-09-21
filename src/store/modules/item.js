@@ -16,6 +16,10 @@ export default {
             'Sapphire',
             'Black Pearl'
         ], 
+        paintSeedVariantKeywords: [
+            'Case Hardened',
+            'Fade'
+        ],
         interestingFloatRanges: [
             {
                 min: 0, 
@@ -52,7 +56,7 @@ export default {
                 unit: ''
             },
             phase: {
-                name: '',
+                name: 'Doppler',
                 unit: ''
             },
             steam_is_souvenir: {
@@ -146,10 +150,17 @@ export default {
         ])
     }),
     getters: {
-        interestingFloat: state => float =>  {
+        hasInterestingFloat: state => float => {
             for(let range of state.interestingFloatRanges) {
                 if(float >= range.min && float <= range.max) return true
             }
+            return false
+        },
+        hasPaintSeedVariants: state => name => {
+            for(let keyword of state.paintSeedVariantKeywords) {
+                if(name.search(keyword) > -1) return true
+            }
+
             return false
         },
         itemOwnerSteamId: state => inspectLink => {
@@ -191,12 +202,12 @@ export default {
 
             dispatch('app/pushAlert', alert, { root: true })
         },
-        getBlueGem({rootState}, {itemType, paintSeed}) {
+        getRarePaintSeedItems({rootState}, {itemName, paintSeed}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'get_blue_gem', 
+                action: 'get_rare_paint_seed_items', 
                 params: {
                     token: rootState.session.token,
-                    item_type: itemType,
+                    item_name: itemName,
                     paint_seed: paintSeed
                 }
             }, 

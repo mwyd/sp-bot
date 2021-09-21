@@ -151,7 +151,7 @@ export default {
     right: 0;
     top: 0;
     height: auto;
-    width: 250px;
+    width: 300px;
     padding: 4px;
 }
 </style>

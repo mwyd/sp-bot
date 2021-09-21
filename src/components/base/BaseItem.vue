@@ -41,17 +41,17 @@
                 class="spb-item__stat"
             >
                 Float 
-                <span :class="interestingFloat(item.floatvalue) ? 'spb--text-highlight' : 'spb--text-green'">
+                <span :class="hasInterestingFloat(item.floatvalue) ? 'spb--text-highlight' : 'spb--text-green'">
                     {{ item.floatvalue }}
                 </span>
             </div>
             <div 
-                v-if="blueGem" 
+                v-if="variant" 
                 class="spb-item__stat"
             > 
-                Gem
-                <span :class="blueGem == 'Gold' ? 'spb--text-highlight' : 'spb--text-blue'">
-                    {{ blueGem }}
+                Variant
+                <span :class="variant.search('%') > -1 ? 'spb--text-highlight' : 'spb--text-blue'">
+                    {{ variant }}
                 </span>
             </div>
             <div 
@@ -103,7 +103,8 @@ export default {
             displayStatistics: this.$store.getters['app/config']('displayItemStatistics'),
             mutableProperties: {...this.$store.state.item.mutableProperties},
             hideMoreStatisticsButton: false,
-            blueGem: null
+            variant: null,
+            alertId: null
         }
     },
     computed: {
@@ -122,36 +123,46 @@ export default {
         }
     },
     beforeMount() {
-        this.loadBlueGem()
+        this.checkPaintSeed()
+    },
+    beforeUnmount() {
+        this.deleteAlert()
     },
     methods: {
         ...mapActions({
             copyInspectLink: 'item/copyInspectLink',
             pushAlert: 'app/pushAlert'
         }),
-        interestingFloat(float) {
-            return this.$store.getters['item/interestingFloat'](float)
+        hasInterestingFloat(float) {
+            return this.$store.getters['item/hasInterestingFloat'](float)
+        },
+        hasPaintSeedVariants(name) {
+            return this.$store.getters['item/hasPaintSeedVariants'](name)  
+        },
+        deleteAlert() {
+            if(this.alertId) this.$store.commit('app/deleteAlert', this.alertId)
         },
         toggleDisplayStatistics() {
             this.displayStatistics = !this.displayStatistics
         },
-        loadBlueGem() {
-            if(this.item.paintseed == null || this.item._search_steam_hash_name.search('case hardened') < 0) return
+        async checkPaintSeed() {
+            if(this.item.paintseed == null || !this.hasPaintSeedVariants(this.item.steam_short_name)) return
 
-            this.$store.dispatch('item/getBlueGem', {
-                itemType: this.item.subcategory_name,
+            this.$store.dispatch('item/getRarePaintSeedItems', {
+                itemName: this.item.steam_short_name,
                 paintSeed: this.item.paintseed
             })
             .then(({success, data}) => {
                 if(success && data?.length > 0) {
-                    this.blueGem = data[0].gem_type
+                    this.variant = data[0].variant
 
                     if(!this.item.is_my_item) {
                         this.pushAlert({
                             type: this.alertTypes.INFO,
                             persistent: true,
-                            message: `${this.blueGem} Gem ${this.item.steam_market_hash_name}`
+                            message: `${this.item.steam_market_hash_name} ${this.variant}`
                         })
+                        .then(id => this.alertId = id)
                     }
                 }
             })
