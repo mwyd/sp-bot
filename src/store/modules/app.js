@@ -130,6 +130,22 @@ export default {
         }
     },
     actions: {
+        async copyToClipboard({rootState, dispatch}, data) {
+            const alert = {
+                type: rootState.app.alertTypes.SUCCESS,
+                message: 'Copied'
+            }
+
+            try {
+                await navigator.clipboard.writeText(data)
+            }
+            catch(err) {
+                alert.type = rootState.app.alertTypes.ERROR
+                alert.message = 'Copy error'
+            }
+
+            dispatch('app/pushAlert', alert, { root: true })
+        },
         loadConfig({rootState, commit}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'get_config',

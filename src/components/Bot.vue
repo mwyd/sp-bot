@@ -171,10 +171,12 @@ export default {
         ...mapMutations({
             setCsrfCookie: 'app/setCsrfCookie',
             startTrack: 'bots/addBot',
-            stopTrack: 'bots/closeBot'
+            stopTrack: 'bots/closeBot',
+            deleteAlert: 'app/deleteAlert'
         }),
         ...mapActions({
-           pushAlert: 'app/pushAlert' 
+           pushAlert: 'app/pushAlert',
+           getItemInfo: 'item/getItemInfo' 
         }),
         sortedPresets(sortAsc = true) {
             return this.$store.getters['presetManager/sortedPresets'](sortAsc)
@@ -187,6 +189,11 @@ export default {
         },
         clear() {
             clearTimeout(this.timeoutId)
+
+            this.items.filtered.forEach(v => {
+                if(v._alert_id) this.deleteAlert(v._alert_id)
+            })
+
             this.items.filtered = []
             this.items.pending.forEach(item => item._current_run = false)
             this.items.toConfirm = new Map()
@@ -216,6 +223,7 @@ export default {
                 const filteredItem = this.items.filtered.find(filteredItem => filteredItem.id == item.id)
 
                 if(filteredItem === undefined) {
+                    if(item._alert_id) this.deleteAlert(item._alert_id)
                     this.items.toConfirm.delete(item.id)
                     return
                 }
@@ -436,6 +444,8 @@ export default {
                                 if(this.isRunning) this.items.toConfirm.set(item.id, item)
                                 resolve(response)
                             }))
+
+                            this.getItemInfo(item)
                         }
                     }
                 }

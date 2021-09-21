@@ -46,12 +46,12 @@
                 </span>
             </div>
             <div 
-                v-if="variant" 
+                v-if="item._variant" 
                 class="spb-item__stat"
             > 
                 Variant
-                <span :class="variant.search('%') > -1 ? 'spb--text-highlight' : 'spb--text-blue'">
-                    {{ variant }}
+                <span :class="item._variant.search('%') > -1 ? 'spb--text-highlight' : 'spb--text-blue'">
+                    {{ item._variant }}
                 </span>
             </div>
             <div 
@@ -74,7 +74,7 @@
             <div 
                 v-if="item.inspect_url" 
                 class="spb-item__stat spb--cursor-pointer"
-                @click="copyInspectLink(item.inspect_url)"
+                @click="copyToClipboard(item.inspect_url)"
             >
                 Inspect
                 <span class="spb--text-green">link</span>
@@ -102,9 +102,7 @@ export default {
         return {
             displayStatistics: this.$store.getters['app/config']('displayItemStatistics'),
             mutableProperties: {...this.$store.state.item.mutableProperties},
-            hideMoreStatisticsButton: false,
-            variant: null,
-            alertId: null
+            hideMoreStatisticsButton: false
         }
     },
     computed: {
@@ -112,8 +110,7 @@ export default {
             steamItemMarketUrl: state => state.app.steam.resources.ITEM_SELL_LISTINGS,
             steamItemImageUrl: state => state.app.steam.resources.ITEM_IMAGE,
             interestingProperties: state => state.item.interestingProperites,
-            shadowpayStatistics: state => state.item.shadowpayStatistics,
-            alertTypes: state => state.app.alertTypes
+            shadowpayStatistics: state => state.item.shadowpayStatistics
         }),
         existingInterestingProperties() {
             return Object.keys(this.interestingProperties).filter(key => this.item[key])
@@ -122,50 +119,15 @@ export default {
             return Object.keys(this.shadowpayStatistics).filter(key => this.mutableProperties[key])
         }
     },
-    beforeMount() {
-        this.checkPaintSeed()
-    },
-    beforeUnmount() {
-        this.deleteAlert()
-    },
     methods: {
         ...mapActions({
-            copyInspectLink: 'item/copyInspectLink',
-            pushAlert: 'app/pushAlert'
+            copyToClipboard: 'app/copyToClipboard'
         }),
         hasInterestingFloat(float) {
             return this.$store.getters['item/hasInterestingFloat'](float)
         },
-        hasPaintSeedVariants(name) {
-            return this.$store.getters['item/hasPaintSeedVariants'](name)  
-        },
-        deleteAlert() {
-            if(this.alertId) this.$store.commit('app/deleteAlert', this.alertId)
-        },
         toggleDisplayStatistics() {
             this.displayStatistics = !this.displayStatistics
-        },
-        async checkPaintSeed() {
-            if(this.item.paintseed == null || !this.hasPaintSeedVariants(this.item.steam_short_name)) return
-
-            this.$store.dispatch('item/getRarePaintSeedItems', {
-                itemName: this.item.steam_short_name,
-                paintSeed: this.item.paintseed
-            })
-            .then(({success, data}) => {
-                if(success && data?.length > 0) {
-                    this.variant = data[0].variant
-
-                    if(!this.item.is_my_item) {
-                        this.pushAlert({
-                            type: this.alertTypes.INFO,
-                            persistent: true,
-                            message: `${this.item.steam_market_hash_name} ${this.variant}`
-                        })
-                        .then(id => this.alertId = id)
-                    }
-                }
-            })
         },
         loadShadowpayStatistics() {
             this.hideMoreStatisticsButton = true

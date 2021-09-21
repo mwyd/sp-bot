@@ -186,29 +186,46 @@ export default {
     },
     mutations: {},
     actions: {
-        async copyInspectLink({rootState, dispatch}, inspectLink) {
-            const alert = {
-                type: rootState.app.alertTypes.SUCCESS,
-                message: 'Copied'
+        async getItemInfo({rootState, getters, dispatch}, item) {
+            if(!item.paintseed) {
+                const { error, iteminfo } = await new Promise(resolve => chrome.runtime.sendMessage({
+                    action: 'get_csgo_float_info', 
+                    params: {
+                        inspect_url: item.inspect_url
+                    }
+                },
+                response => resolve(response)))
+
+                if(error) return
+
+                item.floatvalue = iteminfo.floatvalue
+                item.paintseed = iteminfo.paintseed
+                item.paintindex = iteminfo.paintindex
             }
 
-            try {
-                await navigator.clipboard.writeText(inspectLink)
-            }
-            catch(err) {
-                alert.type = rootState.app.alertTypes.ERROR
-                alert.message = 'Copy error'
-            }
+            if(!getters.hasPaintSeedVariants(item.steam_short_name)) return
 
-            dispatch('app/pushAlert', alert, { root: true })
+            dispatch('getRarePaintSeedItems', item)
+            .then(({success, data}) => {
+                if(success && data.length) {
+                    item._variant = data[0].variant
+
+                    dispatch('app/pushAlert',{
+                        type: rootState.app.alertTypes.INFO,
+                        persistent: true,
+                        message: `${item.steam_market_hash_name} - ${item._variant} - $ ${item.price_market_usd}`
+                    }, { root: true })
+                    .then(id => item._alert_id = id)
+                }
+            })
         },
-        getRarePaintSeedItems({rootState}, {itemName, paintSeed}) {
+        getRarePaintSeedItems({rootState}, {steam_short_name, paintseed}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
                 action: 'get_rare_paint_seed_items', 
                 params: {
                     token: rootState.session.token,
-                    item_name: itemName,
-                    paint_seed: paintSeed
+                    item_name: steam_short_name,
+                    paint_seed: paintseed
                 }
             }, 
             response => resolve(response)))

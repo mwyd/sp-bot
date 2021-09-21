@@ -286,6 +286,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         data => sendResponse(data)
                     )
                     break
+
+                case 'get_csgo_float_info':
+                    fetch(`https://api.csgofloat.com/?url=${params.inspect_url}`)
+                    .then(res => res.json())
+                    .then(data => sendResponse(data))
+                    break
             }
             break
     }
