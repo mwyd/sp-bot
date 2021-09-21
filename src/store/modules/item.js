@@ -215,7 +215,7 @@ export default {
                     dispatch('app/pushAlert',{
                         type: rootState.app.alertTypes.INFO,
                         persistent: true,
-                        message: `${item.steam_market_hash_name} - ${item._variant} - $ ${item.price_market_usd}`
+                        message: `${item.steam_market_hash_name} <br> ${item._variant} <br> $ ${item.price_market_usd}`
                     }, { root: true })
                     .then(id => item._alert_id = id)
                 }

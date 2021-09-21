@@ -9,7 +9,7 @@
             :class="iconClass"
         >
         </div>
-        <div class="spb-alert__message">{{ message }}</div>
+        <div class="spb-alert__message" v-html="message"></div>
     </div>
 </template>
 
@@ -63,6 +63,10 @@ export default {
     height: 20px;
     flex: 0 0 20px;
     background-size: 100%;
+}
+
+.spb-alert__message {
+    width: 100%;
 }
 
 .spb-alert--info {
