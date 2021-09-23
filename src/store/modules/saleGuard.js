@@ -86,7 +86,7 @@ export default {
             for(let {item, metadata} of getters.untrackedItems) {
                 await dispatch('startTrack', {
                     shadowpayOfferId: item.id,
-                    hashName: item.steam_market_hash_name,
+                    hashName: item._conduit_hash_name,
                     minPrice: metadata.minPrice,
                     maxPrice: metadata.maxPrice
                 })

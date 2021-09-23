@@ -128,7 +128,7 @@ export default {
                         showAlert: true
                     }) 
                     : this.startTrack({
-                        hashName: this.item.steam_market_hash_name,
+                        hashName: this.item._conduit_hash_name,
                         shadowpayOfferId: this.item.id,
                         minPrice: this.metadata.minPrice,
                         maxPrice: this.metadata.maxPrice
