@@ -51,7 +51,7 @@ export default {
             INFO: 'info',
             ERROR: 'error'
         }),
-        alertLifeTime: 2 * 1000,
+        alertLifeTime: 2.0,
         alerts: new Map(),
         config: {
             steamVolumeLimit: 10,
@@ -200,7 +200,7 @@ export default {
                 ...alert
             })
 
-            if(!alert.persistent) setTimeout(() => commit('deleteAlert', uuid), state.alertLifeTime)
+            if(!alert.persistent) setTimeout(() => commit('deleteAlert', uuid), state.alertLifeTime * 1000)
 
             return uuid
         },
