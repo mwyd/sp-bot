@@ -447,14 +447,15 @@ export default {
                                         this.buyItem(item)
                                     }
 
-                                    if(this.canBuyItem(item)) this.buyItem(item)
+                                    if(this.canBuyItem(item)) {
+                                        this.getItemInfo(item)
+                                        this.buyItem(item)
+                                    }
                                 }
                                 
                                 if(this.isRunning) this.items.toConfirm.set(item.id, item)
                                 resolve(response)
                             }))
-
-                            this.getItemInfo(item)
                         }
                     }
                 }

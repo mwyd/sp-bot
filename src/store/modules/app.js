@@ -61,7 +61,7 @@ export default {
             openTabsAtStartup: false,
             saleGuardBidStep: 0.01,
             saleGuardSafeDiscount: 0.97,
-            saleGuardItemUpdateDelay: 4 * 1000
+            saleGuardItemUpdateDelay: 4.0
         },
         shadowpay: {
             csrfCookie: Cookies.get('csrf_cookie'),

@@ -223,12 +223,12 @@ export default {
         },
         itemUpdateDelay: {
             get() {
-                return this.$store.getters['app/config']('saleGuardItemUpdateDelay') / 1000
+                return this.$store.getters['app/config']('saleGuardItemUpdateDelay')
             },
             set(value) {
                 this.$store.commit('app/setConfig', {
                     type: 'saleGuardItemUpdateDelay',
-                    value: value * 1000
+                    value: value
                 })
             }
         }

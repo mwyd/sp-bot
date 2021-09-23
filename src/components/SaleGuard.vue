@@ -245,8 +245,6 @@ export default {
 
             try {
                 for(let {item, metadata} of this.trackedItems) {
-                    await new Promise(r => setTimeout(r, this.itemUpdateDelay))
-
                     const response = await fetch(this.getStackedItems +
                             `?item_id=${item.item_id}` +
                             `&price_from=${metadata.minPrice}` +
@@ -290,7 +288,7 @@ export default {
             if(this.isRunning) {
                 this.timeoutId = setTimeout(() => {
                     this.run()
-                }, this.itemUpdateDelay)
+                }, this.itemUpdateDelay * 1000)
             }
         }
     }
