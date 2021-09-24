@@ -70,7 +70,7 @@ export default {
             ]
         },
         createdAtDays() {
-            const days = Math.floor((Date.now() - new Date(this.metadata.createdAt)) / (1000 * 60 * 60 * 24))
+            const days = Math.floor((Date.now() - new Date(this.metadata.createdAt)) / (60 * 60 * 24 * 1000))
 
             return days < 1 
                 ? '< 1 day' 

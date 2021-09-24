@@ -71,12 +71,16 @@ export default {
                 }, { root: true })
             })
         },
-        toggleAllInstances({state, commit}) {
-            commit('toggleRunBots')
-
+        async toggleAllInstances({state, commit}) {
             for(let instance of state.instances) {
-                if(state.runBots == !instance.isRunning) instance.toggleIsRunning()
+                instance.toggleProcess()
             }
+
+            while(state.instances.findIndex(v => v.isProcessTerminated != state.runBots) > -1) {
+                await new Promise(resolve => setTimeout(resolve, 100))
+            }
+
+            commit('toggleRunBots')
         }
     }
 }

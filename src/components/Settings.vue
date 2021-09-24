@@ -21,7 +21,8 @@
                     <button 
                         class="spb-button spb-button-tiny"
                         :class="runBotsButtonClass"
-                        @click="toggleAllBots" 
+                        :disabled="actionsDisabled"
+                        @click="disableActions(toggleAllBots())" 
                     >
                         {{ runBots ? 'stop' : 'start' }}
                     </button>
@@ -109,6 +110,7 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
+import actionMixin from '../mixins/actionMixin.js'
 import AppInput from './ui/AppInput.vue'
 
 export default {
@@ -116,6 +118,7 @@ export default {
     components: {
         AppInput
     },
+    mixins: [actionMixin],
     props: {
         id: Number
     },

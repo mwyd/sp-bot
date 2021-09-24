@@ -90,10 +90,11 @@
         </div>
         <button 
             class="spb-bot__run-button spb-button"
-            :class="toggleIsRunningButtonClass"
-            @click="toggleIsRunning" 
+            :class="toggleProcessButtonClass"
+            :disabled="isProcessTerminating"
+            @click="toggleProcess" 
         >
-        {{ isRunning ? 'stop' : 'start' }}
+        {{ !isProcessTerminated ? 'stop' : 'start' }}
         </button>
     </div>
 </template>
@@ -101,6 +102,7 @@
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
 import { SPB_LOG } from '../utils/index.js'
+import processMixin from '../mixins/processMixin.js'
 import AppInput from './ui/AppInput.vue'
 import DateFormat from 'dateformat'
 
@@ -109,13 +111,13 @@ export default {
     components: {
         AppInput
     },
+    mixins: [processMixin],
     props: {
         id: Number
     },
     emits: ['statusUpdate'],
     data() {
         return {
-            isRunning: false,
             timeoutId: null,
             presetId: 0,
             preset: {},
@@ -156,9 +158,9 @@ export default {
         steamVolumeLimit() {
             return this.$store.getters['app/config']('steamVolumeLimit')
         },
-        toggleIsRunningButtonClass() {
+        toggleProcessButtonClass() {
             return [
-                this.isRunning ? 'spb-button--red' : 'spb-button--green'
+                !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
             ]
         }
     },
@@ -172,7 +174,7 @@ export default {
         this.startTrack(this)
     },
     beforeUnmount() {
-        this.isRunning = false
+        this.setProcessTerminating()
         this.stopTrack(this.id)
     },
     methods: {
@@ -196,8 +198,6 @@ export default {
             return this.$store.getters['item/steamHashName'](hashName)
         },
         clear() {
-            clearTimeout(this.timeoutId)
-
             this.items.filtered = []
             this.items.pending.forEach(item => item._current_run = false)
 
@@ -208,20 +208,30 @@ export default {
             this.items.toConfirm = new Map()
             this.moneySpent = 0
         },
-        toggleIsRunning() {
-            if(this.isRunning) {
-                this.isRunning = false
-                this.$emit('statusUpdate', this.tabStates.IDLE)
-                this.clear()
-            }
-            else {
-                this.isRunning = true
-                this.$emit('statusUpdate', this.tabStates.RUNNING)
-                this.run()
+        stopProcess() {
+            this.$emit('statusUpdate', this.tabStates.IDLE)
+            this.clear()
+            this.setProcessTerminated()
+        },
+        toggleProcess() {
+            switch(this.processState) {
+                case this.processStates.IDLE:
+                    clearTimeout(this.timeoutId)
+                    this.stopProcess()
+                    break
+
+                case this.processStates.RUNNING:
+                    this.setProcessTerminating()
+                    break
+
+                case this.processStates.TERMINATED:
+                    this.$emit('statusUpdate', this.tabStates.RUNNING)
+                    this.run()
+                    break
             }
         },
         checkToConfirm() {
-            if(!this.isRunning) return
+            if(this.isProcessTerminating || this.isProcessTerminated) return
 
             this.items.toConfirm.forEach(item => {
                 if(this.canBuyItem(item)) this.buyItem(item)
@@ -361,7 +371,7 @@ export default {
                                 this.finishedItems.push(item)
 
                                 if(this.items.pending.size == 0 && Math.abs(this.moneySpent - this.preset.toSpend) < this.preset.minPrice) {
-                                    this.toggleIsRunning()
+                                    this.setProcessTerminating()
                                     this.pushAlert({
                                         type: this.alertTypes.INFO,
                                         message: `Bot #${this.id} terminated - to spend limit reached`
@@ -377,6 +387,8 @@ export default {
             })
         },
         async run() {
+            this.setProcessRunning()
+
             if(Math.abs(this.moneySpent - this.preset.toSpend) >= this.preset.minPrice) {
                 try {    
                     const response = await fetch(this.getItemsUrl +
@@ -448,12 +460,15 @@ export default {
                                     }
 
                                     if(this.canBuyItem(item)) {
-                                        this.getItemInfo(item)
                                         this.buyItem(item)
                                     }
                                 }
                                 
-                                if(this.isRunning) this.items.toConfirm.set(item.id, item)
+                                if(this.isProcessRunning) {
+                                    this.items.toConfirm.set(item.id, item)
+                                    this.getItemInfo(item)
+                                }
+
                                 resolve(response)
                             }))
                         }
@@ -467,10 +482,15 @@ export default {
             this.updatePending()
             this.updateToConfirm()
                     
-            if(this.isRunning) {
-                this.timeoutId = setTimeout(() => {
-                    this.run()
-                }, 1000 * this.preset.runDelay)
+            switch(this.processState) {
+                case this.processStates.RUNNING:
+                    this.timeoutId = setTimeout(this.run, this.preset.runDelay * 1000)
+                    this.setProcessIdle()
+                    break
+
+                case this.processStates.TERMINATING:
+                    this.stopProcess()
+                    break
             }
         }
     }

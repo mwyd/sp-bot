@@ -50,11 +50,11 @@
         <div class="spb--flex spb-sale-guard__footer">
             <button 
                 class="spb-sale-guard__toggle-button spb-button"
-                :class="toggleIsRunningButtonClass"
-                :disabled="actionsDisabled && !isRunning"
-                @click="toggleIsRunning"
+                :class="toggleProcessButtonClass"
+                :disabled="actionsDisabled || isProcessTerminating"
+                @click="toggleProcess"
             >
-                {{ isRunning ? 'stop' : 'start' }} 
+                {{ !isProcessTerminated ? 'stop' : 'start' }} 
             </button>
             <div class="spb--flex spb--font-weight-light spb--font-size-medium">
                 <button 
@@ -96,6 +96,7 @@
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import { SPB_LOG, roundNumber } from '../utils/index.js'
 import actionMixin from '../mixins/actionMixin.js'
+import processMixin from '../mixins/processMixin.js'
 import AppInput from './ui/AppInput.vue'
 import SaleGuardItem from './SaleGuardItem.vue'
 
@@ -105,7 +106,7 @@ export default {
         AppInput,
         SaleGuardItem
     },
-    mixins: [actionMixin],
+    mixins: [actionMixin, processMixin],
     props: {
         id: Number
     },
@@ -115,8 +116,7 @@ export default {
             search: '',
             sortByModel: 3,
             sortDirAsc: false,
-            timeoutId: null,
-            isRunning: false
+            timeoutId: null
         }
     },
     computed: {
@@ -150,15 +150,15 @@ export default {
                 this.sortDirAsc ? 'spb-sale-guard__sort-dir--asc' : 'spb-sale-guard__sort-dir--desc'
             ]
         },
-        toggleIsRunningButtonClass() {
+        toggleProcessButtonClass() {
             return [
-                this.isRunning ? 'spb-button--red' : 'spb-button--green'
+                !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
             ]
         }
     },
     watch: {
         saleGuardItemsLoaded(value) {
-            this.$emit('statusUpdate', value ? this.isRunning ? this.tabStates.RUNNING : this.tabStates.OK : this.tabStates.ERROR)
+            this.$emit('statusUpdate', value ? (!this.isProcessTerminated ? this.tabStates.RUNNING : this.tabStates.OK) : this.tabStates.ERROR)
         }
     },
     methods: {
@@ -182,16 +182,25 @@ export default {
             await this.loadItemsOnSale()
             await this.loadSaleGuardItems()
         },
-        toggleIsRunning() {
-            if(this.isRunning) {
-                this.isRunning = false
-                this.$emit('statusUpdate', this.saleGuardItemsLoaded ? this.tabStates.OK : this.tabStates.ERROR)
-                clearTimeout(this.timeoutId)
-            }
-            else {
-                this.isRunning = true
-                this.$emit('statusUpdate', this.tabStates.RUNNING)
-                this.run()
+        stopProcess() {
+            this.$emit('statusUpdate', this.saleGuardItemsLoaded ? this.tabStates.OK : this.tabStates.ERROR)
+            this.setProcessTerminated()
+        },
+        toggleProcess() {
+            switch(this.processState) {
+                case this.processStates.IDLE:
+                    clearTimeout(this.timeoutId)
+                    this.stopProcess()
+                    break
+
+                case this.processStates.RUNNING:
+                    this.setProcessTerminating()
+                    break
+
+                case this.processStates.TERMINATED:
+                    this.$emit('statusUpdate', this.tabStates.RUNNING)
+                    this.run()
+                    break
             }
         },
         updateItemPrice(item, metadata, newPrice) {
@@ -233,14 +242,15 @@ export default {
             .catch(err => SPB_LOG('Cant update price\n', err))
         },
         async run() {
+            this.setProcessRunning()
+
             if(this.trackedItems.length == 0) {
                 this.pushAlert({
                     type: this.alertTypes.INFO,
                     message: 'Sale Guard terminated - empty set'
                 })
 
-                this.toggleIsRunning()
-                return
+                this.setProcessTerminating()
             }
 
             try {
@@ -285,10 +295,15 @@ export default {
                 SPB_LOG('\n', new Error(err))
             }
 
-            if(this.isRunning) {
-                this.timeoutId = setTimeout(() => {
-                    this.run()
-                }, this.itemUpdateDelay * 1000)
+            switch(this.processState) {
+                case this.processStates.RUNNING:
+                    this.timeoutId = setTimeout(this.run, this.itemUpdateDelay * 1000)
+                    this.setProcessIdle()
+                    break
+
+                case this.processStates.TERMINATING:
+                    this.stopProcess()
+                    break
             }
         }
     }
