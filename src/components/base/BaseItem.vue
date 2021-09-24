@@ -50,7 +50,7 @@
                 class="spb-item__stat"
             > 
                 Variant
-                <span :class="item._variant.search('%') > -1 ? 'spb--text-highlight' : 'spb--text-blue'">
+                <span :class="item._variant.includes('%') ? 'spb--text-highlight' : 'spb--text-blue'">
                     {{ item._variant }}
                 </span>
             </div>

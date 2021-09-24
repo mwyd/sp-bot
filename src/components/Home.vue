@@ -182,7 +182,7 @@ export default {
             }
 
             return items
-                .filter(item => item._search_steam_hash_name.search(this.search.toLowerCase()) > -1)
+                .filter(item => item._search_steam_hash_name.includes(this.search.toLowerCase()))
                 .sort(this.sortBy.get(this.sortByModel).callback(this.sortDirAsc))
         },
         freezeToConfirm(value) {
