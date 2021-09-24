@@ -134,8 +134,8 @@ export default {
         ...mapGetters({
             trackedItems: 'saleGuard/trackedItems'
         }),
-        itemUpdateDelay() {
-            return this.$store.getters['app/config']('saleGuardItemUpdateDelay')
+        updateDelay() {
+            return this.$store.getters['app/config']('saleGuardUpdateDelay')
         },
         itemBidStep() {
             return this.$store.getters['app/config']('saleGuardBidStep')
@@ -297,7 +297,7 @@ export default {
 
             switch(this.processState) {
                 case this.processStates.RUNNING:
-                    this.timeoutId = setTimeout(this.run, this.itemUpdateDelay * 1000)
+                    this.timeoutId = setTimeout(this.run, this.updateDelay * 1000)
                     this.setProcessIdle()
                     break
 

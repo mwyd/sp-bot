@@ -83,9 +83,9 @@
                     </app-input>
                 </div>
                 <div class="spb--flex spb-option__row spb--font-size-medium">
-                    <div>Item update delay</div>
+                    <div>Update delay</div>
                     <app-input 
-                        v-model.number="itemUpdateDelay"
+                        v-model.number="updateDelay"
                         class="spb-settings__item-update-delay"
                         :type="'number'"
                         :validator="value => value >= 0 && value <= 1200"
@@ -224,13 +224,13 @@ export default {
                 })
             }
         },
-        itemUpdateDelay: {
+        updateDelay: {
             get() {
-                return this.$store.getters['app/config']('saleGuardItemUpdateDelay')
+                return this.$store.getters['app/config']('saleGuardUpdateDelay')
             },
             set(value) {
                 this.$store.commit('app/setConfig', {
-                    type: 'saleGuardItemUpdateDelay',
+                    type: 'saleGuardUpdateDelay',
                     value: value
                 })
             }
