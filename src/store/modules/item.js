@@ -22,6 +22,7 @@ export default {
             'Case Hardened',
             'Fade'
         ],
+        screenshotService: 'https://csgo.gallery',
         highRankFloat: Math.pow(10, -3),
         interestingFloatRanges: [
             {

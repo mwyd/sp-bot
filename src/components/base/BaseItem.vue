@@ -72,17 +72,28 @@
             </div>
             <slot name="modal-statistics"></slot>
             <div 
-                v-if="item.inspect_url" 
                 class="spb-item__stat spb--cursor-pointer"
                 @click="copyToClipboard(item.inspect_url)"
             >
                 Inspect
                 <span class="spb--text-green">link</span>
             </div>
+            <div class="spb-item__stat spb--cursor-pointer">
+                <a 
+                    target="_blank" 
+                    class="spb--link"
+                    :href="screenshotService + '/' + item.inspect_url"
+                > 
+                    Screenshot
+                    <span class="spb--text-green">
+                        cs.deals
+                    </span>
+                </a>
+            </div>
             <div 
-                @click="loadShadowpayStatistics" 
-                v-if="!hideMoreStatisticsButton" 
+                v-if="!hideMoreStatisticsButton"
                 class="spb--cursor-pointer spb-item__stat"
+                @click="loadShadowpayStatistics"  
             >
                 +
             </div>
@@ -110,7 +121,8 @@ export default {
             steamItemMarketUrl: state => state.app.steam.resources.ITEM_SELL_LISTINGS,
             steamItemImageUrl: state => state.app.steam.resources.ITEM_IMAGE,
             interestingProperties: state => state.item.interestingProperites,
-            shadowpayStatistics: state => state.item.shadowpayStatistics
+            shadowpayStatistics: state => state.item.shadowpayStatistics,
+            screenshotService: state => state.item.screenshotService
         }),
         existingInterestingProperties() {
             return Object.keys(this.interestingProperties).filter(key => this.item[key])
