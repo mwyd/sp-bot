@@ -269,8 +269,6 @@ export default {
             }))
         },
         async setupApp({rootState, commit, dispatch}) {
-            await dispatch('checkBackgroundMounted')
-            
             const response = await fetch(rootState.app.services.shadowpay.api.IS_LOGGED, { credentials: 'include' })
             const { is_logged } = await response.json()
 
@@ -280,22 +278,24 @@ export default {
                     persistent: true,
                     message: 'Shadowpay login required'
                 }, { root: true })
-
-                return
             }
-            
-            await dispatch('session/loadToken', null, { root: true })
-            await dispatch('session/authenticate', null, { root: true })
+            else {
+                await dispatch('checkBackgroundMounted')
 
-            await dispatch('loadConfig')
+                await dispatch('session/loadToken', null, { root: true })
+                await dispatch('session/authenticate', null, { root: true })
 
-            await dispatch('presetManager/loadPresets', null, { root: true })
-                  dispatch('bots/openBots', null, { root: true })
-                  
-            await dispatch('friendManager/loadFriends', null, { root: true })
-            
-            await dispatch('saleGuard/loadItemsOnSale', null, { root: true })
-            await dispatch('saleGuard/loadSaleGuardItems', null, { root: true })
+                await dispatch('loadConfig')
+
+                await dispatch('presetManager/loadPresets', null, { root: true })
+
+                dispatch('bots/openBots', null, { root: true })
+                    
+                await dispatch('friendManager/loadFriends', null, { root: true })
+                
+                await dispatch('saleGuard/loadItemsOnSale', null, { root: true })
+                await dispatch('saleGuard/loadSaleGuardItems', null, { root: true })
+            }
 
             commit('setLoaded', true)
         }
