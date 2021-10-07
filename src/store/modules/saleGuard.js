@@ -44,13 +44,17 @@ export default {
     actions: {
         startTrack({rootState, commit, dispatch}, {shadowpayOfferId, hashName, minPrice, maxPrice}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'set_saleguard_item',
-                params: {
-                    token: rootState.session.token,
-                    hashName: hashName,
-                    shadowpayOfferId: shadowpayOfferId,
-                    minPrice: minPrice,
-                    maxPrice: maxPrice
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: rootState.app.services.conduit.api.SALE_GUARD,
+                    config: {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `shadowpay_offer_id=${shadowpayOfferId}&hash_name=${hashName}&min_price=${minPrice}&max_price=${maxPrice}`
+                    }
                 }
             }, 
             response => {
@@ -94,13 +98,17 @@ export default {
         },
         updateTracked({rootState, dispatch}, {id, data}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'update_saleguard_item',
-                params: {
-                    token: rootState.session.token,
-                    id: id,
-                    shadowpayOfferId: data.shadowpayOfferId,
-                    minPrice: data.minPrice,
-                    maxPrice: data.maxPrice
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: `${rootState.app.services.conduit.api.SALE_GUARD}/${id}`,
+                    config: {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `shadowpay_offer_id=${data.shadowpayOfferId}&min_price=${data.minPrice}&max_price=${data.maxPrice}`
+                    }
                 }
             }, 
             response => {
@@ -122,10 +130,15 @@ export default {
         },
         stopTrack({rootState, commit, dispatch}, {id, showAlert = true}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'delete_saleguard_item',
-                params: {
-                    token: rootState.session.token,
-                    id: id
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: `${rootState.app.services.conduit.api.SALE_GUARD}/${id}`,
+                    config: {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`
+                        }
+                    }
                 }
             }, 
             response => {
@@ -226,11 +239,14 @@ export default {
 
             for(let i = 0; i < loopLimit; i++) {
                 await new Promise(resolve => chrome.runtime.sendMessage({
-                    action: 'get_saleguard_items', 
-                    params: {
-                        token: rootState.session.token,
-                        offset: i * limit,
-                        limit: limit
+                    service: rootState.app.services.conduit.name,
+                    data: {
+                        path: `${rootState.app.services.conduit.api.SALE_GUARD}?offset=${i * limit}&limit=${limit}`,
+                        config: {
+                            headers: {
+                                'Authorization': `Bearer ${rootState.session.token}`
+                            }
+                        }
                     }
                 }, 
                 async response => {

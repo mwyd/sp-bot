@@ -179,9 +179,14 @@ export default {
         },
         loadConfig({rootState, commit}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'get_config',
-                params: {
-                    token: rootState.session.token
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: rootState.app.services.conduit.api.CONFIGS,
+                    config: {
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`
+                        }
+                    }
                 }
             }, 
             response => {
@@ -199,11 +204,18 @@ export default {
         },
         saveConfig({rootState, getters, dispatch}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'set_config', 
-                params: {
-                    token: rootState.session.token,
-                    config: getters.config('*')
-                },
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: rootState.app.services.conduit.api.CONFIGS,
+                    config: {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `config=${JSON.stringify(getters.config('*'))}`
+                    }
+                }
             },
             response => {
                 const {success, error_message} = response
@@ -236,7 +248,10 @@ export default {
         },
         checkBackgroundMounted({rootState, commit, dispatch}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'get_bought_items_counter'
+                service: rootState.app.services.self.name,
+                data: {
+                    action: rootState.app.services.self.actions.GET_BUY_COUNTER
+                }
             },
             response => {
                 const {data} = response

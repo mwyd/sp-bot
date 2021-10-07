@@ -194,19 +194,19 @@ export default {
             item._alerts = []
 
             if(!item.paintseed) {
-                const { error, iteminfo } = await new Promise(resolve => chrome.runtime.sendMessage({
-                    action: 'get_csgo_float_info', 
-                    params: {
-                        inspect_url: item.inspect_url
+                const { success, data } = await new Promise(resolve => chrome.runtime.sendMessage({
+                    service: rootState.app.services.csgoFloat.name,
+                    data: {
+                        path: `${rootState.app.services.csgoFloat.api.INSPECT_ITEM}?url=${item.inspect_url}`
                     }
                 },
                 response => resolve(response)))
 
-                if(error) return
+                if(!success || !data.iteminfo) return
 
-                item.floatvalue = roundNumber(iteminfo.floatvalue, 7)
-                item.paintseed = iteminfo.paintseed
-                item.paintindex = iteminfo.paintindex
+                item.floatvalue = roundNumber(data.iteminfo.floatvalue, 7)
+                item.paintseed = data.iteminfo.paintseed
+                item.paintindex = data.iteminfo.paintindex
             }
 
             if(!getters.hasPaintSeedVariants(item.steam_short_name)) return
@@ -236,21 +236,23 @@ export default {
         },
         getRarePaintSeedItems({rootState}, {steam_short_name, paintseed}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'get_rare_paint_seed_items', 
-                params: {
-                    token: rootState.session.token,
-                    item_name: steam_short_name,
-                    paint_seed: paintseed
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: `${rootState.app.services.conduit.api.RARE_PAINT_SEED_ITEMS}?search=${steam_short_name}&paint_seed=${paintseed}`,
+                    config: {
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`
+                        }
+                    }
                 }
             }, 
             response => resolve(response)))
         },
         loadShadowpayStatistics({rootState}, hashName) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'get_shadowpay_sold_item', 
-                params: {
-                    token: rootState.session.token,
-                    hash_name: hashName
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: `${rootState.app.services.conduit.api.SHADOWPAY_MARKET}?search=${hashName}`,
                 }
             }, 
             response => resolve(response)))

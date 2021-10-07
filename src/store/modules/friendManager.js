@@ -56,11 +56,14 @@ export default {
 
             for(let i = 0; i < loopLimit; i++) {
                 await new Promise(resolve => chrome.runtime.sendMessage({
-                    action: 'get_friends', 
-                    params: {
-                        token: rootState.session.token,
-                        offset: i * limit,
-                        limit: limit
+                    service: rootState.app.services.conduit.name,
+                    data: {
+                        path: `${rootState.app.services.conduit.api.FRIENDS}?offset=${i * limit}&limit=${limit}`,
+                        config: {
+                            headers: {
+                                'Authorization': `Bearer ${rootState.session.token}`
+                            }
+                        }
                     }
                 }, 
                 response => {
@@ -89,11 +92,17 @@ export default {
         },
         addFriend({rootState, commit, dispatch}, friend) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'set_friend',
-                params: {
-                    token: rootState.session.token,
-                    shadowpayUserId: friend.shadowpayUserId,
-                    name: friend.name
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: rootState.app.services.conduit.api.FRIENDS,
+                    config: {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `shadowpay_user_id=${friend.shadowpayUserId}&name=${friend.name}`
+                    }
                 }
             }, 
             response => {
@@ -124,12 +133,17 @@ export default {
         },
         updateFriend({rootState, commit, dispatch}, {id, friend}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'update_friend',
-                params: {
-                    token: rootState.session.token,
-                    id: id,
-                    shadowpayUserId: friend.shadowpayUserId,
-                    name: friend.name
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: `${rootState.app.services.conduit.api.FRIENDS}/${id}`,
+                    config: {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `shadowpay_user_id=${friend.shadowpayUserId}&name=${friend.name}`
+                    }
                 }
             }, 
             response => {
@@ -160,10 +174,15 @@ export default {
         },
         deleteFriend({rootState, commit, dispatch}, id) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'delete_friend',
-                params: {
-                    token: rootState.session.token,
-                    id: id
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: `${rootState.app.services.conduit.api.FRIENDS}/${id}`,
+                    config: {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`
+                        }
+                    }
                 }
             }, 
             response => {

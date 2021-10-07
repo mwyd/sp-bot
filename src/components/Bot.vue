@@ -134,7 +134,9 @@ export default {
     },
     computed: {
         ...mapState({
+            selfService: state => state.app.services.self,
             shadowpayService: state => state.app.services.shadowpay,
+            conduitService: state => state.app.services.conduit,
             notificationSound: state => state.app.notificationSound,
             alertTypes: state => state.app.alertTypes,
             tabStates: state => state.app.tabStates,
@@ -305,7 +307,10 @@ export default {
                     item._transaction_id = id
                         
                     chrome.runtime.sendMessage({
-                        action: 'buy_item'
+                        service: this.selfService.name,
+                        data: {
+                            action: this.selfService.actions.INCREMENT_BUY_COUNTER
+                        }
                     })
 
                     this.notificationSound.play()
@@ -323,7 +328,10 @@ export default {
             if(this.items.pending.size == 0 || Date.now() - this.lastPendingUpdate < this.pendingUpdateDelay * 1000) return
             
             chrome.runtime.sendMessage({
-                action: 'get_bought_items_counter'
+                service: this.selfService.name,
+                data: {
+                    action: this.selfService.actions.GET_BUY_COUNTER
+                }
             }, 
             response => {
                 fetch(this.shadowpayService.api.BUY_HISTORY, {
@@ -436,10 +444,9 @@ export default {
                             }
 
                             await new Promise(resolve => chrome.runtime.sendMessage({
-                                action: 'get_steam_market_csgo_item', 
-                                params: {
-                                    token: this.token,
-                                    hash_name: item._conduit_hash_name
+                                service: this.conduitService.name,
+                                data: {
+                                    path: `${this.conduitService.api.STEAM_MARKET}/${item._conduit_hash_name}`
                                 }
                             }, 
                             response => {

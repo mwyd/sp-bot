@@ -48,11 +48,14 @@ export default {
 
             for(let i = 0; i < loopLimit; i++) {
                 await new Promise(resolve => chrome.runtime.sendMessage({
-                    action: 'get_presets', 
-                    params: {
-                        token: rootState.session.token,
-                        offset: i * limit,
-                        limit: limit
+                    service: rootState.app.services.conduit.name,
+                    data: {
+                        path: `${rootState.app.services.conduit.api.PRESETS}?offset=${i * limit}&limit=${limit}`,
+                        config: {
+                            headers: {
+                                'Authorization': `Bearer ${rootState.session.token}`
+                            }
+                        }
                     }
                 }, 
                 response => {
@@ -78,10 +81,17 @@ export default {
         },
         addPreset({rootState, commit, dispatch}, preset) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'set_preset',
-                params: {
-                    token: rootState.session.token,
-                    preset: preset
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: rootState.app.services.conduit.api.PRESETS,
+                    config: {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `preset=${JSON.stringify(preset)}`
+                    }
                 }
             }, 
             response => {
@@ -109,11 +119,17 @@ export default {
         },
         updatePreset({rootState, commit, dispatch}, {id, preset}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'update_preset',
-                params: {
-                    token: rootState.session.token,
-                    id: id,
-                    preset: preset
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: `${rootState.app.services.conduit.api.PRESETS}/${id}`,
+                    config: {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `preset=${JSON.stringify(preset)}`
+                    }
                 }
             }, 
             response => {
@@ -141,10 +157,15 @@ export default {
         },
         deletePreset({rootState, commit, dispatch}, id) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'delete_preset',
-                params: {
-                    token: rootState.session.token,
-                    id: id
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: `${rootState.app.services.conduit.api.PRESETS}/${id}`,
+                    config: {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`
+                        }
+                    }
                 }
             }, 
             response => {
