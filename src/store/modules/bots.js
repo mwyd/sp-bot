@@ -73,6 +73,8 @@ export default {
         },
         async toggleAllInstances({state, commit}) {
             for(let instance of state.instances) {
+                if(instance.isProcessTerminated == state.runBots) continue
+
                 instance.toggleProcess()
             }
 
