@@ -167,7 +167,7 @@ export default {
         },
         async loadItemsOnSale({state, rootState, rootGetters, commit, dispatch}) {
             try {
-                const response = await fetch(rootState.app.shadowpay.api.ITEMS_ON_SALE, {
+                const response = await fetch(rootState.app.services.shadowpay.api.ITEMS_ON_SALE, {
                     credentials: 'include'
                 })
 

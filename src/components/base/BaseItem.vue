@@ -5,9 +5,9 @@
                 <a
                     target="_blank" 
                     class="spb--link"
-                    :href="steamItemMarketUrl + item.steam_market_hash_name"
+                    :href="steamService.resources.ITEM_SELL_LISTINGS + item.steam_market_hash_name"
                 >
-                    <img :src="steamItemImageUrl + item.steam_icon_url_large">
+                    <img :src="steamService.resources.ITEM_IMAGE + item.steam_icon_url_large">
                     {{ item.steam_market_hash_name }}
                 </a>
             </div>
@@ -18,7 +18,7 @@
                     :data-spb-sticker-price="'$ ' + sticker.steam_price"
                     :key="'item-sticker-' + index"
                 >
-                    <img :src="steamItemImageUrl + sticker.icon_url">
+                    <img :src="steamService.resources.ITEM_IMAGE + sticker.icon_url">
                 </div>
             </div>
             <div class="spb-item__column spb-item__price">
@@ -118,8 +118,7 @@ export default {
     },
     computed: {
         ...mapState({
-            steamItemMarketUrl: state => state.app.steam.resources.ITEM_SELL_LISTINGS,
-            steamItemImageUrl: state => state.app.steam.resources.ITEM_IMAGE,
+            steamService: state => state.app.services.steam,
             interestingProperties: state => state.item.interestingProperites,
             shadowpayStatistics: state => state.item.shadowpayStatistics,
             screenshotService: state => state.item.screenshotService

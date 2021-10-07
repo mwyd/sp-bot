@@ -63,24 +63,54 @@ export default {
             saleGuardSafeDiscount: 0.97,
             saleGuardUpdateDelay: 4.0
         },
-        shadowpay: {
-            csrfCookie: Cookies.get('csrf_cookie'),
-            api: Object.freeze({
-                MARKET_ITEMS: 'https://api.shadowpay.com/api/market/get_items',
-                STACKED_ITEMS: 'https://api.shadowpay.com/api/market/get_items_for_stacked',
-                BUY_ITEM: 'https://api.shadowpay.com/api/market/buy_item',
-                BUY_HISTORY: 'https://api.shadowpay.com/en/profile/get_bought_history',
-                ITEMS_ON_SALE: 'https://api.shadowpay.com/api/market/list_items',
-                SAVE_ITEM_PRICE: 'https://api.shadowpay.com/api/market/save_item_price',
-                IS_LOGGED: 'https://api.shadowpay.com/api/market/is_logged'
-            })
-        },
-        steam: {
-            resources: Object.freeze({
-                ITEM_SELL_LISTINGS: 'https://steamcommunity.com/market/listings/730/',
-                ITEM_IMAGE: 'https://community.cloudflare.steamstatic.com/economy/image/',
-                USER_PROFILE: 'https://steamcommunity.com/profiles/'
-            })
+        services: {
+            shadowpay: {
+                name: 'shadowpay',
+                csrfCookie: Cookies.get('csrf_cookie'),
+                api: Object.freeze({
+                    MARKET_ITEMS: 'https://api.shadowpay.com/api/market/get_items',
+                    STACKED_ITEMS: 'https://api.shadowpay.com/api/market/get_items_for_stacked',
+                    BUY_ITEM: 'https://api.shadowpay.com/api/market/buy_item',
+                    BUY_HISTORY: 'https://api.shadowpay.com/en/profile/get_bought_history',
+                    ITEMS_ON_SALE: 'https://api.shadowpay.com/api/market/list_items',
+                    SAVE_ITEM_PRICE: 'https://api.shadowpay.com/api/market/save_item_price',
+                    IS_LOGGED: 'https://api.shadowpay.com/api/market/is_logged'
+                })
+            },
+            steam: {
+                name: 'steam',
+                resources: Object.freeze({
+                    ITEM_SELL_LISTINGS: 'https://steamcommunity.com/market/listings/730/',
+                    ITEM_IMAGE: 'https://community.cloudflare.steamstatic.com/economy/image/',
+                    USER_PROFILE: 'https://steamcommunity.com/profiles/'
+                })
+            },
+            conduit: {
+                name: 'conduit',
+                api: Object.freeze({
+                    USER: '/user',
+                    PRESETS: '/shadowpay-bot-presets',
+                    CONFIGS: '/shadowpay-bot-configs',
+                    FRIENDS: '/shadowpay-friends',
+                    STEAM_MARKET: '/steam-market-csgo-items',
+                    SHADOWPAY_MARKET: '/shadowpay-sold-items',
+                    SALE_GUARD: '/shadowpay-sale-guard-items',
+                    RARE_PAINT_SEED_ITEMS: '/csgo-rare-paint-seed-items'
+                })
+            },
+            csgoFloat: {
+                name: 'csgo_float',
+                api: {
+                    INSPECT_ITEM: 'https://api.csgofloat.com/'
+                }
+            },
+            self: {
+                name: 'self',
+                actions: {
+                    INCREMENT_BUY_COUNTER: 'increment_buy_counter',
+                    GET_BUY_COUNTER: 'get_buy_counter'
+                }
+            }
         },
         tabStates: Object.freeze({
             OK: 'ok',
@@ -106,7 +136,7 @@ export default {
             type == '*' ? Object.assign(state.config, value) : state.config[type] = value
         },
         setCsrfCookie(state, cookie) {
-            state.shadowpay.csrfCookie = cookie
+            state.services.shadowpay.csrfCookie = cookie
         },
         addTab(state, tabProps) {
             if(state.tabFreeIds.length == 0) return
@@ -226,7 +256,7 @@ export default {
         async setupApp({rootState, commit, dispatch}) {
             await dispatch('checkBackgroundMounted')
             
-            const response = await fetch(rootState.app.shadowpay.api.IS_LOGGED, { credentials: 'include' })
+            const response = await fetch(rootState.app.services.shadowpay.api.IS_LOGGED, { credentials: 'include' })
             const { is_logged } = await response.json()
 
             if(!is_logged) {

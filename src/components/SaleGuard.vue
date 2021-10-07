@@ -121,14 +121,12 @@ export default {
     },
     computed: {
         ...mapState({
-            csrfCookie: state => state.app.shadowpay.csrfCookie,
+            shadowpayService: state => state.app.services.shadowpay,
             sortByTypes: state => state.item.sortByTypes,
             sortBy: state => state.item.sortBy,
             itemsOnSale: state => state.saleGuard.items,
             saleGuardItemsLoaded: state => state.saleGuard.loaded,
             tabStates: state => state.app.tabStates,
-            getStackedItems: state => state.app.shadowpay.api.STACKED_ITEMS,
-            setItemPriceUrl: state => state.app.shadowpay.api.SAVE_ITEM_PRICE,
             alertTypes: state => state.app.alertTypes
         }),
         ...mapGetters({
@@ -204,7 +202,7 @@ export default {
             }
         },
         updateItemPrice(item, metadata, newPrice) {
-            fetch(this.setItemPriceUrl, {
+            fetch(this.shadowpayService.api.SAVE_ITEM_PRICE, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -212,7 +210,7 @@ export default {
                 },
                 body: `id=${item.id}` +
                     `&price=${newPrice}` +
-                    `&csrf_token=${this.csrfCookie}`
+                    `&csrf_token=${this.shadowpayService.csrfCookie}`
             })
             .then(response => response.json())
             .then(({status, error_message, token}) => {
@@ -255,7 +253,7 @@ export default {
 
             try {
                 for(let {item, metadata} of this.trackedItems) {
-                    const response = await fetch(this.getStackedItems +
+                    const response = await fetch(this.shadowpayService.api.STACKED_ITEMS +
                             `?item_id=${item.item_id}` +
                             `&price_from=${metadata.minPrice}` +
                             `&price_to=${metadata.maxPrice}` +

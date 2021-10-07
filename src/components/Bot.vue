@@ -134,13 +134,10 @@ export default {
     },
     computed: {
         ...mapState({
-            csrfCookie: state => state.app.shadowpay.csrfCookie,
+            shadowpayService: state => state.app.services.shadowpay,
             notificationSound: state => state.app.notificationSound,
             alertTypes: state => state.app.alertTypes,
             tabStates: state => state.app.tabStates,
-            getItemsUrl: state => state.app.shadowpay.api.MARKET_ITEMS,
-            buyItemUrl: state => state.app.shadowpay.api.BUY_ITEM,
-            getBuyHistoryUrl: state => state.app.shadowpay.api.BUY_HISTORY,
             presets: state => state.presetManager.presets,
             finishedItems: state => state.bots.items.finished,
             token: state => state.session.token
@@ -277,7 +274,7 @@ export default {
             this.items.pending.set(item.id, item)
             this.moneySpent += item.price_market_usd
     
-            fetch(this.buyItemUrl, {
+            fetch(this.shadowpayService.api.BUY_ITEM, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -285,7 +282,7 @@ export default {
                 },
                 body: `id=${item.id}` +
                     `&price=${item.price_market_usd}` +
-                    `&csrf_token=${this.csrfCookie}`
+                    `&csrf_token=${this.shadowpayService.csrfCookie}`
             })
             .then(response => response.json())
             .then(data => {
@@ -329,7 +326,7 @@ export default {
                 action: 'get_bought_items_counter'
             }, 
             response => {
-                fetch(this.getBuyHistoryUrl, {
+                fetch(this.shadowpayService.api.BUY_HISTORY, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
@@ -391,7 +388,7 @@ export default {
 
             if(Math.abs(this.moneySpent - this.preset.toSpend) >= this.preset.minPrice) {
                 try {    
-                    const response = await fetch(this.getItemsUrl +
+                    const response = await fetch(this.shadowpayService.api.MARKET_ITEMS +
                         `?types=[]` +
                         `&exteriors=[]` +
                         `&rarities=[]` +

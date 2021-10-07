@@ -23,7 +23,7 @@
                 <a 
                     target="_blank" 
                     class="spb--link"
-                    :href="steamUserProfileUrl + itemOwnerSteamId(item.inspect_url)"
+                    :href="steamService.resources.USER_PROFILE + itemOwnerSteamId(item.inspect_url)"
                 > 
                     {{ friendOwner ? friendOwner + "'s" : "Owner's" }}
                     <span class="spb--text-green">
@@ -57,7 +57,7 @@ export default {
     },
     computed: {
         ...mapState({
-            steamUserProfileUrl: state => state.app.steam.resources.USER_PROFILE,
+            steamService: state => state.app.services.steam,
             itemTypes: state => state.bots.itemTypes
         }),
         stateClass() {
