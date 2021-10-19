@@ -3,7 +3,6 @@ export default {
     state: () => ({
         instances: [],
         runBots: false,
-        runBotsDelay: 4 * 1000,
         items: {
             finished: []
         },
@@ -60,24 +59,30 @@ export default {
         openBots({rootGetters, commit}) {
             if(!rootGetters['app/config']('openTabsAtStartup')) return
 
-            rootGetters['presetManager/sortedPresets'](true).forEach(pair => {
-                if(pair[0] == 0) return
+            rootGetters['presetManager/sortedPresets'](true).forEach(([id]) => {
+                if(id == 0) return
 
                 commit('app/addTab', {
                     isStatic: false,
                     name: 'Bot',
                     symbol: 'B',
                     childComponent: 'Bot',
-                    tabMounted: tab => tab.$refs.tabWindow.$refs.childComponent.presetIdModel = pair[0]
+                    tabMounted: tab => tab.$refs.tabWindow.$refs.childComponent.presetIdModel = id
                 }, { root: true })
             })
         },
-        toggleAllInstances({state, commit}) {
-            commit('toggleRunBots')
-
+        async toggleAllInstances({state, commit}) {
             for(let instance of state.instances) {
-                if(state.runBots == !instance.isRunning) instance.toggleIsRunning()
+                if(instance.isProcessTerminated == state.runBots) continue
+
+                instance.toggleProcess()
             }
+
+            while(state.instances.findIndex(v => v.isProcessTerminated != state.runBots) > -1) {
+                await new Promise(resolve => setTimeout(resolve, 100))
+            }
+
+            commit('toggleRunBots')
         }
     }
 }

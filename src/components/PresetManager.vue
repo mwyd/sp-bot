@@ -1,24 +1,12 @@
 <template>
     <div class="spb-preset-manager">
         <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">Preset Manager</h3>
-        <div class="spb-preset-manager__views-wrapper">
-            <div class="spb-preset-manager__views spb--cursor-pointer spb--rounded-small spb--flex">
-                <div 
-                    class="spb-preset-manager__view spb--rounded-small"
-                    :class="viewClass(views.ADD)"
-                    @click="currentView = views.ADD" 
-                >
-                    Add
-                </div>
-                <div 
-                    class="spb-preset-manager__view spb--rounded-small"
-                    :class="viewClass(views.MANAGE)"
-                    @click="currentView = views.MANAGE"
-                >
-                    Manage
-                </div>
-            </div>
-        </div>
+        <app-multiple-switch
+            :options="Object.values(views)"
+            :selected="currentView"
+            @optionUpdate="view => currentView = view"
+        >
+        </app-multiple-switch>
         <div v-show="currentView == views.MANAGE" class="spb-option">
             <span class="spb-option__description">Select preset</span>
             <select 
@@ -26,11 +14,11 @@
                 v-model="currentPresetIdModel"
             >
                 <option 
-                    v-for="pair in sortedPresets(true)" 
-                    :key="'preset-' + pair[0]" 
-                    :value="pair[0]"
+                    v-for="[id, preset] in sortedPresets(true)" 
+                    :key="'preset-' + id" 
+                    :value="id"
                 >
-                    {{ pair[1].name }}
+                    {{ preset.name }}
                 </option>
             </select>
         </div> 
@@ -38,76 +26,76 @@
             <div>
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal</span>
-                    <InputField 
+                    <app-input 
                         v-model.number="currentPreset.deal"
                         :type="'number'"
-                        :validator="value => (value >= 0 && value <= 100)"
+                        :validator="value => (value >= -1000 && value <= 100)"
                     >
-                    </InputField>
+                    </app-input>
                 </div>  
                 <div class="spb-option">
                     <span class="spb-option__description">$ Item min price</span>
-                    <InputField 
+                    <app-input 
                         v-model.number="currentPreset.minPrice"
                         :type="'number'" 
                         :validator="value => (value >= 0 && value <= currentPreset.maxPrice)"
                     >
-                    </InputField>
+                    </app-input>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">Name</span>
-                    <InputField 
+                    <app-input 
                         v-model="currentPreset.name"
                         :type="'text'" 
                     >
-                    </InputField>    
+                    </app-input>    
                 </div>  
                 <div class="spb-option">
                     <span class="spb-option__description">Search</span>
-                    <InputField 
+                    <app-input 
                         v-model="currentPreset.search"
                         :type="'text'" 
                         :placeholder="'Search...'"
                     >
-                    </InputField>
+                    </app-input>
                 </div> 
             </div>
             <div>
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal margin</span>
-                    <InputField 
+                    <app-input 
                         v-model.number="currentPreset.dealMargin"
                         :type="'number'" 
-                        :validator="value => (value >= -currentPreset.deal && value <= 100 - currentPreset.deal)"
+                        :validator="value => (value >= -currentPreset.deal && value <= 1000 - currentPreset.deal)"
                     >
-                    </InputField>
+                    </app-input>
                 </div>  
                 <div class="spb-option">
                     <span class="spb-option__description">$ Item max price</span>
-                    <InputField 
+                    <app-input 
                         v-model.number="currentPreset.maxPrice"
                         :type="'number'" 
                         :validator="value => (value >= currentPreset.minPrice && value <= currentPreset.toSpend)"
                     >
-                    </InputField>
+                    </app-input>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">$ Money to spend</span>
-                    <InputField 
+                    <app-input 
                         v-model.number="currentPreset.toSpend"
                         :type="'number'" 
                         :validator="value => (value >= currentPreset.maxPrice && value <= 1000000)"
                     >
-                    </InputField>
+                    </app-input>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">Refresh time</span>
-                    <InputField
+                    <app-input
                         v-model.number="currentPreset.runDelay" 
                         :type="'number'" 
                         :validator="value => (value >= 0 && value <= 1200)"
                     >
-                    </InputField>
+                    </app-input>
                 </div>
             </div>
         </div>
@@ -116,11 +104,7 @@
                 <button 
                     class="spb-button spb-button--green"
                     :disabled="actionsDisabled" 
-                    @click="() => {
-                        actionsDisabled = true
-                        addPreset(currentPreset)
-                        .then(() => actionsDisabled = false)
-                    }"
+                    @click="disableActions(addPreset(currentPreset))"
                 >
                 add
                 </button>
@@ -129,21 +113,14 @@
                 <button 
                     class="spb-preset-manager__button-update spb-button spb-button--green" 
                     :disabled="currentPresetId == 0 || actionsDisabled"
-                    @click="() => {
-                        actionsDisabled = true
-                        updatePreset({
-                            id: currentPresetId,
-                            preset: currentPreset
-                        })
-                        .then(() => actionsDisabled = false)
-                    }"
+                    @click="disableActions(updatePreset({id: currentPresetId, preset: currentPreset}))"
                 >
                 update
                 </button>
                 <button 
                     class="spb-preset-manager__button-delete spb-button spb-button--red" 
                     :disabled="currentPresetId == 0 || actionsDisabled"
-                    @click="deletePreset(currentPresetId)"
+                    @click="disableActions(deletePreset(currentPresetId).then(shiftCurrentPresetIdModel))"
                 >
                 delete
                 </button>
@@ -154,32 +131,30 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
-import InputField from './InputField.vue'
+import actionMixin from '../mixins/actionMixin.js'
+import AppInput from './ui/AppInput.vue'
+import AppMultipleSwitch from './ui/AppMultipleSwitch.vue'
 
 export default {
     name: 'PresetManager',
     components: {
-        InputField
+        AppInput,
+        AppMultipleSwitch
+    },
+    mixins: [actionMixin],
+    props: {
+        id: Number
     },
     emits: ['statusUpdate'],
     data() {
         return {
-            actionsDisabled: false,
             views: Object.freeze({
-                ADD: 'add',
-                MANAGE: 'manage'
+                ADD: 'Add',
+                MANAGE: 'Manage'
             }),
-            currentView: 'add',
+            currentView: 'Add',
             currentPresetId: 0,
             currentPreset: {...this.getPreset(0)}
-        }
-    },
-    watch: {
-        currentView() {
-            this.currentPresetIdModel = 0
-        },
-        presetsLoaded(value) {
-            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
         }
     },
     computed: {
@@ -201,34 +176,31 @@ export default {
             }
         }
     },
+    watch: {
+        currentView() {
+            this.currentPresetIdModel = 0
+        },
+        presetsLoaded(value) {
+            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
+        }
+    },
     methods: {
         ...mapActions({
             addPreset: 'presetManager/addPreset',
-            updatePreset: 'presetManager/updatePreset'
+            updatePreset: 'presetManager/updatePreset',
+            deletePreset: 'presetManager/deletePreset'
         }),
-        viewClass(view) {
-            return [
-                this.currentView == view ? `spb-preset-manager__view--active` : ''
-            ]
-        },
         sortedPresets(sortAsc = true) {
             return this.$store.getters['presetManager/sortedPresets'](sortAsc)
         },
         getPreset(id) {
             return this.$store.getters['presetManager/preset'](id)
         },
-        deletePreset(id) {
-            this.actionsDisabled = true
-
-            this.$store.dispatch('presetManager/deletePreset', id)
-                .then(({success}) => {
-                    if(success) {
-                        const {length} = this.presetIds
-                        if(length > 0) this.currentPresetIdModel = this.presetIds[length - 1]
-
-                        this.actionsDisabled = false
-                    }
-                })
+        shiftCurrentPresetIdModel({success}) {
+            if(success) {
+                const {length} = this.presetIds
+                if(length > 0) this.currentPresetIdModel = this.presetIds[length - 1]
+            }
         }
     }
 }
@@ -245,23 +217,6 @@ export default {
 .spb-preset-manager__preset-select {
     background-color: var(--secondary-background-color);
     height: 32px;
-}
-
-.spb-preset-manager__views-wrapper {
-    padding: 10px 0px;
-}
-
-.spb-preset-manager__views {
-    background-color: var(--alternative-background-color);
-}
-
-.spb-preset-manager__view {
-    text-align: center;
-    width: 100%;
-}
-
-.spb-preset-manager__view--active {
-    background-color: var(--secondary-background-color);
 }
 
 .spb-preset-manager__wrapper {

@@ -28,9 +28,14 @@ export default {
         },
         authenticate({rootState, commit, state, dispatch}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'authenticate', 
-                params: {
-                    token: state.token
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: rootState.app.services.conduit.api.USER,
+                    config: {
+                        headers: {
+                            'Authorization': `Bearer ${state.token}`
+                        }
+                    }
                 }
             }, 
             response => {
@@ -57,7 +62,7 @@ export default {
 
                 commit('setSession', session)
 
-                dispatch('app/updateAlerts', alert, { root: true })
+                dispatch('app/pushAlert', alert, { root: true })
                 resolve(response)
             }))
         }

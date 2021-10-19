@@ -1,24 +1,12 @@
 <template>
     <div class="spb-friend-manager">
         <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">Friend Manager</h3>
-        <div class="spb-friend-manager__views-wrapper">
-            <div class="spb-friend-manager__views spb--cursor-pointer spb--rounded-small spb--flex">
-                <div 
-                    class="spb-friend-manager__view spb--rounded-small"
-                    :class="viewClass(views.ADD)"
-                    @click="currentView = views.ADD" 
-                >
-                    Add
-                </div>
-                <div 
-                    class="spb-friend-manager__view spb--rounded-small"
-                    :class="viewClass(views.MANAGE)"
-                    @click="currentView = views.MANAGE"
-                >
-                    Manage
-                </div>
-            </div>
-        </div>
+        <app-multiple-switch
+            :options="Object.values(views)"
+            :selected="currentView"
+            @optionUpdate="view => currentView = view"
+        >
+        </app-multiple-switch>
         <div v-show="currentView == views.MANAGE" class="spb-option">
             <span class="spb-option__description">Select friend</span>
             <select 
@@ -26,32 +14,32 @@
                 v-model="currentFriendIdModel"
             >
                 <option 
-                    v-for="pair in sortedFriends(true)" 
-                    :key="'friend-' + pair[0]" 
-                    :value="pair[0]"
+                    v-for="[id, friend] in sortedFriends(true)" 
+                    :key="'friend-' + id" 
+                    :value="id"
                 >
-                    {{ pair[1].name }}
+                    {{ friend.name }}
                 </option>
             </select>
         </div>
         <div class="spb-friend-manager__options">
             <div class="spb-option">
                 <span class="spb-option__description">Shadowpay id</span>
-                <InputField 
-                    v-model.number="currentFriend.shadowpay_id"
+                <app-input 
+                    v-model.number="currentFriend.shadowpayUserId"
                     :type="'number'"
                     :placeholder="'Enter id...'"
                 >
-                </InputField>
+                </app-input>
             </div>  
             <div class="spb-option">
                 <span class="spb-option__description">Name</span>
-                <InputField 
+                <app-input 
                     v-model="currentFriend.name"
                     :type="'text'" 
                     :placeholder="'Enter name...'"
                 >
-                </InputField>
+                </app-input>
             </div>
         </div>
         <div class="spb-friend-manager__buttons-wrapper">
@@ -59,11 +47,7 @@
                 <button 
                     class="spb-button spb-button--green" 
                     :disabled="actionsDisabled"
-                    @click="() => {
-                        actionsDisabled = true
-                        addFriend(currentFriend)
-                        .then(() => actionsDisabled = false)
-                    }"
+                    @click="disableActions(addFriend(currentFriend))"
                 >
                 add
                 </button>
@@ -72,21 +56,14 @@
                 <button 
                     class="spb-friend-manager__button-update spb-button spb-button--green" 
                     :disabled="currentFriendId == 0 || actionsDisabled"
-                    @click="() => {
-                        actionsDisabled = true
-                        updateFriend({
-                            id: currentFriendId,
-                            friend: currentFriend
-                        })
-                        .then(() => actionsDisabled = false)
-                    }"
+                    @click="disableActions(updateFriend({id: currentFriendId, friend: currentFriend}))"
                 >
                 update
                 </button>
                 <button 
                     class="spb-friend-manager__button-delete spb-button spb-button--red" 
                     :disabled="currentFriendId == 0 || actionsDisabled"
-                    @click="deleteFriend(currentFriendId)"
+                    @click="disableActions(deleteFriend(currentFriendId).then(shiftCurrentFriendIdModel))"
                 >
                 delete
                 </button>
@@ -97,32 +74,30 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
-import InputField from './InputField'
+import actionMixin from '../mixins/actionMixin.js'
+import AppInput from './ui/AppInput.vue'
+import AppMultipleSwitch from './ui/AppMultipleSwitch.vue'
 
 export default {
     name: 'FriendManager',
     components: {
-        InputField
+        AppInput,
+        AppMultipleSwitch
+    },
+    mixins: [actionMixin],
+    props: {
+        id: Number
     },
     emits: ['statusUpdate'],
     data() {
         return {
-            actionsDisabled: false,
             views: Object.freeze({
-                ADD: 'add',
-                MANAGE: 'manage'
+                ADD: 'Add',
+                MANAGE: 'Manage'
             }),
-            currentView: 'add',
+            currentView: 'Add',
             currentFriendId: 0,
             currentFriend: {...this.getFriend(0)}
-        }
-    },
-    watch: {
-        currentView() {
-            this.currentFriendIdModel = 0
-        },
-        friendsLoaded(value) {
-            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
         }
     },
     computed: {
@@ -144,34 +119,31 @@ export default {
             }
         }
     },
+    watch: {
+        currentView() {
+            this.currentFriendIdModel = 0
+        },
+        friendsLoaded(value) {
+            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
+        }
+    },
     methods: {
         ...mapActions({
             addFriend: 'friendManager/addFriend',
-            updateFriend: 'friendManager/updateFriend'
+            updateFriend: 'friendManager/updateFriend',
+            deleteFriend: 'friendManager/deleteFriend'
         }),
-        viewClass(view) {
-            return [
-                this.currentView == view ? 'spb-friend-manager__view--active' : ''
-            ]
-        },
         sortedFriends(sortAsc = true) {
             return this.$store.getters['friendManager/sortedFriends'](sortAsc)
         },
         getFriend(id) {
             return this.$store.getters['friendManager/friend'](id)
         },
-        deleteFriend(id) {
-            this.actionsDisabled = true
-
-            this.$store.dispatch('friendManager/deleteFriend', id)
-                .then(({success}) => {
-                    if(success) {
-                        const {length} = this.friendIds
-                        if(length > 0) this.currentFriendIdModel = this.friendIds[length - 1]
-
-                        this.actionsDisabled = false
-                    }
-                })
+        shiftCurrentFriendIdModel({success}) {
+            if(success) {
+                const {length} = this.friendIds
+                if(length > 0) this.currentFriendIdModel = this.friendIds[length - 1]
+            }
         }
     }
 }
@@ -188,23 +160,6 @@ export default {
 .spb-friend-manager__friend-select {
     background-color: var(--secondary-background-color);
     height: 32px;
-}
-
-.spb-friend-manager__views-wrapper {
-    padding: 10px 0px;
-}
-
-.spb-friend-manager__views {
-    background-color: var(--alternative-background-color);
-}
-
-.spb-friend-manager__view {
-    text-align: center;
-    width: 100%;
-}
-
-.spb-friend-manager__view--active {
-    background-color: var(--secondary-background-color);
 }
 
 .spb-friend-manager__buttons-wrapper {

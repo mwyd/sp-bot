@@ -14,21 +14,15 @@
 </template>
 
 <script>
-import Home from './Home.vue'
-import SaleGuard from './SaleGuard.vue'
-import PresetManager from './PresetManager.vue'
-import FriendManager from './FriendManager.vue'
-import Settings from './Settings.vue'
-import Bot from './Bot.vue'
+import Home from '../Home.vue'
+import SaleGuard from '../SaleGuard.vue'
+import PresetManager from '../PresetManager.vue'
+import FriendManager from '../FriendManager.vue'
+import Settings from '../Settings.vue'
+import Bot from '../Bot.vue'
 
 export default {
-    name: 'TabWindow',
-    props: {
-        id: Number,
-        isOpen: Boolean,
-        childComponent: String
-    },
-    emits: ['statusUpdate'],
+    name: 'AppTabWindow',
     components: {
         Home,
         SaleGuard,
@@ -37,6 +31,12 @@ export default {
         Settings,
         Bot
     },
+    props: {
+        id: Number,
+        isOpen: Boolean,
+        childComponent: String
+    },
+    emits: ['statusUpdate'],
     computed: {
         tabWindowClass() {
             return [

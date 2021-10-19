@@ -6,17 +6,17 @@
             :class="tabBarLoaderClass"
         ></div>
         <div class="spb-tab-bar__wrapper">
-            <Tab 
+            <app-tab 
                 v-for="tab in staticTabs"
                 :key="'tab-' + tab.id"
                 :id="tab.id"
-                :isStatic="tab.isStatic"
+                :is-static="tab.isStatic"
                 :name="tab.name"
                 :symbol="tab.symbol"
-                :childComponent="tab.childComponent"
-                :tabMounted="tab.tabMounted"
+                :child-component="tab.childComponent"
+                :tab-mounted="tab.tabMounted"
             >
-            </Tab>
+            </app-tab>
             <div class="spb-tab">
                 <div 
                     class="spb-tab__button spb--rounded-medium spb--cursor-pointer spb--flex"
@@ -28,54 +28,41 @@
                     })"
                 >+</div>
             </div>
-            <Tab 
+            <app-tab 
                 v-for="tab in dynamicTabs"
                 :key="'tab-' + tab.id"
                 :id="tab.id"
-                :isStatic="tab.isStatic"
+                :is-static="tab.isStatic"
                 :name="tab.name"
                 :symbol="tab.symbol"
-                :childComponent="tab.childComponent"
-                :tabMounted="tab.tabMounted"
+                :child-component="tab.childComponent"
+                :tab-mounted="tab.tabMounted"
             >
-            </Tab>
+            </app-tab>
         </div>
         <div class="spb-alert-box">
-            <Alert
-                v-for="(alert, index) in alerts"
-                :key="'spb-alert-' + index"
+            <app-alert
+                v-for="[uuid, alert] in alerts"
+                :key="'spb-alert-' + uuid"
+                :uuid="uuid"
                 :type="alert.type"
                 :message="alert.message"
             >
-            </Alert>
+            </app-alert>
         </div>
     </div>
 </template>
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
-import Tab from './components/Tab.vue'
-import Alert from './components/Alert.vue'
+import AppTab from './components/ui/AppTab.vue'
+import AppAlert from './components/ui/AppAlert.vue'
 
 export default {
     name: 'App',
     components: {
-        Tab,
-        Alert
-    },
-    watch: {
-        displayInterfaceOnTop(value) {
-            const root = document.querySelector('#spb-root')
-
-            if(value) {
-                root.classList.remove('spb--z-100')
-                root.classList.add('spb--z-1200')
-            }
-            else {
-                root.classList.remove('spb--z-1200')
-                root.classList.add('spb--z-100')
-            }
-        }
+        AppTab,
+        AppAlert
     },
     computed: {
         ...mapState({
@@ -99,6 +86,23 @@ export default {
             ]
         }
     },
+    watch: {
+        displayInterfaceOnTop(value) {
+            const root = document.querySelector('#spb-root')
+
+            if(value) {
+                root.classList.remove('spb--z-100')
+                root.classList.add('spb--z-1200')
+            }
+            else {
+                root.classList.remove('spb--z-1200')
+                root.classList.add('spb--z-100')
+            }
+        }
+    },
+    created() {
+        this.setupApp()
+    },
     methods: {
         ...mapMutations({
             addTab: 'app/addTab'
@@ -106,9 +110,6 @@ export default {
         ...mapActions({
             setupApp: 'app/setupApp'
         })
-    },
-    created() {
-        this.setupApp()
     }
 }
 </script>
@@ -147,10 +148,10 @@ export default {
 
 .spb-alert-box {
     position: fixed;
-    left: 0;
+    right: 0;
     top: 0;
     height: auto;
-    width: 250px;
+    width: 300px;
     padding: 4px;
 }
 </style>

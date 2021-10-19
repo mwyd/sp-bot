@@ -16,7 +16,7 @@
 
 <script>
 export default {
-    name: 'InputField',
+    name: 'AppInput',
     props: {
         type: String,
         modelValue: [String, Number],
@@ -36,7 +36,7 @@ export default {
         },
         modelUpdated: {
             type: Function,
-            default: () => {},
+            default: null,
             required: false
         }
     },
@@ -47,17 +47,17 @@ export default {
             synchronized: true
         }
     },
-    watch: {
-        modelValue(value) {
-            this.internalModel = value
-        }
-    },
     computed: {
         inputClass() {
             return [
                 this.synchronized ? 'spb-input__field--ok' : 'spb-input__field--wrong',
                 this.disabled ? 'spb--cursor-not-allowed' : ''
             ]
+        }
+    },
+    watch: {
+        modelValue(value) {
+            this.internalModel = value
         }
     },
     methods: {
@@ -71,7 +71,7 @@ export default {
         saveModelValue() {
             this.synchronized = true
             this.$emit('update:modelValue', this.internalModel)
-            this.modelUpdated()
+            this.modelUpdated?.()
         }
     }
 }

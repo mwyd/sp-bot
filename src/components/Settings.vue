@@ -4,28 +4,29 @@
         <div>
             <div class="spb-option spb--font-size-big">
                 <span class="spb-option__description">Token</span>
-                    <InputField
+                    <app-input
                         v-model="token"
                         :type="'password'"
-                        :modelUpdated="() => {
+                        :model-updated="() => {
                             saveToken()
                             setupApp()
                         }"
                     >
-                    </InputField>
+                    </app-input>
             </div>
             <div class="spb-option spb--font-size-big">
                 <span class="spb-option__description spb--clear-padding">Manage</span>
-                    <div class="spb--flex spb-option__row spb--font-size-medium">
-                        <div>Toggle bots</div>
-                        <button 
-                            class="spb-button spb-button-tiny"
-                            :class="runBotsButtonClass"
-                            @click="toggleAllBots" 
-                        >
-                            {{ runBots ? 'stop' : 'start' }}
-                        </button>
-                    </div>
+                <div class="spb--flex spb-option__row spb--font-size-medium">
+                    <div>Toggle bots</div>
+                    <button 
+                        class="spb-button spb-button-tiny"
+                        :class="runBotsButtonClass"
+                        :disabled="actionsDisabled"
+                        @click="disableActions(toggleAllBots())" 
+                    >
+                        {{ runBots ? 'stop' : 'start' }}
+                    </button>
+                </div>
             </div>
             <div class="spb-option spb--font-size-big">
                 <span class="spb-option__description spb--clear-padding">Config</span>
@@ -47,36 +48,49 @@
                 </div>
             </div>
             <div class="spb-option spb--font-size-big">
+                <span class="spb-option__description spb--clear-padding">Bot</span>
+                <div class="spb--flex spb-option__row spb--font-size-medium">
+                    <div>Steam volume limit</div>
+                    <app-input 
+                        v-model.number="steamVolumeLimit"
+                        class="spb-settings__safe-discount"
+                        :type="'number'"
+                        :validator="value => value >= 0 && value <= 100"
+                    >
+                    </app-input>
+                </div>
+            </div>
+            <div class="spb-option spb--font-size-big">
                 <span class="spb-option__description spb--clear-padding">Sale Guard</span>
                 <div class="spb--flex spb-option__row spb--font-size-medium">
                     <div>Bid step</div>
-                    <InputField 
+                    <app-input 
                         v-model.number="bidStep"
                         class="spb-settings__bid-step"
                         :type="'number'"
                         :validator="value => value >= 0.01 && value <= 100"
                     >
-                    </InputField>
+                    </app-input>
                 </div>
                 <div class="spb--flex spb-option__row spb--font-size-medium">
                     <div>Safe discount</div>
-                    <InputField 
+                    <app-input 
                         v-model.number="safeDiscount"
                         class="spb-settings__safe-discount"
                         :type="'number'"
                         :validator="value => value >= 1 && value <= 100"
                     >
-                    </InputField>
+                    </app-input>
                 </div>
                 <div class="spb--flex spb-option__row spb--font-size-medium">
-                    <div>Item update delay</div>
-                    <InputField 
-                        v-model.number="itemUpdateDelay"
+                    <div>Update delay</div>
+                    <app-input 
+                        v-model.number="updateDelay"
                         class="spb-settings__item-update-delay"
                         :type="'number'"
                         :validator="value => value >= 0 && value <= 1200"
                     >
-                    </InputField>
+                    </app-input>
                 </div>
             </div>
         </div>
@@ -96,22 +110,22 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import InputField from './InputField.vue'
+import actionMixin from '../mixins/actionMixin.js'
+import AppInput from './ui/AppInput.vue'
 
 export default {
     name: 'Settings',
-    emits: ['statusUpdate'],
     components: {
-        InputField
+        AppInput
     },
+    mixins: [actionMixin],
+    props: {
+        id: Number
+    },
+    emits: ['statusUpdate'],
     data() {
         return {
             buttonsDisabled: false
-        }
-    },
-    watch: {
-        authenticated(value) {
-            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
         }
     },
     computed: {
@@ -131,6 +145,17 @@ export default {
             },
             set(value) {
                 this.$store.commit('session/setToken', value)
+            }
+        },
+        steamVolumeLimit: {
+            get() {
+                return this.$store.getters['app/config']('steamVolumeLimit')
+            },
+            set(value) {
+                this.$store.commit('app/setConfig', {
+                    type: 'steamVolumeLimit',
+                    value: value
+                })
             }
         },
         displayItemStatistics: {
@@ -190,25 +215,30 @@ export default {
         },
         safeDiscount: {
             get() {
-                return this.$store.getters['app/config']('saleGuardSaleDiscount') * 100
+                return this.$store.getters['app/config']('saleGuardSafeDiscount') * 100
             },
             set(value) {
                 this.$store.commit('app/setConfig', {
-                    type: 'saleGuardSaleDiscount',
+                    type: 'saleGuardSafeDiscount',
                     value: value / 100
                 })
             }
         },
-        itemUpdateDelay: {
+        updateDelay: {
             get() {
-                return this.$store.getters['app/config']('saleGuardItemUpdateDelay') / 1000
+                return this.$store.getters['app/config']('saleGuardUpdateDelay')
             },
             set(value) {
                 this.$store.commit('app/setConfig', {
-                    type: 'saleGuardItemUpdateDelay',
-                    value: value * 1000
+                    type: 'saleGuardUpdateDelay',
+                    value: value
                 })
             }
+        }
+    },
+    watch: {
+        authenticated(value) {
+            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
         }
     },
     methods: {

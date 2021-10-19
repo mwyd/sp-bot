@@ -5,22 +5,22 @@
             <div>
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal</span>
-                    <InputField 
+                    <app-input 
                         v-model.number="preset.deal"
                         :type="'number'"
-                        :validator="value => (value >= 0 && value <= 100)"
-                        :modelUpdated="checkToConfirm"
+                        :validator="value => (value >= -1000 && value <= 100)"
+                        :model-updated="checkToConfirm"
                     >
-                    </InputField>
+                    </app-input>
                 </div>  
                 <div class="spb-option">
                     <span class="spb-option__description">$ Item min price</span>
-                    <InputField 
+                    <app-input 
                         v-model.number="preset.minPrice"
                         :type="'number'" 
                         :validator="value => (value >= 0 && value <= preset.maxPrice)"
                     >
-                    </InputField>
+                    </app-input>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">Preset</span>
@@ -29,71 +29,72 @@
                             v-model="presetIdModel"
                         >
                             <option 
-                                v-for="pair in sortedPresets(true)" 
-                                :key="'preset-' + pair[0]" 
-                                :value="pair[0]"
+                                v-for="[id, preset] in sortedPresets(true)" 
+                                :key="'preset-' + id" 
+                                :value="id"
                             >
-                                {{ pair[1].name }}
+                                {{ preset.name }}
                             </option>
                         </select>
                 </div>  
                 <div class="spb-option">
                     <span class="spb-option__description">Search</span>
-                    <InputField 
+                    <app-input 
                         v-model="preset.search"
                         :type="'text'" 
                         :placeholder="'Search...'"
                     >
-                    </InputField>
+                    </app-input>
                 </div> 
             </div>
             <div>
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal margin</span>
-                    <InputField 
+                    <app-input 
                         v-model.number="preset.dealMargin"
                         :type="'number'" 
-                        :validator="value => (value >= -preset.deal && value <= 100 - preset.deal)"
-                        :modelUpdated="checkToConfirm"
+                        :validator="value => (value >= -preset.deal && value <= 1000 - preset.deal)"
+                        :model-updated="checkToConfirm"
                     >
-                    </InputField>
+                    </app-input>
                 </div>  
                 <div class="spb-option">
                     <span class="spb-option__description">$ Item max price</span>
-                    <InputField 
+                    <app-input 
                         v-model.number="preset.maxPrice"
                         :type="'number'" 
                         :validator="value => (value >= preset.minPrice && value <= preset.toSpend)"
                     >
-                    </InputField>
+                    </app-input>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">$ Money to spend</span>
-                    <InputField 
+                    <app-input 
                         v-model.number="preset.toSpend"
                         :type="'number'" 
                         :validator="value => (value >= preset.maxPrice && value <= 1000000)"
-                        :modelUpdated="checkToConfirm"
+                        :model-updated="checkToConfirm"
                     >
-                    </InputField>
+                    </app-input>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">Refresh time</span>
-                    <InputField
+                    <app-input
                         v-model.number="preset.runDelay" 
                         :type="'number'" 
                         :validator="value => (value >= 0 && value <= 1200)"
                     >
-                    </InputField>
+                    </app-input>
                 </div>
             </div>
         </div>
         <button 
             class="spb-bot__run-button spb-button"
-            :class="toggleIsRunningButtonClass"
-            @click="toggleIsRunning" 
+            :class="toggleProcessButtonClass"
+            :disabled="isProcessTerminating"
+            @click="toggleProcess" 
         >
-        {{ isRunning ? 'stop' : 'start' }}
+        {{ !isProcessTerminated ? 'stop' : 'start' }}
         </button>
     </div>
 </template>
@@ -101,21 +102,22 @@
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
 import { SPB_LOG } from '../utils/index.js'
+import processMixin from '../mixins/processMixin.js'
+import AppInput from './ui/AppInput.vue'
 import DateFormat from 'dateformat'
-import InputField from './InputField.vue'
 
 export default {
     name: 'Bot',
     components: {
-        InputField
+        AppInput
     },
+    mixins: [processMixin],
     props: {
         id: Number
     },
     emits: ['statusUpdate'],
     data() {
         return {
-            isRunning: false,
             timeoutId: null,
             presetId: 0,
             preset: {},
@@ -132,13 +134,12 @@ export default {
     },
     computed: {
         ...mapState({
-            csrfCookie: state => state.app.shadowpay.csrfCookie,
+            selfService: state => state.app.services.self,
+            shadowpayService: state => state.app.services.shadowpay,
+            conduitService: state => state.app.services.conduit,
             notificationSound: state => state.app.notificationSound,
             alertTypes: state => state.app.alertTypes,
             tabStates: state => state.app.tabStates,
-            getItemsUrl: state => state.app.shadowpay.api.MARKET_ITEMS,
-            buyItemUrl: state => state.app.shadowpay.api.BUY_ITEM,
-            getBuyHistoryUrl: state => state.app.shadowpay.api.BUY_HISTORY,
             presets: state => state.presetManager.presets,
             finishedItems: state => state.bots.items.finished,
             token: state => state.session.token
@@ -153,20 +154,38 @@ export default {
                 this.checkToConfirm()
             }
         },
-        toggleIsRunningButtonClass() {
+        steamVolumeLimit() {
+            return this.$store.getters['app/config']('steamVolumeLimit')
+        },
+        toggleProcessButtonClass() {
             return [
-                this.isRunning ? 'spb-button--red' : 'spb-button--green'
+                !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
             ]
         }
+    },
+    watch: {
+        steamVolumeLimit() {
+            this.checkToConfirm()
+        }
+    },
+    beforeMount() {
+        this.presetIdModel = this.presetId
+        this.startTrack(this)
+    },
+    beforeUnmount() {
+        this.setProcessTerminating()
+        this.stopTrack(this.id)
     },
     methods: {
         ...mapMutations({
             setCsrfCookie: 'app/setCsrfCookie',
             startTrack: 'bots/addBot',
-            stopTrack: 'bots/closeBot'
+            stopTrack: 'bots/closeBot',
+            deleteAlert: 'app/deleteAlert'
         }),
         ...mapActions({
-           updateAlerts: 'app/updateAlerts' 
+           pushAlert: 'app/pushAlert',
+           getItemInfo: 'item/getItemInfo' 
         }),
         sortedPresets(sortAsc = true) {
             return this.$store.getters['presetManager/sortedPresets'](sortAsc)
@@ -178,26 +197,40 @@ export default {
             return this.$store.getters['item/steamHashName'](hashName)
         },
         clear() {
-            clearTimeout(this.timeoutId)
             this.items.filtered = []
             this.items.pending.forEach(item => item._current_run = false)
+
+            this.items.toConfirm.forEach(v => {
+                v._alerts.forEach(id => this.deleteAlert(id))
+            })
+
             this.items.toConfirm = new Map()
             this.moneySpent = 0
         },
-        toggleIsRunning() {
-            if(this.isRunning) {
-                this.isRunning = false
-                this.$emit('statusUpdate', this.tabStates.IDLE)
-                this.clear()
-            }
-            else {
-                this.isRunning = true
-                this.$emit('statusUpdate', this.tabStates.RUNNING)
-                this.run()
+        stopProcess() {
+            this.$emit('statusUpdate', this.tabStates.IDLE)
+            this.clear()
+            this.setProcessTerminated()
+        },
+        toggleProcess() {
+            switch(this.processState) {
+                case this.processStates.IDLE:
+                    clearTimeout(this.timeoutId)
+                    this.stopProcess()
+                    break
+
+                case this.processStates.RUNNING:
+                    this.setProcessTerminating()
+                    break
+
+                case this.processStates.TERMINATED:
+                    this.$emit('statusUpdate', this.tabStates.RUNNING)
+                    this.run()
+                    break
             }
         },
         checkToConfirm() {
-            if(!this.isRunning) return
+            if(this.isProcessTerminating || this.isProcessTerminated) return
 
             this.items.toConfirm.forEach(item => {
                 if(this.canBuyItem(item)) this.buyItem(item)
@@ -208,6 +241,7 @@ export default {
                 const filteredItem = this.items.filtered.find(filteredItem => filteredItem.id == item.id)
 
                 if(filteredItem === undefined) {
+                    item._alerts.forEach(id => this.deleteAlert(id))
                     this.items.toConfirm.delete(item.id)
                     return
                 }
@@ -219,15 +253,21 @@ export default {
                     item.price_usd = filteredItem.price_usd
                     item.price_market_usd = filteredItem.price_market_usd
 
+                    if(item._updated) this.calculateIncome(item)
                     if(this.canBuyItem(item)) this.buyItem(item)
                 }
             })       
         },
+        calculateIncome(item) {
+            item._app_income = ((0.87 * item._steam_price) - item.price_market_usd).toFixed(2)
+            item._app_income_percentage = 100 - Math.round((item.price_market_usd - item._app_income) * 100 / item.price_market_usd)
+            item._real_discount = 100 - Math.round(item.price_market_usd * 100 / item._steam_price)
+        },
         canBuyItem(item) {
-            return item._updated && item._real_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume >= 10
+            return item._updated && item._real_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume >= this.steamVolumeLimit
         },
         buyItem(item) {
-            if(this.items.pending.get(item.id) || item.price_market_usd + this.moneySpent > this.preset.toSpend) return
+            if(this.items.pending.has(item.id) || item.price_market_usd + this.moneySpent > this.preset.toSpend) return
 
             item._current_run = true
             item._transaction_id = null
@@ -236,7 +276,7 @@ export default {
             this.items.pending.set(item.id, item)
             this.moneySpent += item.price_market_usd
     
-            fetch(this.buyItemUrl, {
+            fetch(this.shadowpayService.api.BUY_ITEM, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -244,7 +284,7 @@ export default {
                 },
                 body: `id=${item.id}` +
                     `&price=${item.price_market_usd}` +
-                    `&csrf_token=${this.csrfCookie}`
+                    `&csrf_token=${this.shadowpayService.csrfCookie}`
             })
             .then(response => response.json())
             .then(data => {
@@ -267,7 +307,10 @@ export default {
                     item._transaction_id = id
                         
                     chrome.runtime.sendMessage({
-                        action: 'buy_item'
+                        service: this.selfService.name,
+                        data: {
+                            action: this.selfService.actions.INCREMENT_BUY_COUNTER
+                        }
                     })
 
                     this.notificationSound.play()
@@ -285,10 +328,13 @@ export default {
             if(this.items.pending.size == 0 || Date.now() - this.lastPendingUpdate < this.pendingUpdateDelay * 1000) return
             
             chrome.runtime.sendMessage({
-                action: 'get_bought_items_counter'
+                service: this.selfService.name,
+                data: {
+                    action: this.selfService.actions.GET_BUY_COUNTER
+                }
             }, 
             response => {
-                fetch(this.getBuyHistoryUrl, {
+                fetch(this.shadowpayService.api.BUY_HISTORY, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
@@ -330,8 +376,8 @@ export default {
                                 this.finishedItems.push(item)
 
                                 if(this.items.pending.size == 0 && Math.abs(this.moneySpent - this.preset.toSpend) < this.preset.minPrice) {
-                                    this.toggleIsRunning()
-                                    this.updateAlerts({
+                                    this.setProcessTerminating()
+                                    this.pushAlert({
                                         type: this.alertTypes.INFO,
                                         message: `Bot #${this.id} terminated - to spend limit reached`
                                     })
@@ -346,9 +392,11 @@ export default {
             })
         },
         async run() {
+            this.setProcessRunning()
+
             if(Math.abs(this.moneySpent - this.preset.toSpend) >= this.preset.minPrice) {
                 try {    
-                    const response = await fetch(this.getItemsUrl +
+                    const response = await fetch(this.shadowpayService.api.MARKET_ITEMS +
                         `?types=[]` +
                         `&exteriors=[]` +
                         `&rarities=[]` +
@@ -382,19 +430,23 @@ export default {
                         )
 
                         for(let item of this.items.filtered) {
-                            if(this.items.toConfirm.get(item.id)) continue
+                            if(this.items.toConfirm.has(item.id)) continue
 
                             item.discount = Math.round(item.discount)
                             item.price_market_usd = parseFloat(item.price_market_usd)
                             item._updated = false
                             item._search_steam_hash_name = item.steam_market_hash_name.toLowerCase()
-                            if(item.phase) item.steam_market_hash_name = this.clearDopplerHashName(item.steam_market_hash_name)
+                            item._conduit_hash_name = item.steam_market_hash_name
+
+                            if(item.phase) {
+                                item.steam_market_hash_name = this.clearDopplerHashName(item.steam_market_hash_name)
+                                item._conduit_hash_name = item.steam_market_hash_name.replace('(', `${item.phase} (`)
+                            }
 
                             await new Promise(resolve => chrome.runtime.sendMessage({
-                                action: 'get_steam_market_csgo_item', 
-                                params: {
-                                    token: this.token,
-                                    hash_name: item.steam_market_hash_name
+                                service: this.conduitService.name,
+                                data: {
+                                    path: `${this.conduitService.api.STEAM_MARKET}/${item._conduit_hash_name}`
                                 }
                             }, 
                             response => {
@@ -404,17 +456,23 @@ export default {
                                     item._updated = true
                                     item._steam_price = data.price
                                     item._steam_volume = data.volume
-                                    item._app_income = ((0.87 * data.price) - item.price_market_usd).toFixed(2)
-                                    item._app_income_percentage = 100 - Math.round((item.price_market_usd - item._app_income) * 100 / item.price_market_usd)
-                                    item._real_discount = 100 - Math.round(item.price_market_usd * 100 / item._steam_price)
+
+                                    this.calculateIncome(item)
+
                                     item._onclick = () => {
                                         this.buyItem(item)
                                     }
 
-                                    if(this.canBuyItem(item)) this.buyItem(item)
+                                    if(this.canBuyItem(item)) {
+                                        this.buyItem(item)
+                                    }
                                 }
                                 
-                                if(this.isRunning) this.items.toConfirm.set(item.id, item)
+                                if(this.isProcessRunning) {
+                                    this.items.toConfirm.set(item.id, item)
+                                    this.getItemInfo(item)
+                                }
+
                                 resolve(response)
                             }))
                         }
@@ -428,20 +486,17 @@ export default {
             this.updatePending()
             this.updateToConfirm()
                     
-            if(this.isRunning) {
-                this.timeoutId = setTimeout(() => {
-                    this.run()
-                }, 1000 * this.preset.runDelay)
+            switch(this.processState) {
+                case this.processStates.RUNNING:
+                    this.timeoutId = setTimeout(this.run, this.preset.runDelay * 1000)
+                    this.setProcessIdle()
+                    break
+
+                case this.processStates.TERMINATING:
+                    this.stopProcess()
+                    break
             }
         }
-    },
-    beforeMount() {
-        this.presetIdModel = this.presetId
-        this.startTrack(this)
-    },
-    beforeUnmount() {
-        this.isRunning = false
-        this.stopTrack(this.id)
     }
 }
 </script>

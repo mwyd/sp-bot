@@ -1,4 +1,4 @@
-import { SPB_LOG } from '../../utils/index.js'
+import { SPB_LOG, roundNumber } from '../../utils/index.js'
 
 export default {
     namespaced: true,
@@ -42,14 +42,19 @@ export default {
         }
     },
     actions: {
-        startTrack({rootState, commit, dispatch}, {shadowpayItemId, minPrice, maxPrice}) {
+        startTrack({rootState, commit, dispatch}, {shadowpayOfferId, hashName, minPrice, maxPrice}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'set_saleguard_item',
-                params: {
-                    token: rootState.session.token,
-                    shadowpayItemId: shadowpayItemId,
-                    minPrice: minPrice,
-                    maxPrice: maxPrice
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: rootState.app.services.conduit.api.SALE_GUARD,
+                    config: {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `shadowpay_offer_id=${shadowpayOfferId}&hash_name=${hashName}&min_price=${minPrice}&max_price=${maxPrice}`
+                    }
                 }
             }, 
             response => {
@@ -62,12 +67,13 @@ export default {
 
                 if(success) {
                     commit('setItemMetadata', {
-                        id: data.shadowpay_item_id,
+                        id: data.shadowpay_offer_id,
                         metadata: {
                             databaseId: data.id,
                             tracked: true,
                             minPrice: data.min_price,
-                            maxPrice: data.max_price
+                            maxPrice: data.max_price,
+                            createdAt: data.created_at
                         }
                     })
                 }
@@ -76,14 +82,15 @@ export default {
                     alert.message = error_message
                 }
 
-                dispatch('app/updateAlerts', alert, { root: true })
+                dispatch('app/pushAlert', alert, { root: true })
                 resolve(response)
             }))
         },
         async startTrackAll({getters, dispatch}) {
             for(let {item, metadata} of getters.untrackedItems) {
                 await dispatch('startTrack', {
-                    shadowpayItemId: item.id,
+                    shadowpayOfferId: item.id,
+                    hashName: item._conduit_hash_name,
                     minPrice: metadata.minPrice,
                     maxPrice: metadata.maxPrice
                 })
@@ -91,13 +98,17 @@ export default {
         },
         updateTracked({rootState, dispatch}, {id, data}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'update_saleguard_item',
-                params: {
-                    token: rootState.session.token,
-                    id: id,
-                    shadowpayItemId: data.shadowpayItemId,
-                    minPrice: data.minPrice,
-                    maxPrice: data.maxPrice
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: `${rootState.app.services.conduit.api.SALE_GUARD}/${id}`,
+                    config: {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `shadowpay_offer_id=${data.shadowpayOfferId}&min_price=${data.minPrice}&max_price=${data.maxPrice}`
+                    }
                 }
             }, 
             response => {
@@ -113,16 +124,21 @@ export default {
                     alert.message = error_message
                 }
 
-                dispatch('app/updateAlerts', alert, { root: true })
+                dispatch('app/pushAlert', alert, { root: true })
                 resolve(response)
             }))
         },
         stopTrack({rootState, commit, dispatch}, {id, showAlert = true}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'delete_saleguard_item',
-                params: {
-                    token: rootState.session.token,
-                    id: id
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: `${rootState.app.services.conduit.api.SALE_GUARD}/${id}`,
+                    config: {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`
+                        }
+                    }
                 }
             }, 
             response => {
@@ -135,12 +151,13 @@ export default {
 
                 if(success) {
                     commit('setItemMetadata', {
-                        id: data.shadowpay_item_id,
+                        id: data.shadowpay_offer_id,
                         metadata: {
                             databaseId: null,
                             tracked: false,
                             minPrice: data.min_price,
-                            maxPrice: data.max_price
+                            maxPrice: data.max_price,
+                            createdAt: null
                         }
                     })
                 }
@@ -149,7 +166,7 @@ export default {
                     alert.message = error_message
                 }
 
-                if(showAlert) dispatch('app/updateAlerts', alert, { root: true })
+                if(showAlert) dispatch('app/pushAlert', alert, { root: true })
                 resolve(response)
             }))
         },
@@ -161,9 +178,9 @@ export default {
                 })
             }
         },
-        async loadItemsOnSale({state, rootState, rootGetters, commit}) {
+        async loadItemsOnSale({state, rootState, rootGetters, commit, dispatch}) {
             try {
-                const response = await fetch(rootState.app.shadowpay.api.ITEMS_ON_SALE, {
+                const response = await fetch(rootState.app.services.shadowpay.api.ITEMS_ON_SALE, {
                     credentials: 'include'
                 })
 
@@ -180,11 +197,17 @@ export default {
                         item.discount = Math.round(item.discount)
                         item.price_market_usd = parseFloat(item.price_market_usd)
                         item._search_steam_hash_name = item.steam_market_hash_name.toLowerCase()
-                        if(item.phase) item.steam_market_hash_name = rootGetters['item/steamHashName'](item.steam_market_hash_name)
+                        item._conduit_hash_name = item.steam_market_hash_name
+
+                        if(item.phase) {
+                            item.steam_market_hash_name = rootGetters['item/steamHashName'](item.steam_market_hash_name)
+                            item._conduit_hash_name = item.steam_market_hash_name.replace('(', `${item.phase} (`)
+                        }
 
                         let minPrice = item.price_market_usd
-                        let maxPrice = Math.round(item.steam_price_en * rootGetters['app/config']('saleGuardSaleDiscount') * 100) / 100
-                        if(maxPrice < minPrice) maxPrice = Math.round((minPrice + rootGetters['app/config']('saleGuardBidStep')) * 100) / 100
+                        let maxPrice = roundNumber(item.steam_price_en * rootGetters['app/config']('saleGuardSafeDiscount'))
+                        
+                        if(maxPrice < minPrice) maxPrice = roundNumber(minPrice + rootGetters['app/config']('saleGuardBidStep'))
                     
                         updatedItems.set(item.id, {
                             item: item,
@@ -195,6 +218,8 @@ export default {
                                 maxPrice: maxPrice
                             }
                         })
+
+                        dispatch('item/getItemInfo', item, { root: true })
                     }
                     else updatedItems.set(item.id, itemOnSale)
                 } 
@@ -210,38 +235,38 @@ export default {
             let loopLimit = 1
 
             let loaded = true
+            let missingItems = []
 
             for(let i = 0; i < loopLimit; i++) {
                 await new Promise(resolve => chrome.runtime.sendMessage({
-                    action: 'get_saleguard_items', 
-                    params: {
-                        token: rootState.session.token,
-                        offset: i * limit,
-                        limit: limit
+                    service: rootState.app.services.conduit.name,
+                    data: {
+                        path: `${rootState.app.services.conduit.api.SALE_GUARD}?offset=${i * limit}&limit=${limit}`,
+                        config: {
+                            headers: {
+                                'Authorization': `Bearer ${rootState.session.token}`
+                            }
+                        }
                     }
                 }, 
-                response => {
+                async response => {
                     const {success, data} = response
 
                     if(success) {
                         for(let item of data) {
-                            if(state.items.get(item.shadowpay_item_id)) {
+                            if(state.items.has(item.shadowpay_offer_id)) {
                                 commit('setItemMetadata', {
-                                    id: item.shadowpay_item_id,
+                                    id: item.shadowpay_offer_id,
                                     metadata: {
                                         databaseId: item.id,
                                         tracked: true,
                                         minPrice: item.min_price,
-                                        maxPrice: item.max_price
+                                        maxPrice: item.max_price,
+                                        createdAt: item.created_at
                                     }
                                 })
                             }
-                            else {
-                                dispatch('stopTrack', {
-                                    id: item.id,
-                                    showAlert: false
-                                })
-                            }
+                            else missingItems.push(item.id)
                         }
 
                         if(data.length == limit) loopLimit++
@@ -250,6 +275,13 @@ export default {
 
                     resolve(response)
                 }))
+            }
+
+            for(let id of missingItems) {
+                await dispatch('stopTrack', {
+                    id: id,
+                    showAlert: false
+                })
             }
 
             commit('setLoaded', loaded)

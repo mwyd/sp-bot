@@ -1,3 +1,5 @@
+import { roundNumber } from '../../utils/index.js'
+
 export default {
     namespaced: true,
     state: () => ({
@@ -16,6 +18,12 @@ export default {
             'Sapphire',
             'Black Pearl'
         ], 
+        paintSeedVariantKeywords: [
+            'Case Hardened',
+            'Fade'
+        ],
+        screenshotService: 'https://csgo.gallery',
+        highRankFloat: Math.pow(10, -3),
         interestingFloatRanges: [
             {
                 min: 0, 
@@ -52,7 +60,7 @@ export default {
                 unit: ''
             },
             phase: {
-                name: '',
+                name: 'Doppler',
                 unit: ''
             },
             steam_is_souvenir: {
@@ -114,7 +122,7 @@ export default {
             [0, 
                 {
                     name: 'Steam discount',
-                    func: function(asc) { 
+                    callback: function(asc) { 
                         return (a, b) => ((b._real_discount ?? 0) - (a._real_discount ?? 0)) * (asc ? -1 : 1)
                     }
                 }
@@ -122,7 +130,7 @@ export default {
             [1, 
                 {
                     name: 'Shadowpay discount',
-                    func: function(asc) { 
+                    callback: function(asc) { 
                         return (a, b) => (b.discount - a.discount) * (asc ? -1 : 1)
                     }
                 }
@@ -130,7 +138,7 @@ export default {
             [2,
                 {
                     name: 'Item float',
-                    func: function(asc) { 
+                    callback: function(asc) { 
                         return (a, b) => ((b.floatvalue || 1) - (a.floatvalue || 1)) * (asc ? -1 : 1)
                     }  
                 }
@@ -138,7 +146,7 @@ export default {
             [3, 
                 {
                     name: 'Market price',
-                    func: function(asc) { 
+                    callback: function(asc) { 
                         return (a, b) => (b.price_market_usd - a.price_market_usd) * (asc ? -1 : 1)
                     }  
                 }
@@ -146,10 +154,17 @@ export default {
         ])
     }),
     getters: {
-        interestingFloat: state => float =>  {
+        hasInterestingFloat: state => float => {
             for(let range of state.interestingFloatRanges) {
                 if(float >= range.min && float <= range.max) return true
             }
+            return false
+        },
+        hasPaintSeedVariants: state => name => {
+            for(let keyword of state.paintSeedVariantKeywords) {
+                if(name.search(keyword) > -1) return true
+            }
+
             return false
         },
         itemOwnerSteamId: state => inspectLink => {
@@ -175,39 +190,69 @@ export default {
     },
     mutations: {},
     actions: {
-        async copyInspectLink({rootState, dispatch}, inspectLink) {
-            const alert = {
-                type: rootState.app.alertTypes.SUCCESS,
-                message: 'Copied'
+        async getItemInfo({rootState, getters, dispatch}, item) {
+            item._alerts = []
+
+            if(!item.paintseed) {
+                const { success, data } = await new Promise(resolve => chrome.runtime.sendMessage({
+                    service: rootState.app.services.csgoFloat.name,
+                    data: {
+                        path: `${rootState.app.services.csgoFloat.api.INSPECT_ITEM}?url=${item.inspect_url}`
+                    }
+                },
+                response => resolve(response)))
+
+                if(!success || !data.iteminfo) return
+
+                item.floatvalue = roundNumber(data.iteminfo.floatvalue, 7)
+                item.paintseed = data.iteminfo.paintseed
+                item.paintindex = data.iteminfo.paintindex
             }
 
-            try {
-                await navigator.clipboard.writeText(inspectLink)
-            }
-            catch(err) {
-                alert.type = rootState.app.alertTypes.ERROR
-                alert.message = 'Copy error'
+            if(!getters.hasPaintSeedVariants(item.steam_short_name)) return
+
+            if(rootState.item.highRankFloat >= item.floatvalue) {
+                dispatch('app/pushAlert',{
+                    type: rootState.app.alertTypes.INFO,
+                    persistent: true,
+                    message: `${item.steam_market_hash_name} <br> ${item.floatvalue} <br> $ ${item.price_market_usd}`
+                }, { root: true })
+                .then(id => item._alerts.push(id))
             }
 
-            dispatch('app/updateAlerts', alert, { root: true })
+            dispatch('getRarePaintSeedItems', item)
+            .then(({success, data}) => {
+                if(success && data.length) {
+                    item._variant = data[0].variant
+
+                    dispatch('app/pushAlert',{
+                        type: rootState.app.alertTypes.INFO,
+                        persistent: true,
+                        message: `${item.steam_market_hash_name} <br> ${item._variant} <br> $ ${item.price_market_usd}`
+                    }, { root: true })
+                    .then(id => item._alerts.push(id))
+                }
+            })
         },
-        getBlueGem({rootState}, {itemType, paintSeed}) {
+        getRarePaintSeedItems({rootState}, {steam_short_name, paintseed}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'get_blue_gem', 
-                params: {
-                    token: rootState.session.token,
-                    item_type: itemType,
-                    paint_seed: paintSeed
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: `${rootState.app.services.conduit.api.RARE_PAINT_SEED_ITEMS}?search=${steam_short_name}&paint_seed=${paintseed}`,
+                    config: {
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`
+                        }
+                    }
                 }
             }, 
             response => resolve(response)))
         },
         loadShadowpayStatistics({rootState}, hashName) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'get_shadowpay_sold_item', 
-                params: {
-                    token: rootState.session.token,
-                    hash_name: hashName
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: `${rootState.app.services.conduit.api.SHADOWPAY_MARKET}?search=${hashName}`,
                 }
             }, 
             response => resolve(response)))

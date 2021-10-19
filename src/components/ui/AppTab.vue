@@ -21,25 +21,25 @@
             </div>
             {{ symbol }}
         </div>
-        <TabWindow
+        <app-tab-window
             ref="tabWindow"
             :id="id"
-            :isOpen="isOpen"
-            :childComponent="childComponent"
+            :is-open="isOpen"
+            :child-component="childComponent"
             @statusUpdate="newStatus => status = newStatus"
         >
-        </TabWindow>
+        </app-tab-window>
     </div>
 </template>
 
 <script>
 import { mapMutations } from 'vuex'
-import TabWindow from './TabWindow.vue'
+import AppTabWindow from './AppTabWindow.vue'
 
 export default {
-    name: 'Tab',
+    name: 'AppTab',
     components: {
-        TabWindow
+        AppTabWindow
     },
     props: {
         id: Number,
@@ -49,7 +49,7 @@ export default {
         childComponent: String,
         tabMounted: {
             type: Function,
-            default: () => {},
+            default: null,
             required: false
         }
     },
@@ -75,6 +75,9 @@ export default {
                 `spb-tab__icon--${this.status}`
             ]
         }
+    },
+    mounted() {
+        this.tabMounted?.(this)
     },
     methods: {
         ...mapMutations({
@@ -104,9 +107,6 @@ export default {
             this.isOpen = this.isBound
             this.isMouseOver = false
         }
-    },
-    mounted() {
-        this.tabMounted(this)
     }
 }
 </script>

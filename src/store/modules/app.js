@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie'
+import { v4 as uuidv4 } from 'uuid'
 
 export default {
     namespaced: true,
@@ -50,33 +51,66 @@ export default {
             INFO: 'info',
             ERROR: 'error'
         }),
-        alertLifeTime: 2 * 1000,
-        alerts: [],
+        alertLifeTime: 2.0,
+        alerts: new Map(),
         config: {
+            steamVolumeLimit: 10,
             displayItemStatistics: false,
             displayTabPreview: true,
             displayInterfaceOnTop: false,
             openTabsAtStartup: false,
             saleGuardBidStep: 0.01,
-            saleGuardSaleDiscount: 0.97,
-            saleGuardItemUpdateDelay: 4 * 1000
+            saleGuardSafeDiscount: 0.97,
+            saleGuardUpdateDelay: 4.0
         },
-        shadowpay: {
-            csrfCookie: Cookies.get('csrf_cookie'),
-            api: Object.freeze({
-                MARKET_ITEMS: `https://api.shadowpay.com/api/market/get_items`,
-                BUY_ITEM: 'https://api.shadowpay.com/api/market/buy_item',
-                BUY_HISTORY: 'https://api.shadowpay.com/en/profile/get_bought_history',
-                ITEMS_ON_SALE: 'https://api.shadowpay.com/api/market/list_items',
-                SAVE_ITEM_PRICE: 'https://api.shadowpay.com/api/market/save_item_price'
-            })
-        },
-        steam: {
-            resources: Object.freeze({
-                ITEM_SELL_LISTINGS: 'https://steamcommunity.com/market/listings/730/',
-                ITEM_IMAGE: 'https://community.cloudflare.steamstatic.com/economy/image/',
-                USER_PROFILE: 'https://steamcommunity.com/profiles/'
-            })
+        services: {
+            shadowpay: {
+                name: 'shadowpay',
+                csrfCookie: Cookies.get('csrf_cookie'),
+                api: Object.freeze({
+                    MARKET_ITEMS: 'https://api.shadowpay.com/api/market/get_items',
+                    STACKED_ITEMS: 'https://api.shadowpay.com/api/market/get_items_for_stacked',
+                    BUY_ITEM: 'https://api.shadowpay.com/api/market/buy_item',
+                    BUY_HISTORY: 'https://api.shadowpay.com/en/profile/get_bought_history',
+                    ITEMS_ON_SALE: 'https://api.shadowpay.com/api/market/list_items',
+                    SAVE_ITEM_PRICE: 'https://api.shadowpay.com/api/market/save_item_price',
+                    IS_LOGGED: 'https://api.shadowpay.com/api/market/is_logged'
+                })
+            },
+            steam: {
+                name: 'steam',
+                resources: Object.freeze({
+                    ITEM_SELL_LISTINGS: 'https://steamcommunity.com/market/listings/730/',
+                    ITEM_IMAGE: 'https://community.cloudflare.steamstatic.com/economy/image/',
+                    USER_PROFILE: 'https://steamcommunity.com/profiles/'
+                })
+            },
+            conduit: {
+                name: 'conduit',
+                api: Object.freeze({
+                    USER: '/user',
+                    PRESETS: '/shadowpay-bot-presets',
+                    CONFIGS: '/shadowpay-bot-configs',
+                    FRIENDS: '/shadowpay-friends',
+                    STEAM_MARKET: '/steam-market-csgo-items',
+                    SHADOWPAY_MARKET: '/shadowpay-sold-items',
+                    SALE_GUARD: '/shadowpay-sale-guard-items',
+                    RARE_PAINT_SEED_ITEMS: '/csgo-rare-paint-seed-items'
+                })
+            },
+            csgoFloat: {
+                name: 'csgo_float',
+                api: {
+                    INSPECT_ITEM: 'https://api.csgofloat.com/'
+                }
+            },
+            self: {
+                name: 'self',
+                actions: {
+                    INCREMENT_BUY_COUNTER: 'increment_buy_counter',
+                    GET_BUY_COUNTER: 'get_buy_counter'
+                }
+            }
         },
         tabStates: Object.freeze({
             OK: 'ok',
@@ -102,7 +136,7 @@ export default {
             type == '*' ? Object.assign(state.config, value) : state.config[type] = value
         },
         setCsrfCookie(state, cookie) {
-            state.shadowpay.csrfCookie = cookie
+            state.services.shadowpay.csrfCookie = cookie
         },
         addTab(state, tabProps) {
             if(state.tabFreeIds.length == 0) return
@@ -120,18 +154,39 @@ export default {
             state.tabs.splice(state.tabs.findIndex(tab => tab.id == id), 1)
         },
         addAlert(state, alert) {
-            state.alerts.push(alert)
+            state.alerts.set(alert.uuid, alert)
         },
-        shiftAlert(state) {
-            state.alerts.shift()
+        deleteAlert(state, uuid) {
+            state.alerts.delete(uuid)
         }
     },
     actions: {
+        async copyToClipboard({rootState, dispatch}, data) {
+            const alert = {
+                type: rootState.app.alertTypes.SUCCESS,
+                message: 'Copied'
+            }
+
+            try {
+                await navigator.clipboard.writeText(data)
+            }
+            catch(err) {
+                alert.type = rootState.app.alertTypes.ERROR
+                alert.message = 'Copy error'
+            }
+
+            dispatch('app/pushAlert', alert, { root: true })
+        },
         loadConfig({rootState, commit}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'get_config',
-                params: {
-                    token: rootState.session.token
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: rootState.app.services.conduit.api.CONFIGS,
+                    config: {
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`
+                        }
+                    }
                 }
             }, 
             response => {
@@ -149,11 +204,18 @@ export default {
         },
         saveConfig({rootState, getters, dispatch}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'set_config', 
-                params: {
-                    token: rootState.session.token,
-                    config: getters.config('*')
-                },
+                service: rootState.app.services.conduit.name,
+                data: {
+                    path: rootState.app.services.conduit.api.CONFIGS,
+                    config: {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${rootState.session.token}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `config=${JSON.stringify(getters.config('*'))}`
+                    }
+                }
             },
             response => {
                 const {success, error_message} = response
@@ -168,25 +230,37 @@ export default {
                     alert.message = error_message
                 }
 
-                dispatch('app/updateAlerts', alert, { root: true })
+                dispatch('app/pushAlert', alert, { root: true })
                 resolve(response)
             }))
         },
-        updateAlerts({state, commit}, alert) {
-            commit('addAlert', alert)
-            setTimeout(() => commit('shiftAlert'), state.alertLifeTime)
+        pushAlert({state, commit}, alert) {
+            const uuid = uuidv4()
+
+            commit('addAlert', {
+                uuid: uuid, 
+                ...alert
+            })
+
+            if(!alert.persistent) setTimeout(() => commit('deleteAlert', uuid), state.alertLifeTime * 1000)
+
+            return uuid
         },
         checkBackgroundMounted({rootState, commit, dispatch}) {
             return new Promise(resolve => chrome.runtime.sendMessage({
-                action: 'get_bought_items_counter'
+                service: rootState.app.services.self.name,
+                data: {
+                    action: rootState.app.services.self.actions.GET_BUY_COUNTER
+                }
             },
             response => {
                 const {data} = response
 
                 if(data !== undefined) commit('setBackgroundMounted', true)
                 else {
-                    dispatch('app/updateAlerts', {
+                    dispatch('app/pushAlert', {
                         type: rootState.app.alertTypes.ERROR,
+                        persistent: true,
                         message: 'Background not mounted correctly - restart browser'
                     }, { root: true })
                 }
@@ -194,21 +268,34 @@ export default {
                 resolve(response)
             }))
         },
-        async setupApp({commit, dispatch}) {
-            await dispatch('checkBackgroundMounted')
-            
-            await dispatch('session/loadToken', null, { root: true })
-            await dispatch('session/authenticate', null, { root: true })
+        async setupApp({rootState, commit, dispatch}) {
+            const response = await fetch(rootState.app.services.shadowpay.api.IS_LOGGED, { credentials: 'include' })
+            const { is_logged } = await response.json()
 
-            await dispatch('loadConfig')
+            if(!is_logged) {
+                dispatch('app/pushAlert', {
+                    type: rootState.app.alertTypes.ERROR,
+                    persistent: true,
+                    message: 'Shadowpay login required'
+                }, { root: true })
+            }
+            else {
+                await dispatch('checkBackgroundMounted')
 
-            await dispatch('presetManager/loadPresets', null, { root: true })
-                  dispatch('bots/openBots', null, { root: true })
-                  
-            await dispatch('friendManager/loadFriends', null, { root: true })
-            
-            await dispatch('saleGuard/loadItemsOnSale', null, { root: true })
-            await dispatch('saleGuard/loadSaleGuardItems', null, { root: true })
+                await dispatch('session/loadToken', null, { root: true })
+                await dispatch('session/authenticate', null, { root: true })
+
+                await dispatch('loadConfig')
+
+                await dispatch('presetManager/loadPresets', null, { root: true })
+
+                dispatch('bots/openBots', null, { root: true })
+                    
+                await dispatch('friendManager/loadFriends', null, { root: true })
+                
+                await dispatch('saleGuard/loadItemsOnSale', null, { root: true })
+                await dispatch('saleGuard/loadSaleGuardItems', null, { root: true })
+            }
 
             commit('setLoaded', true)
         }
