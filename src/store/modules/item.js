@@ -209,8 +209,6 @@ export default {
                 item.paintindex = data.iteminfo.paintindex
             }
 
-            if(!getters.hasPaintSeedVariants(item.steam_short_name)) return
-
             if(rootState.item.highRankFloat >= item.floatvalue) {
                 dispatch('app/pushAlert',{
                     type: rootState.app.alertTypes.INFO,
@@ -219,6 +217,8 @@ export default {
                 }, { root: true })
                 .then(id => item._alerts.push(id))
             }
+
+            if(!getters.hasPaintSeedVariants(item.steam_short_name)) return
 
             dispatch('getRarePaintSeedItems', item)
             .then(({success, data}) => {
