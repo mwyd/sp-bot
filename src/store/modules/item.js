@@ -209,7 +209,7 @@ export default {
                 item.paintindex = data.iteminfo.paintindex
             }
 
-            if(rootState.item.highRankFloat >= item.floatvalue) {
+            if(item.floatvalue && rootState.item.highRankFloat >= item.floatvalue) {
                 dispatch('app/pushAlert',{
                     type: rootState.app.alertTypes.INFO,
                     persistent: true,
