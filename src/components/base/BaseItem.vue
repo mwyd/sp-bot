@@ -82,7 +82,7 @@
                 <a 
                     target="_blank" 
                     class="spb--link"
-                    :href="screenshotService + '/' + item.inspect_url"
+                    :href="screenshotService.resources.SCREENSHOT + '/' + item.inspect_url"
                 > 
                     Screenshot
                     <span class="spb--text-green">
@@ -121,7 +121,7 @@ export default {
             steamService: state => state.app.services.steam,
             interestingProperties: state => state.item.interestingProperites,
             shadowpayStatistics: state => state.item.shadowpayStatistics,
-            screenshotService: state => state.item.screenshotService
+            screenshotService: state => state.app.services.csgoGallery
         }),
         existingInterestingProperties() {
             return Object.keys(this.interestingProperties).filter(key => this.item[key])

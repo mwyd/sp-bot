@@ -22,7 +22,6 @@ export default {
             'Case Hardened',
             'Fade'
         ],
-        screenshotService: 'https://csgo.gallery',
         highRankFloat: Math.pow(10, -3),
         interestingFloatRanges: [
             {
@@ -209,16 +208,25 @@ export default {
                 item.paintindex = data.iteminfo.paintindex
             }
 
-            if(!getters.hasPaintSeedVariants(item.steam_short_name)) return
-
-            if(rootState.item.highRankFloat >= item.floatvalue) {
+            if(item.floatvalue && rootState.item.highRankFloat >= item.floatvalue) {
                 dispatch('app/pushAlert',{
                     type: rootState.app.alertTypes.INFO,
                     persistent: true,
-                    message: `${item.steam_market_hash_name} <br> ${item.floatvalue} <br> $ ${item.price_market_usd}`
+                    message: `
+                        <span>${item.steam_market_hash_name}</span>
+                        <br> 
+                        <span style="color: yellow;">${item.floatvalue}</span>
+                        <br>
+                        <span>
+                            <span style="color: greenyellow;">$</span> 
+                            ${item.price_market_usd}
+                        </span>
+                    `
                 }, { root: true })
                 .then(id => item._alerts.push(id))
             }
+
+            if(!getters.hasPaintSeedVariants(item.steam_short_name)) return
 
             dispatch('getRarePaintSeedItems', item)
             .then(({success, data}) => {
@@ -228,7 +236,16 @@ export default {
                     dispatch('app/pushAlert',{
                         type: rootState.app.alertTypes.INFO,
                         persistent: true,
-                        message: `${item.steam_market_hash_name} <br> ${item._variant} <br> $ ${item.price_market_usd}`
+                        message: `
+                            <span>${item.steam_market_hash_name}</span>
+                            <br>
+                            <span style="color: yellow;">${item._variant}</span>
+                            <br>
+                            <span>
+                                <span style="color: greenyellow;">$</span> 
+                                ${item.price_market_usd}
+                            </span>
+                        `
                     }, { root: true })
                     .then(id => item._alerts.push(id))
                 }
