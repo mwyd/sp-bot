@@ -23,7 +23,7 @@
             </div>
             <div class="spb-item__column spb-item__price">
                 <span class="spb--font-weight-light">$ {{ item.price_market_usd.toFixed(2) }}
-                    <sup>{{ (item._real_discount !== null ? item._real_discount + '% | ': '') + item.discount }}%</sup>
+                    <sup>{{ (item._real_discount != null ? item._real_discount + '% | ': '') + item.discount }}%</sup>
                 </span>
             </div>
             <slot name="modal-columns"></slot>
