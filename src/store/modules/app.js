@@ -104,6 +104,12 @@ export default {
                     INSPECT_ITEM: 'https://api.csgofloat.com/'
                 }
             },
+            csgoGallery: {
+                name: 'csgo_gallery',
+                resources: Object.freeze({
+                    SCREENSHOT: 'https://csgo.gallery'
+                })
+            },
             self: {
                 name: 'self',
                 actions: {
