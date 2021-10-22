@@ -40,7 +40,10 @@
             >
             </app-tab>
         </div>
-        <div class="spb-alert-box">
+        <div 
+            ref="alertBox"
+            :class="alertBoxClass"
+        >
             <app-alert
                 v-for="[uuid, alert] in alerts"
                 :key="'spb-alert-' + uuid"
@@ -84,6 +87,14 @@ export default {
             return [
                 !this.backgroundMounted ? 'spb--cursor-not-allowed' : 'spb--cursor-wait'
             ]
+        },
+        alertBoxClass() {
+            const alertsExists = this.alerts.size > 0
+
+            return {
+                'spb-alert-box': true,
+                'spb-alert-box--overflow': this.$refs.alertBox?.scrollHeight > window.innerHeight && alertsExists
+            }
         }
     },
     watch: {
@@ -153,5 +164,13 @@ export default {
     height: auto;
     width: 300px;
     padding: 4px;
+}
+
+.spb-alert-box--overflow {
+    height: 100%;
+}
+
+.spb-alert-box--overflow:hover {
+    overflow-y: auto;
 }
 </style>
