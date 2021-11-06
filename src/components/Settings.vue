@@ -78,7 +78,7 @@
                         v-model.number="safeDiscount"
                         class="spb-settings__safe-discount"
                         :type="'number'"
-                        :validator="value => value >= 1 && value <= 100"
+                        :validator="value => value >= 1 && value <= 1000"
                     >
                     </app-input>
                 </div>
