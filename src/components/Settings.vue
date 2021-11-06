@@ -96,12 +96,8 @@
         </div>
         <button 
             class="spb-settings__save-button spb-button spb-button--green"
-            :disabled="buttonsDisabled"
-            @click="() => {
-                buttonsDisabled = true
-                saveConfig()
-                .then(() => buttonsDisabled = false)
-            }"
+            :disabled="actionsDisabled"
+            @click="disableActions(saveConfig())"
         >
         save
         </button>
@@ -123,11 +119,6 @@ export default {
         id: Number
     },
     emits: ['statusUpdate'],
-    data() {
-        return {
-            buttonsDisabled: false
-        }
-    },
     computed: {
         ...mapState({
             authenticated: state => state.session.authenticated,
