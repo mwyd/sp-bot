@@ -78,7 +78,7 @@
                         v-model.number="safeDiscount"
                         class="spb-settings__safe-discount"
                         :type="'number'"
-                        :validator="value => value >= 1 && value <= 100"
+                        :validator="value => value >= 1 && value <= 1000"
                     >
                     </app-input>
                 </div>
@@ -96,12 +96,8 @@
         </div>
         <button 
             class="spb-settings__save-button spb-button spb-button--green"
-            :disabled="buttonsDisabled"
-            @click="() => {
-                buttonsDisabled = true
-                saveConfig()
-                .then(() => buttonsDisabled = false)
-            }"
+            :disabled="actionsDisabled"
+            @click="disableActions(saveConfig())"
         >
         save
         </button>
@@ -123,11 +119,6 @@ export default {
         id: Number
     },
     emits: ['statusUpdate'],
-    data() {
-        return {
-            buttonsDisabled: false
-        }
-    },
     computed: {
         ...mapState({
             authenticated: state => state.session.authenticated,

@@ -36,7 +36,7 @@ export default {
         },
         modelUpdated: {
             type: Function,
-            default: null,
+            default: () => {},
             required: false
         }
     },
@@ -71,7 +71,7 @@ export default {
         saveModelValue() {
             this.synchronized = true
             this.$emit('update:modelValue', this.internalModel)
-            this.modelUpdated?.()
+            this.modelUpdated()
         }
     }
 }
