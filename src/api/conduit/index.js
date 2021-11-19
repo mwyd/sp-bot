@@ -1,0 +1,34 @@
+import apiService from '../../enums/apiService'
+import useSaleGuardItem from './useSaleGuardItem'
+import useUser from './useUser'
+import useUserConfig from './useUserConfig'
+import useUserFriend from './useUserFriend'
+import useUserPreset from './useUserPreset'
+import useRarePaintSeedItem from './useRarePaintSeedItem'
+import useShadowpaySoldItem from './useShadowpaySoldItem'
+import useSteamMarketItem from './useSteamMarketItem'
+
+const defaults = {
+    baseUrl: 'https://conduit.ddns.net/api/v1',
+    service: apiService.CONDUIT
+}
+
+const user = useUser(defaults)
+const userPreset = useUserPreset(defaults)
+const userFriend = useUserFriend(defaults)
+const userConfig = useUserConfig(defaults)
+const saleGuardItem = useSaleGuardItem(defaults)
+const rarePaintSeedItem = useRarePaintSeedItem(defaults)
+const shadowpaySoldItem = useShadowpaySoldItem(defaults)
+const steamMarketItem = useSteamMarketItem(defaults)
+
+export {
+    user,
+    userPreset,
+    userFriend,
+    userConfig,
+    saleGuardItem,
+    rarePaintSeedItem,
+    shadowpaySoldItem,
+    steamMarketItem
+}

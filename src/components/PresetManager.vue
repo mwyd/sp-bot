@@ -131,9 +131,15 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
-import actionMixin from '../mixins/actionMixin.js'
-import AppInput from './ui/AppInput.vue'
-import AppMultipleSwitch from './ui/AppMultipleSwitch.vue'
+import tabWindowState from '../enums/tabWindowState'
+import actionMixin from '../mixins/actionMixin'
+import AppInput from './ui/AppInput'
+import AppMultipleSwitch from './ui/AppMultipleSwitch'
+
+const views = Object.freeze({
+    ADD: 'Add',
+    MANAGE: 'Manage'
+})
 
 export default {
     name: 'PresetManager',
@@ -148,20 +154,16 @@ export default {
     emits: ['statusUpdate'],
     data() {
         return {
-            views: Object.freeze({
-                ADD: 'Add',
-                MANAGE: 'Manage'
-            }),
-            currentView: 'Add',
+            views,
+            currentView: views.ADD,
             currentPresetId: 0,
-            currentPreset: {...this.getPreset(0)}
+            currentPreset: { ...this.getPreset(0) }
         }
     },
     computed: {
         ...mapState({
             presets: state => state.presetManager.presets,
-            presetsLoaded: state => state.presetManager.loaded,
-            tabStates: state => state.app.tabStates
+            presetsLoaded: state => state.presetManager.loaded
         }),
         ...mapGetters({
             presetIds: 'presetManager/presetIds'
@@ -172,7 +174,7 @@ export default {
             },
             set(value) {
                 this.currentPresetId = value
-                this.currentPreset = {...this.getPreset(this.currentPresetId)}
+                this.currentPreset = { ...this.getPreset(this.currentPresetId) }
             }
         }
     },
@@ -181,7 +183,7 @@ export default {
             this.currentPresetIdModel = 0
         },
         presetsLoaded(value) {
-            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
+            this.$emit('statusUpdate', value ? tabWindowState.OK : tabWindowState.ERROR)
         }
     },
     methods: {
@@ -196,9 +198,9 @@ export default {
         getPreset(id) {
             return this.$store.getters['presetManager/preset'](id)
         },
-        shiftCurrentPresetIdModel({success}) {
+        shiftCurrentPresetIdModel(success) {
             if(success) {
-                const {length} = this.presetIds
+                const { length } = this.presetIds
                 if(length > 0) this.currentPresetIdModel = this.presetIds[length - 1]
             }
         }

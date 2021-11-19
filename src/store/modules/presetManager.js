@@ -1,3 +1,6 @@
+import { userPreset } from '@/api/conduit'
+import alertType from '@/enums/alertType'
+
 export default {
     namespaced: true,
     state: () => ({
@@ -32,7 +35,7 @@ export default {
         setLoaded(state, value) {
             state.loaded = value
         },
-        setPreset(state, {id, preset}) {
+        setPreset(state, { id, preset }) {
             state.presets.set(id, preset)
         },
         removePreset(state, id) {
@@ -40,151 +43,92 @@ export default {
         }
     },
     actions: {
-        async loadPresets({rootState, commit}) {
+        async loadPresets({ rootState, commit }) {
             const limit = 50
             let loopLimit = 1
 
             let loaded = true
 
             for(let i = 0; i < loopLimit; i++) {
-                await new Promise(resolve => chrome.runtime.sendMessage({
-                    service: rootState.app.services.conduit.name,
-                    data: {
-                        path: `${rootState.app.services.conduit.api.PRESETS}?offset=${i * limit}&limit=${limit}`,
-                        config: {
-                            headers: {
-                                'Authorization': `Bearer ${rootState.session.token}`
-                            }
-                        }
-                    }
-                }, 
-                response => {
-                    const {success, data} = response
+                const { success, data } = await userPreset.all(rootState.session.token, { offset: i * limit, limit })
 
-                    if(success) {
-                        for(let preset of data) {
-                            commit('setPreset', {
-                                id: preset.id,
-                                preset: preset.preset
-                            })
-                        }
+                if(!success) {
+                    loaded = false
 
-                        if(data.length == limit) loopLimit++
-                    }
-                    else loaded = false
+                    break
+                }
 
-                    resolve(response)
-                }))
+                for(let preset of data) {
+                    commit('setPreset', {
+                        id: preset.id,
+                        preset: preset.preset
+                    })
+                }
+
+                if(data.length == limit) loopLimit++
             }
 
             commit('setLoaded', loaded)
         },
-        addPreset({rootState, commit, dispatch}, preset) {
-            return new Promise(resolve => chrome.runtime.sendMessage({
-                service: rootState.app.services.conduit.name,
-                data: {
-                    path: rootState.app.services.conduit.api.PRESETS,
-                    config: {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${rootState.session.token}`,
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `preset=${JSON.stringify(preset)}`
-                    }
-                }
-            }, 
-            response => {
-                const {success, data, error_message} = response
+        async addPreset({ rootState, commit, dispatch }, preset) {
+            const { success, data, error_message } = await userPreset.create(rootState.session.token, preset)
 
-                const alert = {
-                    type: rootState.app.alertTypes.SUCCESS,
-                    message: 'Preset created'
-                }
+            const alert = {
+                type: alertType.SUCCESS,
+                message: 'Preset created'
+            }
 
-                if(success) {
-                    commit('setPreset', {
-                        id: data.id,
-                        preset: data.preset
-                    })
-                }
-                else {
-                    alert.type = rootState.app.alertTypes.ERROR,
-                    alert.message = error_message
-                }
+            if(success) {
+                commit('setPreset', {
+                    id: data.id,
+                    preset: data.preset
+                })
+            }
+            else {
+                alert.type = alertType.ERROR,
+                alert.message = error_message
+            }
 
-                dispatch('app/pushAlert', alert, { root: true })
-                resolve(response)
-            }))
+            dispatch('app/pushAlert', alert, { root: true })
         },
-        updatePreset({rootState, commit, dispatch}, {id, preset}) {
-            return new Promise(resolve => chrome.runtime.sendMessage({
-                service: rootState.app.services.conduit.name,
-                data: {
-                    path: `${rootState.app.services.conduit.api.PRESETS}/${id}`,
-                    config: {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': `Bearer ${rootState.session.token}`,
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `preset=${JSON.stringify(preset)}`
-                    }
-                }
-            }, 
-            response => {
-                const {success, data, error_message} = response
+        async updatePreset({ rootState, commit, dispatch }, preset) {
+            const { success, data, error_message } = await userPreset.update(rootState.session.token, preset)
 
-                const alert = {
-                    type: rootState.app.alertTypes.SUCCESS,
-                    message: 'Preset updated'
-                }
+            const alert = {
+                type: alertType.SUCCESS,
+                message: 'Preset updated'
+            }
 
-                if(success) {
-                    commit('setPreset', {
-                        id: data.id,
-                        preset: data.preset
-                    })
-                }
-                else {
-                    alert.type = rootState.app.alertTypes.ERROR,
-                    alert.message = error_message
-                }
+            if(success) {
+                commit('setPreset', {
+                    id: data.id,
+                    preset: data.preset
+                })
+            }
+            else {
+                alert.type = alertType.ERROR,
+                alert.message = error_message
+            }
 
-                dispatch('app/pushAlert', alert, { root: true })
-                resolve(response)
-            }))
+            dispatch('app/pushAlert', alert, { root: true })
         },
-        deletePreset({rootState, commit, dispatch}, id) {
-            return new Promise(resolve => chrome.runtime.sendMessage({
-                service: rootState.app.services.conduit.name,
-                data: {
-                    path: `${rootState.app.services.conduit.api.PRESETS}/${id}`,
-                    config: {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${rootState.session.token}`
-                        }
-                    }
-                }
-            }, 
-            response => {
-                const {success, data, error_message} = response
+        async deletePreset({ rootState, commit, dispatch }, id) {
+            const { success, data, error_message } = await userPreset.remove(rootState.session.token, id)
 
-                const alert = {
-                    type: rootState.app.alertTypes.SUCCESS,
-                    message: 'Preset deleted'
-                }
+            const alert = {
+                type: alertType.SUCCESS,
+                message: 'Preset deleted'
+            }
 
-                if(success) commit('removePreset', data.id)
-                else {
-                    alert.type = rootState.app.alertTypes.ERROR,
-                    alert.message = error_message
-                }
+            if(success) commit('removePreset', data.id)
+            else {
+                alert.type = alertType.ERROR,
+                alert.message = error_message
+            }
 
-                dispatch('app/pushAlert', alert, { root: true })
-                resolve(response)
-            }))
+            dispatch('app/pushAlert', alert, { root: true })
+
+            return success
         }
     }
 }

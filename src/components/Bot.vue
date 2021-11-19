@@ -101,10 +101,17 @@
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
-import { SPB_LOG } from '../utils/index.js'
-import processMixin from '../mixins/processMixin.js'
-import AppInput from './ui/AppInput.vue'
+import { SPB_LOG } from '../utils/index'
+import { normalizeMarketItem, inspectItem } from '../resources/marketItem'
+import processMixin from '../mixins/processMixin'
+import AppInput from './ui/AppInput'
 import DateFormat from 'dateformat'
+import alertType from '../enums/alertType'
+import tabWindowState from '../enums/tabWindowState'
+import { market } from '../api/shadowpay'
+import { background } from '../api/internal'
+import { steamMarketItem } from '../api/conduit'
+import { notificationSound } from '../config'
 
 export default {
     name: 'Bot',
@@ -134,12 +141,7 @@ export default {
     },
     computed: {
         ...mapState({
-            selfService: state => state.app.services.self,
-            shadowpayService: state => state.app.services.shadowpay,
-            conduitService: state => state.app.services.conduit,
-            notificationSound: state => state.app.notificationSound,
-            alertTypes: state => state.app.alertTypes,
-            tabStates: state => state.app.tabStates,
+            csrfCookie: state => state.app.csrfCookie,
             presets: state => state.presetManager.presets,
             finishedItems: state => state.bots.items.finished,
             token: state => state.session.token
@@ -150,7 +152,7 @@ export default {
             },
             set(value) {
                 this.presetId = value
-                this.preset = {...this.getPreset(this.presetId)}
+                this.preset = { ...this.getPreset(this.presetId) }
                 this.checkToConfirm()
             }
         },
@@ -184,17 +186,13 @@ export default {
             deleteAlert: 'app/deleteAlert'
         }),
         ...mapActions({
-           pushAlert: 'app/pushAlert',
-           getItemInfo: 'item/getItemInfo' 
+           pushAlert: 'app/pushAlert'
         }),
         sortedPresets(sortAsc = true) {
             return this.$store.getters['presetManager/sortedPresets'](sortAsc)
         },
         getPreset(id) {
             return this.$store.getters['presetManager/preset'](id)
-        },
-        clearDopplerHashName(hashName) {
-            return this.$store.getters['item/steamHashName'](hashName)
         },
         clear() {
             this.items.filtered = []
@@ -208,7 +206,7 @@ export default {
             this.moneySpent = 0
         },
         stopProcess() {
-            this.$emit('statusUpdate', this.tabStates.IDLE)
+            this.$emit('statusUpdate', tabWindowState.IDLE)
             this.clear()
             this.setProcessTerminated()
         },
@@ -224,7 +222,7 @@ export default {
                     break
 
                 case this.processStates.TERMINATED:
-                    this.$emit('statusUpdate', this.tabStates.RUNNING)
+                    this.$emit('statusUpdate', tabWindowState.RUNNING)
                     this.run()
                     break
             }
@@ -243,6 +241,7 @@ export default {
                 if(filteredItem === undefined) {
                     item._alerts.forEach(id => this.deleteAlert(id))
                     this.items.toConfirm.delete(item.id)
+
                     return
                 }
 
@@ -276,150 +275,114 @@ export default {
             this.items.pending.set(item.id, item)
             this.moneySpent += item.price_market_usd
     
-            fetch(this.shadowpayService.api.BUY_ITEM, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `id=${item.id}` +
-                    `&price=${item.price_market_usd}` +
-                    `&csrf_token=${this.shadowpayService.csrfCookie}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                SPB_LOG('Buy info', {...data, _item: item})
+            market.buy(this.csrfCookie, item)
+                .then(data => {
+                    SPB_LOG('Buy info', { ...data, _item: item })
 
-                const {status, error_message, token, id} = data
+                    const { status, error_message, token, id } = data
 
-                if(status == 'error') {
+                    if(status == 'error') {
+                        this.items.pending.delete(item.id)
+                        this.moneySpent -= item.price_market_usd
+
+                        if(error_message == 'wrong_token') {
+                            this.setCsrfCookie(token)
+                            this.buyItem(item)
+                        }
+                        return
+                    }
+
+                    if(status == 'success') {
+                        item._transaction_id = id
+                            
+                        background.incrementBuyCounter()
+
+                        notificationSound.play()
+                        return
+                    }
+                })
+                .catch(err => {
+                    SPB_LOG('\n', new Error(err))
+
                     this.items.pending.delete(item.id)
                     this.moneySpent -= item.price_market_usd
-
-                    if(error_message == 'wrong_token') {
-                        this.setCsrfCookie(token)
-                        this.buyItem(item)
-                    }
-                    return
-                }
-
-                if(status == 'success') {
-                    item._transaction_id = id
-                        
-                    chrome.runtime.sendMessage({
-                        service: this.selfService.name,
-                        data: {
-                            action: this.selfService.actions.INCREMENT_BUY_COUNTER
-                        }
-                    })
-
-                    this.notificationSound.play()
-                    return
-                }
-            })
-            .catch(err => {
-                SPB_LOG('\n', new Error(err))
-
-                this.items.pending.delete(item.id)
-                this.moneySpent -= item.price_market_usd
-            })
+                })
         },
         updatePending() {
             if(this.items.pending.size == 0 || Date.now() - this.lastPendingUpdate < this.pendingUpdateDelay * 1000) return
             
-            chrome.runtime.sendMessage({
-                service: this.selfService.name,
-                data: {
-                    action: this.selfService.actions.GET_BUY_COUNTER
-                }
-            }, 
-            response => {
-                fetch(this.shadowpayService.api.BUY_HISTORY, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `page=1` +
-                        `&limit=${response.data}` +
-                        `&sort_column=time_finished` +
-                        `&sort_dir=desc` +
-                        `&custom_id=` +
-                        `&date_start=${DateFormat(new Date(this.initDate - (2 * 60 * 60 * 1000)), 'yyyy-mm-dd H:MM:ss')}` +
-                        `&date_end=` +
-                        `&state=all`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    this.lastPendingUpdate = Date.now()
+            background.getBuyCounter()
+                .then(response => {
+                    market.getBuyHistory({
+                        page: 1,
+                        limit: response.data,
+                        sort_column: 'time_finished',
+                        sort_dir: 'desc',
+                        custom_id: '',
+                        date_start: DateFormat(new Date(this.initDate - (2 * 60 * 60 * 1000)), 'yyyy-mm-dd H:MM:ss'),
+                        date_end: '',
+                        state: 'all'
+                    })
+                    .then(data => {
+                        this.lastPendingUpdate = Date.now()
 
-                    const {status, items} = data
+                        const { status, items } = data
 
-                    if(status != 'success') return
+                        if(status != 'success') return
 
-                    this.items.pending.forEach(item => {    
-                        const transaction = items.find(transaction => transaction.id == item._transaction_id)
-                        if(transaction === undefined) return
+                        this.items.pending.forEach(item => {    
+                            const transaction = items.find(transaction => transaction.id == item._transaction_id)
 
-                        item.state = transaction.state
+                            if(transaction === undefined) return
 
-                        switch(item.state) {
-                            case 'cancelled':
-                                this.items.pending.delete(item.id)
-                                this.finishedItems.push(item)
+                            item.state = transaction.state
 
-                                if(item._current_run) this.moneySpent -= item.price_market_usd
-                                break
+                            switch(item.state) {
+                                case 'cancelled':
+                                    this.items.pending.delete(item.id)
+                                    this.finishedItems.push(item)
 
-                            case 'finished':
-                                this.items.pending.delete(item.id)
-                                this.finishedItems.push(item)
+                                    if(item._current_run) this.moneySpent -= item.price_market_usd
+                                    break
 
-                                if(this.items.pending.size == 0 && Math.abs(this.moneySpent - this.preset.toSpend) < this.preset.minPrice) {
-                                    this.setProcessTerminating()
-                                    this.pushAlert({
-                                        type: this.alertTypes.INFO,
-                                        message: `Bot #${this.id} terminated - to spend limit reached`
-                                    })
-                                }
-                                break
-                        }
+                                case 'finished':
+                                    this.items.pending.delete(item.id)
+                                    this.finishedItems.push(item)
+
+                                    if(this.items.pending.size == 0 && Math.abs(this.moneySpent - this.preset.toSpend) < this.preset.minPrice) {
+                                        this.setProcessTerminating()
+                                        this.pushAlert({
+                                            type: alertType.INFO,
+                                            message: `Bot #${this.id} terminated - to spend limit reached`
+                                        })
+                                    }
+                                    break
+                            }
+                        })
+                    })
+                    .catch(err => {
+                        SPB_LOG('\n', new Error(err))
                     })
                 })
-                .catch(err => {
-                    SPB_LOG('\n', new Error(err))
-                })
-            })
         },
         async run() {
             this.setProcessRunning()
 
             if(Math.abs(this.moneySpent - this.preset.toSpend) >= this.preset.minPrice) {
                 try {    
-                    const response = await fetch(this.shadowpayService.api.MARKET_ITEMS +
-                        `?types=[]` +
-                        `&exteriors=[]` +
-                        `&rarities=[]` +
-                        `&collections=[]` +
-                        `&item_subcategories=[]` +
-                        `&float={"from":0,"to":1}` +
-                        `&price_from=${this.preset.minPrice}` +
-                        `&price_to=${this.preset.maxPrice}` +
-                        `&game=csgo` +
-                        `&stickers=[]` +
-                        `&count_stickers=[]` +
-                        `&short_name=` +
-                        `&search=${this.preset.search}` +
-                        `&stack=false` +
-                        `&sort=desc` + 
-                        `&sort_dir=desc` +
-                        `&sort_column=price_rate` +
-                        `&limit=50` +
-                        `&offset=0`, {
-                        credentials: 'include'
+                    const { status, items } = await market.getItems({
+                        price_from: this.preset.minPrice,
+                        price_to: this.preset.maxPrice,
+                        game: 'csgo',
+                        currency: 'USD',
+                        search: this.preset.search,
+                        stack: false,
+                        sort: 'desc', 
+                        sort_dir: 'desc',
+                        sort_column: 'price_rate',
+                        limit: 50,
+                        offset: 0
                     })
-
-                    const {status, items} = await response.json()
 
                     if(status == "success") {
                         this.items.filtered = items
@@ -432,49 +395,33 @@ export default {
                         for(let item of this.items.filtered) {
                             if(this.items.toConfirm.has(item.id)) continue
 
-                            item.discount = Math.round(item.discount)
-                            item.price_market_usd = parseFloat(item.price_market_usd)
+                            normalizeMarketItem(item)
+
                             item._updated = false
-                            item._search_steam_hash_name = item.steam_market_hash_name.toLowerCase()
-                            item._conduit_hash_name = item.steam_market_hash_name
 
-                            if(item.phase) {
-                                item.steam_market_hash_name = this.clearDopplerHashName(item.steam_market_hash_name)
-                                item._conduit_hash_name = item.steam_market_hash_name.replace('(', `${item.phase} (`)
+                            const { success, data } = await steamMarketItem.single(item._conduit_hash_name)
+
+                            if(success) {
+                                item._updated = true
+                                item._steam_price = data.price
+                                item._steam_volume = data.volume
+
+                                this.calculateIncome(item)
+
+                                item._buy = () => {
+                                    this.buyItem(item)
+                                }
+
+                                if(this.canBuyItem(item)) {
+                                    this.buyItem(item)
+                                }
                             }
-
-                            await new Promise(resolve => chrome.runtime.sendMessage({
-                                service: this.conduitService.name,
-                                data: {
-                                    path: `${this.conduitService.api.STEAM_MARKET}/${item._conduit_hash_name}`
-                                }
-                            }, 
-                            response => {
-                                const {success, data} = response
-
-                                if(success) {
-                                    item._updated = true
-                                    item._steam_price = data.price
-                                    item._steam_volume = data.volume
-
-                                    this.calculateIncome(item)
-
-                                    item._onclick = () => {
-                                        this.buyItem(item)
-                                    }
-
-                                    if(this.canBuyItem(item)) {
-                                        this.buyItem(item)
-                                    }
-                                }
+                            
+                            if(this.isProcessRunning) {
+                                this.items.toConfirm.set(item.id, item)
                                 
-                                if(this.isProcessRunning) {
-                                    this.items.toConfirm.set(item.id, item)
-                                    this.getItemInfo(item)
-                                }
-
-                                resolve(response)
-                            }))
+                                inspectItem(item)
+                            }
                         }
                     }
                 }

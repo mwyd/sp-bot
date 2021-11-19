@@ -8,8 +8,8 @@
             <div class="spb-item__column spb-item__date">
                 <button 
                     class="spb-button spb--font-size-small spb-button--green"
-                    v-if="type == itemTypes.TO_CONFIRM" 
-                    @click="item._onclick" 
+                    v-if="type == botItemType.TO_CONFIRM" 
+                    @click="item._buy" 
                     @mouseenter="overBuyButton(true)" 
                     @mouseleave="overBuyButton(false)" 
                 >
@@ -23,7 +23,7 @@
                 <a 
                     target="_blank" 
                     class="spb--link"
-                    :href="steamService.resources.USER_PROFILE + itemOwnerSteamId(item.inspect_url)"
+                    :href="steamMarket.USER_PROFILE + getItemOwnerSteamId(item.inspect_url)"
                 > 
                     {{ friendOwner ? friendOwner + "'s" : "Owner's" }}
                     <span class="spb--text-green">
@@ -36,9 +36,11 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { getItemOwnerSteamId } from '../resources/marketItem'
 import BaseItem from './base/BaseItem.vue'
 import DateFormat from 'dateformat'
+import botItemType from '../enums/botItemType'
+import { steamMarket } from '../config'
 
 export default {
     name: 'HomeItem',
@@ -52,33 +54,23 @@ export default {
     emits: ['overBuyButton'],
     data() {
         return {
-            friendOwner: null
+            steamMarket,
+            botItemType,
+            friendOwner: this.$store.getters['friendManager/itemOwner'](this.item.user_id)
         }
     },
     computed: {
-        ...mapState({
-            steamService: state => state.app.services.steam,
-            itemTypes: state => state.bots.itemTypes
-        }),
         stateClass() {
             return [
-               this.type != this.itemTypes.TO_CONFIRM ? `spb-item__status--${this.item.state}` : ''
+               this.type != botItemType.TO_CONFIRM ? `spb-item__status--${this.item.state}` : ''
             ]
         },
         timeBought() {
             return DateFormat(this.item._time_bought, 'yyyy-mm-dd H:MM:ss')
         }
     },
-    beforeMount() {
-        this.loadFriendOwner()
-    },
     methods: {
-        itemOwnerSteamId(inspectLink) {
-            return this.$store.getters['item/itemOwnerSteamId'](inspectLink)
-        },
-        loadFriendOwner() {
-            this.friendOwner = this.$store.getters['friendManager/itemOwner'](this.item.user_id)
-        },
+        getItemOwnerSteamId,
         overBuyButton(value) {
             this.$emit('overBuyButton', value)
         }

@@ -34,7 +34,8 @@
 
 <script>
 import { mapMutations } from 'vuex'
-import AppTabWindow from './AppTabWindow.vue'
+import AppTabWindow from './AppTabWindow'
+import tabWindowState from '../../enums/tabWindowState'
 
 export default {
     name: 'AppTab',
@@ -55,7 +56,7 @@ export default {
     },
     data() {
         return {
-            status: 'idle',
+            status: tabWindowState.IDLE,
             isOpen: false,
             isBound: false,
             isMouseOver: false

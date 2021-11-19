@@ -74,9 +74,15 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
-import actionMixin from '../mixins/actionMixin.js'
-import AppInput from './ui/AppInput.vue'
-import AppMultipleSwitch from './ui/AppMultipleSwitch.vue'
+import tabWindowState from '../enums/tabWindowState'
+import actionMixin from '../mixins/actionMixin'
+import AppInput from './ui/AppInput'
+import AppMultipleSwitch from './ui/AppMultipleSwitch'
+
+const views = Object.freeze({
+    ADD: 'Add',
+    MANAGE: 'Manage'
+})
 
 export default {
     name: 'FriendManager',
@@ -91,20 +97,16 @@ export default {
     emits: ['statusUpdate'],
     data() {
         return {
-            views: Object.freeze({
-                ADD: 'Add',
-                MANAGE: 'Manage'
-            }),
-            currentView: 'Add',
+            views,
+            currentView: views.ADD,
             currentFriendId: 0,
-            currentFriend: {...this.getFriend(0)}
+            currentFriend: { ...this.getFriend(0) }
         }
     },
     computed: {
         ...mapState({
             friends: state => state.friendManager.friends,
-            friendsLoaded: state => state.friendManager.loaded,
-            tabStates: state => state.app.tabStates
+            friendsLoaded: state => state.friendManager.loaded
         }),
         ...mapGetters({
             friendIds: 'friendManager/friendIds'
@@ -115,7 +117,7 @@ export default {
             },
             set(value) {
                 this.currentFriendId = value
-                this.currentFriend = {...this.getFriend(this.currentFriendId)}
+                this.currentFriend = { ...this.getFriend(this.currentFriendId) }
             }
         }
     },
@@ -124,7 +126,7 @@ export default {
             this.currentFriendIdModel = 0
         },
         friendsLoaded(value) {
-            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
+            this.$emit('statusUpdate', value ? tabWindowState.OK : tabWindowState.ERROR)
         }
     },
     methods: {
@@ -139,9 +141,9 @@ export default {
         getFriend(id) {
             return this.$store.getters['friendManager/friend'](id)
         },
-        shiftCurrentFriendIdModel({success}) {
+        shiftCurrentFriendIdModel(success) {
             if(success) {
-                const {length} = this.friendIds
+                const { length } = this.friendIds
                 if(length > 0) this.currentFriendIdModel = this.friendIds[length - 1]
             }
         }

@@ -21,11 +21,11 @@
                     class="spb-home__sort-by spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
                     v-model="sortByModel"
                 >
-                    <option v-for="sortById in Object.values(sortByTypes)"
+                    <option v-for="sortById in Object.values(itemSortType)"
                         :key="'sort-' + sortById"
                         :value="sortById"
                     >
-                        {{ sortBy.get(sortById).name }}
+                        {{ itemSortBy.get(sortById).name }}
                     </option>
                 </select>
                 <div 
@@ -48,8 +48,8 @@
                 class="spb-home__items-active"
             >
                 <home-item 
-                    v-for="item in filteredItems(itemTypes.TO_CONFIRM)"  
-                    :type="itemTypes.TO_CONFIRM" 
+                    v-for="item in filteredItems(botItemType.TO_CONFIRM)"  
+                    :type="botItemType.TO_CONFIRM" 
                     :item="item" 
                     :key="'item-' + item.id"
                     @overBuyButton="freezeToConfirm"
@@ -61,15 +61,15 @@
                 class="spb-home__items-buy-history"
             >
                 <home-item 
-                    v-for="item in filteredItems(itemTypes.PENDING)" 
-                    :type="itemTypes.PENDING" 
+                    v-for="item in filteredItems(botItemType.PENDING)" 
+                    :type="botItemType.PENDING" 
                     :item="item" 
                     :key="'item-' + item.id"
                 >
                 </home-item> 
                 <home-item 
-                    v-for="item in filteredItems(itemTypes.FINISHED)" 
-                    :type="itemTypes.FINISHED" 
+                    v-for="item in filteredItems(botItemType.FINISHED)" 
+                    :type="botItemType.FINISHED" 
                     :item="item" 
                     :key="'item-' + item.id"
                 >
@@ -91,9 +91,18 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import HomeItem from './HomeItem.vue'
-import AppInput from './ui/AppInput.vue'
-import AppMultipleSwitch from './ui/AppMultipleSwitch.vue'
+import tabWindowState from '../enums/tabWindowState'
+import HomeItem from './HomeItem'
+import AppInput from './ui/AppInput'
+import AppMultipleSwitch from './ui/AppMultipleSwitch'
+import botItemType from '../enums/botItemType'
+import itemSortType from '../enums/itemSortType'
+import { itemSortBy } from '../resources/marketItem'
+
+const views = Object.freeze({
+    ACTIVE: 'Active',
+    BUY_HISTORY: 'Buy history'
+})
 
 export default {
     name: 'Home',
@@ -108,42 +117,37 @@ export default {
     emits: ['statusUpdate'],
     data() {
         return {
-            views: Object.freeze({
-                ACTIVE: 'Active',
-                BUY_HISTORY: 'Buy history'
-            }),
-            currentView: 'Active',
+            itemSortType,
+            botItemType,
+            views,
+            itemSortBy,
+            currentView: views.ACTIVE,
             itemsCache: {
                 toConfirm: []
             },
             search: '',
             frozenToConfirm: false,
-            sortByModel: 0,
+            sortByModel: itemSortType.REAL_DISCOUNT,
             sortDirAsc: false
         }
     },
     computed: {
         ...mapState({
-            sortByTypes: state => state.item.sortByTypes,
-            sortBy: state => state.item.sortBy,
-            itemTypes: state => state.bots.itemTypes,
-            tabStates: state => state.app.tabStates,
             finishedItems: state => state.bots.items.finished
         }),
         ...mapGetters({
-            botsRunning: 'bots/running',
             itemsCount: 'bots/itemsCount'
         }),
         countedItems() {
             return this.currentView == this.views.ACTIVE 
-                ? this.itemsCount(this.itemTypes.TO_CONFIRM) 
-                : this.itemsCount(this.itemTypes.PENDING) + this.finishedItems.length 
+                ? this.itemsCount(botItemType.TO_CONFIRM) 
+                : this.itemsCount(botItemType.PENDING) + this.finishedItems.length 
         },
         toConfirmItems() {
-            return this.frozenToConfirm ? this.itemsCache.toConfirm : this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)
+            return this.frozenToConfirm ? this.itemsCache.toConfirm : this.$store.getters['bots/items'](botItemType.TO_CONFIRM)
         },
         pendingItems() {
-            return this.$store.getters['bots/items'](this.itemTypes.PENDING)
+            return this.$store.getters['bots/items'](botItemType.PENDING)
         },
         sortDirClass() {
             return [
@@ -153,10 +157,7 @@ export default {
     },
     watch: {
         pendingItems(items) {
-            if(this.currentView != this.views.BUY_HISTORY && items.length > 0) this.$emit('statusUpdate', this.tabStates.PENDING)
-        },
-        botsRunning(value) {
-            this.$emit('statusUpdate', value ? this.tabStates.RUNNING : this.tabStates.IDLE)
+            if(this.currentView != this.views.BUY_HISTORY && items.length > 0) this.$emit('statusUpdate', tabWindowState.PENDING)
         }
     },
     methods: {
@@ -168,30 +169,30 @@ export default {
             let items = []
 
             switch(type) {
-                case this.itemTypes.TO_CONFIRM:
+                case botItemType.TO_CONFIRM:
                     items = this.toConfirmItems
                     break
 
-                case this.itemTypes.PENDING:
+                case botItemType.PENDING:
                     items = this.pendingItems
                     break
 
-                case this.itemTypes.FINISHED:
+                case botItemType.FINISHED:
                     items = this.finishedItems
                     break
             }
 
             return items
                 .filter(item => item._search_steam_hash_name.includes(this.search.toLowerCase()))
-                .sort(this.sortBy.get(this.sortByModel).callback(this.sortDirAsc))
+                .sort(this.itemSortBy.get(this.sortByModel).callback(this.sortDirAsc))
         },
         freezeToConfirm(value) {
-            if(value) this.itemsCache.toConfirm = this.$store.getters['bots/items'](this.itemTypes.TO_CONFIRM)
+            if(value) this.itemsCache.toConfirm = this.$store.getters['bots/items'](botItemType.TO_CONFIRM)
             this.frozenToConfirm = value
         },
         clearPendingStatus() {
-            if(this.$parent.$parent.status == this.tabStates.PENDING) {
-                this.$emit('statusUpdate', this.botsRunning ? this.tabStates.RUNNING : this.tabStates.IDLE)
+            if(this.$parent.$parent.status == tabWindowState.PENDING) {
+                this.$emit('statusUpdate', tabWindowState.IDLE)
             }
         }
     }

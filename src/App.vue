@@ -58,8 +58,8 @@
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
-import AppTab from './components/ui/AppTab.vue'
-import AppAlert from './components/ui/AppAlert.vue'
+import AppTab from './components/ui/AppTab'
+import AppAlert from './components/ui/AppAlert'
 
 export default {
     name: 'App',

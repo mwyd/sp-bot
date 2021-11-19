@@ -1,9 +1,13 @@
+import { user } from '@/api/conduit'
+import { syncStorage } from '@/utils'
+import alertType from '@/enums/alertType'
+
 export default {
     namespaced: true,
     state: () => ({
         user: null,
         token: null,
-        authenticated: null
+        authenticated: false
     }),
     getters: {},
     mutations: {
@@ -15,56 +19,36 @@ export default {
         }
     },
     actions: {
-        loadToken({commit}) {
-            return new Promise(resolve => chrome.storage.sync.get(['token'], ({token}) => {
-                commit('setToken', token)
-                resolve(token)
-            }))
+        async loadToken({ commit }) {
+            const token = await syncStorage.get('token')
+
+            commit('setToken', token)
         },
-        saveToken({state}) {
-            chrome.storage.sync.set({
+        saveToken({ state }) {
+            syncStorage.set({
                 token: state.token
             })
         },
-        authenticate({rootState, commit, state, dispatch}) {
-            return new Promise(resolve => chrome.runtime.sendMessage({
-                service: rootState.app.services.conduit.name,
-                data: {
-                    path: rootState.app.services.conduit.api.USER,
-                    config: {
-                        headers: {
-                            'Authorization': `Bearer ${state.token}`
-                        }
-                    }
-                }
-            }, 
-            response => {
-                const session = {
-                    user: null,
-                    authenticated: false
-                }
+        async authenticate({ commit, state, dispatch }) {
+            const { success, data, error_message } = await user.get(state.token)
 
-                const alert = {
-                    type: rootState.app.alertTypes.SUCCESS,
-                    message: 'Authenticated'
-                }
+            const alert = {
+                type: alertType.SUCCESS,
+                message: 'Authenticated'
+            }
 
-                const {success, data, error_message} = response
+            if(success) {
+                commit('setSession', {
+                    user: data.name,
+                    authenticated: true
+                })
+            }
+            else {
+                alert.type = alertType.ERROR,
+                alert.message = error_message
+            }
 
-                if(success) {
-                    session.user = data.name
-                    session.authenticated = true
-                }
-                else {
-                    alert.type = rootState.app.alertTypes.ERROR,
-                    alert.message = error_message
-                }
-
-                commit('setSession', session)
-
-                dispatch('app/pushAlert', alert, { root: true })
-                resolve(response)
-            }))
+            dispatch('app/pushAlert', alert, { root: true })
         }
     }
 }

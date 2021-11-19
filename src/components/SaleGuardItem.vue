@@ -48,9 +48,9 @@
 
 <script>
 import { mapActions } from 'vuex'
-import BaseItem from './base/BaseItem.vue'
-import actionMixin from '../mixins/actionMixin.js'
-import AppInput from './ui/AppInput.vue'
+import BaseItem from './base/BaseItem'
+import actionMixin from '../mixins/actionMixin'
+import AppInput from './ui/AppInput'
 
 export default {
     name: 'SaleGuardItem',
