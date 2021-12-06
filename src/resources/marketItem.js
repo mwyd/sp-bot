@@ -1,4 +1,4 @@
-import { roundNumber } from '@/utils/index'
+import { roundNumber } from '@/utils'
 import { inspectTool } from '@/api/csgo_flaot'
 import { rarePaintSeedItem } from '@/api/conduit'
 import store from '@/store'
@@ -172,17 +172,17 @@ const normalizeMarketItem = item => {
     }
 }
 
-const createRareItemAlert = (hashName, variant, price) => ({
+const createRareItemAlert = item => ({
     type: alertType.INFO,
     persistent: true,
     message: `
-        <span>${hashName}</span>
+        <span>${item.steam_market_hash_name}</span>
         <br> 
-        <span style="color: yellow;">${variant}</span>
+        <span style="color: yellow;">${item._variant || item.floatvalue}</span>
         <br>
         <span>
             <span style="color: greenyellow;">$</span> 
-            ${price}
+            ${item.price_market_usd} / ${item.steam_price_en}
         </span>
     `
 })
@@ -201,11 +201,7 @@ const inspectItem = async (item, showAlerts = true) => {
     }
 
     if(item.floatvalue && highRankFloat >= item.floatvalue && showAlerts) {
-        store.dispatch('app/pushAlert', createRareItemAlert(
-            item.steam_market_hash_name,
-            item.floatvalue,
-            item.price_market_usd
-        ), { root: true })
+        store.dispatch('app/pushAlert', createRareItemAlert(item), { root: true })
             .then(id => item._alerts.push(id))
     }
 
@@ -218,11 +214,7 @@ const inspectItem = async (item, showAlerts = true) => {
             item._variant = data[0].variant
 
             if(showAlerts) {
-                store.dispatch('app/pushAlert', createRareItemAlert(
-                    item.steam_market_hash_name,
-                    item._variant,
-                    item.price_market_usd
-                ), { root: true })
+                store.dispatch('app/pushAlert', createRareItemAlert(item), { root: true })
                     .then(id => item._alerts.push(id))
             }
         })
