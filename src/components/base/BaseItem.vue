@@ -82,6 +82,18 @@
                     </span>
                 </a>
             </div>
+            <div class="spb-item__stat spb--cursor-pointer">
+                <a 
+                    target="_blank" 
+                    class="spb--link"
+                    :href="buff163.MARKET + '#search=' + item.steam_market_hash_name"
+                > 
+                    Buff.163
+                    <span class="spb--text-green">
+                        market
+                    </span>
+                </a>
+            </div>
             <div 
                 v-for="key in existingShadowpayStatistics"
                 class="spb-item__stat" 
@@ -105,7 +117,7 @@
 import { copyToClipboard } from '../../utils'
 import { significantProperties, shadowpayStatistics, isFloatProfitable } from '../../resources/marketItem'
 import { shadowpaySoldItem } from '../../api/conduit'
-import { steamMarket, csgoGallery } from '../../config'
+import { steamMarket, csgoGallery, buff163 } from '../../config'
 
 export default {
     name: 'Item',
@@ -118,6 +130,7 @@ export default {
             shadowpayStatistics,
             steamMarket,
             csgoGallery,
+            buff163,
             mutableShadowpayStatistics: {},
             displayStatistics: this.$store.getters['app/config']('displayItemStatistics'),
             hideMoreStatisticsButton: false
