@@ -3,7 +3,10 @@ import useMarket from './useMarket'
 
 const defaults = {
     baseUrl: 'https://api.shadowpay.com',
-    credentials: 'include'
+    credentials: 'include',
+    headers: {
+        'Accept': 'application/json'
+    }
 }
 
 const itemOnSale = useItemOnSale(defaults)
