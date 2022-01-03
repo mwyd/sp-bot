@@ -7,6 +7,7 @@ export default {
     methods: {
         disableActions(promise) {
             this.actionsDisabled = true
+            
             promise.finally(() => this.actionsDisabled = false)
         }
     }

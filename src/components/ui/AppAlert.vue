@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex'
+import { mapMutations } from 'vuex'
 
 export default {
     name: 'AppAlert',
@@ -27,9 +27,6 @@ export default {
         message: String
     },
     computed: {
-        ...mapState({
-            alertTypes: state => state.app.alertTypes
-        }),
         alertClass() {
             return [
                 `spb-alert--${this.type}`

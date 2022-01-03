@@ -5,9 +5,9 @@
                 <a
                     target="_blank" 
                     class="spb--link"
-                    :href="steamService.resources.ITEM_SELL_LISTINGS + item.steam_market_hash_name"
+                    :href="steamMarket.ITEM_SELL_LISTINGS + item.steam_market_hash_name"
                 >
-                    <img :src="steamService.resources.ITEM_IMAGE + item.steam_icon_url_large">
+                    <img :src="steamMarket.ITEM_IMAGE + item.steam_icon_url_large">
                     {{ item.steam_market_hash_name }}
                 </a>
             </div>
@@ -18,7 +18,7 @@
                     :data-spb-sticker-price="'$ ' + sticker.steam_price"
                     :key="'item-sticker-' + index"
                 >
-                    <img :src="steamService.resources.ITEM_IMAGE + sticker.icon_url">
+                    <img :src="steamMarket.ITEM_IMAGE + sticker.icon_url">
                 </div>
             </div>
             <div class="spb-item__column spb-item__price">
@@ -41,7 +41,7 @@
                 class="spb-item__stat"
             >
                 Float 
-                <span :class="hasInterestingFloat(item.floatvalue) ? 'spb--text-highlight' : 'spb--text-green'">
+                <span :class="isFloatProfitable(item.floatvalue) ? 'spb--text-highlight' : 'spb--text-green'">
                     {{ item.floatvalue }}
                 </span>
             </div>
@@ -55,20 +55,12 @@
                 </span>
             </div>
             <div 
-                v-for="key in existingInterestingProperties"
+                v-for="key in existingSignificantProperties"
                 class="spb-item__stat" 
                 :key="'item.' + key"
             >
-                {{ interestingProperties[key].name }} 
-                <span class="spb--text-green">{{ interestingProperties[key].unit + ' ' + item[key] }}</span>
-            </div>
-            <div 
-                v-for="key in existingShadowpayStatistics"
-                class="spb-item__stat" 
-                :key="'item.' + key"
-            >
-                {{ shadowpayStatistics[key].name }} 
-                <span class="spb--text-green">{{ shadowpayStatistics[key].unit + ' ' + mutableProperties[key] }}</span>
+                {{ significantProperties[key].name }} 
+                <span class="spb--text-green">{{ significantProperties[key].unit + ' ' + item[key] }}</span>
             </div>
             <slot name="modal-statistics"></slot>
             <div 
@@ -82,13 +74,33 @@
                 <a 
                     target="_blank" 
                     class="spb--link"
-                    :href="screenshotService.resources.SCREENSHOT + '/' + item.inspect_url"
+                    :href="csgoGallery.SCREENSHOT + item.inspect_url"
                 > 
                     Screenshot
                     <span class="spb--text-green">
                         cs.deals
                     </span>
                 </a>
+            </div>
+            <div class="spb-item__stat spb--cursor-pointer">
+                <a 
+                    target="_blank" 
+                    class="spb--link"
+                    :href="buff163.MARKET + '#search=' + item.steam_market_hash_name"
+                > 
+                    Buff.163
+                    <span class="spb--text-green">
+                        market
+                    </span>
+                </a>
+            </div>
+            <div 
+                v-for="key in existingShadowpayStatistics"
+                class="spb-item__stat" 
+                :key="'item.' + key"
+            >
+                {{ shadowpayStatistics[key].name }} 
+                <span class="spb--text-green">{{ shadowpayStatistics[key].unit + ' ' + mutableShadowpayStatistics[key] }}</span>
             </div>
             <div 
                 v-if="!hideMoreStatisticsButton"
@@ -102,7 +114,10 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { copyToClipboard } from '../../utils'
+import { significantProperties, shadowpayStatistics, isFloatProfitable } from '../../resources/marketItem'
+import { shadowpaySoldItem } from '../../api/conduit'
+import { steamMarket, csgoGallery, buff163 } from '../../config'
 
 export default {
     name: 'Item',
@@ -111,47 +126,43 @@ export default {
     },
     data() {
         return {
+            significantProperties,
+            shadowpayStatistics,
+            steamMarket,
+            csgoGallery,
+            buff163,
+            mutableShadowpayStatistics: {},
             displayStatistics: this.$store.getters['app/config']('displayItemStatistics'),
-            mutableProperties: {...this.$store.state.item.mutableProperties},
             hideMoreStatisticsButton: false
         }
     },
     computed: {
-        ...mapState({
-            steamService: state => state.app.services.steam,
-            interestingProperties: state => state.item.interestingProperites,
-            shadowpayStatistics: state => state.item.shadowpayStatistics,
-            screenshotService: state => state.app.services.csgoGallery
-        }),
-        existingInterestingProperties() {
-            return Object.keys(this.interestingProperties).filter(key => this.item[key])
+        existingSignificantProperties() {
+            return Object.keys(this.significantProperties).filter(key => this.item[key])
         },
         existingShadowpayStatistics() {
-            return Object.keys(this.shadowpayStatistics).filter(key => this.mutableProperties[key])
+            return Object.keys(this.shadowpayStatistics).filter(key => this.mutableShadowpayStatistics[key])
         }
     },
     methods: {
-        ...mapActions({
-            copyToClipboard: 'app/copyToClipboard'
-        }),
-        hasInterestingFloat(float) {
-            return this.$store.getters['item/hasInterestingFloat'](float)
-        },
+        copyToClipboard,
+        isFloatProfitable,
         toggleDisplayStatistics() {
             this.displayStatistics = !this.displayStatistics
         },
         loadShadowpayStatistics() {
             this.hideMoreStatisticsButton = true
 
-            this.$store.dispatch('item/loadShadowpayStatistics', this.item._conduit_hash_name)
-            .then(({success, data}) => {
-                if(!success || data?.length == 0) return
+            shadowpaySoldItem.get(this.item._conduit_hash_name)
+                .then(({ success, data }) => {
+                    if(!success || data?.length == 0) return
 
-                this.mutableProperties._app_sell_price = (data[0].avg_suggested_price * (1 - (data[0].avg_discount / 100))).toFixed(2)
-                this.mutableProperties._avg_discount = data[0].avg_discount
-                this.mutableProperties._sold = data[0].sold
-                this.mutableProperties._last_sold = data[0].last_sold
-            })
+                    Object.entries(data[0]).forEach(([k, v]) => {
+                        this.mutableShadowpayStatistics['_' + k] = v
+                    })
+
+                    this.mutableShadowpayStatistics._app_sell_price = (data[0].avg_suggested_price * (1 - (data[0].avg_discount / 100))).toFixed(2)
+                })
         }
     }
 }

@@ -15,11 +15,11 @@
                     class="spb-sale-guard__sort-by spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
                     v-model="sortByModel"
                 >
-                    <option v-for="sortById in Object.values(sortByTypes)"
+                    <option v-for="sortById in Object.values(itemSortType)"
                         :key="'sort-' + sortById"
                         :value="sortById"
                     >
-                        {{ sortBy.get(sortById).name }}
+                        {{ itemSortBy.get(sortById).name }}
                     </option>
                 </select>
                 <div 
@@ -94,11 +94,16 @@
 
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
-import { SPB_LOG, roundNumber } from '../utils/index.js'
-import actionMixin from '../mixins/actionMixin.js'
-import processMixin from '../mixins/processMixin.js'
-import AppInput from './ui/AppInput.vue'
-import SaleGuardItem from './SaleGuardItem.vue'
+import { SPB_LOG, roundNumber } from '../utils/index'
+import actionMixin from '../mixins/actionMixin'
+import processMixin from '../mixins/processMixin'
+import AppInput from './ui/AppInput'
+import SaleGuardItem from './SaleGuardItem'
+import alertType from '../enums/alertType'
+import tabWindowState from '../enums/tabWindowState'
+import itemSortType from '../enums/itemSortType'
+import { itemSortBy } from '../resources/marketItem'
+import { itemOnSale, market } from '../api/shadowpay'
 
 export default {
     name: 'SaleGuard',
@@ -113,21 +118,19 @@ export default {
     emits: ['statusUpdate'],
     data() {
         return {
+            itemSortType,
+            itemSortBy,
             search: '',
-            sortByModel: 3,
+            sortByModel: itemSortType.MARKET_PRICE,
             sortDirAsc: false,
             timeoutId: null
         }
     },
     computed: {
         ...mapState({
-            shadowpayService: state => state.app.services.shadowpay,
-            sortByTypes: state => state.item.sortByTypes,
-            sortBy: state => state.item.sortBy,
+            csrfCookie: state => state.app.csrfCookie,
             itemsOnSale: state => state.saleGuard.items,
-            saleGuardItemsLoaded: state => state.saleGuard.loaded,
-            tabStates: state => state.app.tabStates,
-            alertTypes: state => state.app.alertTypes
+            saleGuardItemsLoaded: state => state.saleGuard.loaded
         }),
         ...mapGetters({
             trackedItems: 'saleGuard/trackedItems'
@@ -141,7 +144,7 @@ export default {
         filteredItems() {
             return [...this.itemsOnSale.values()]
                 .filter(data => data.item._search_steam_hash_name.includes(this.search.toLowerCase()))
-                .sort((a, b) => this.sortBy.get(this.sortByModel).callback(this.sortDirAsc)(a.item, b.item))
+                .sort((a, b) => itemSortBy.get(this.sortByModel).callback(this.sortDirAsc)(a.item, b.item))
         },
         sortDirClass() {
             return [
@@ -156,7 +159,7 @@ export default {
     },
     watch: {
         saleGuardItemsLoaded(value) {
-            this.$emit('statusUpdate', value ? (!this.isProcessTerminated ? this.tabStates.RUNNING : this.tabStates.OK) : this.tabStates.ERROR)
+            this.$emit('statusUpdate', value ? (!this.isProcessTerminated ? tabWindowState.RUNNING : tabWindowState.OK) : tabWindowState.ERROR)
         }
     },
     methods: {
@@ -181,7 +184,7 @@ export default {
             await this.loadSaleGuardItems()
         },
         stopProcess() {
-            this.$emit('statusUpdate', this.saleGuardItemsLoaded ? this.tabStates.OK : this.tabStates.ERROR)
+            this.$emit('statusUpdate', this.saleGuardItemsLoaded ? tabWindowState.OK : tabWindowState.ERROR)
             this.setProcessTerminated()
         },
         toggleProcess() {
@@ -196,55 +199,45 @@ export default {
                     break
 
                 case this.processStates.TERMINATED:
-                    this.$emit('statusUpdate', this.tabStates.RUNNING)
+                    this.$emit('statusUpdate', tabWindowState.RUNNING)
                     this.run()
                     break
             }
         },
         updateItemPrice(item, metadata, newPrice) {
-            fetch(this.shadowpayService.api.SAVE_ITEM_PRICE, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `id=${item.id}` +
-                    `&price=${newPrice}` +
-                    `&csrf_token=${this.shadowpayService.csrfCookie}`
-            })
-            .then(response => response.json())
-            .then(({status, error_message, token}) => {
-                if(status == 'success') {
-                    this.setItemMarketPrice({
-                        id: item.id,
-                        price: newPrice
-                    })
-                }
-                else {
-                    switch(error_message) {
-                        case 'wrong_token':
-                            this.setCsrfCookie(token)
-                            this.updateItemPrice(item, metadata, newPrice)
-                            break
-
-                        case 'bid_item_not_exist':
-                            this.stopTrack({
-                                id: metadata.databaseId,
-                                showAlert: false
-                            })
-                            this.loadItemsOnSale()
-                            break
+            itemOnSale.update(this.csrfCookie, item.id, newPrice)
+                .then(({ status, error_message, token }) => {
+                    if(status == 'success') {
+                        this.setItemMarketPrice({
+                            id: item.id,
+                            price: newPrice
+                        })
                     }
-                }
-            })
-            .catch(err => SPB_LOG('Cant update price\n', err))
+                    else {
+                        switch(error_message) {
+                            case 'wrong_token':
+                                this.setCsrfCookie(token)
+                                this.updateItemPrice(item, metadata, newPrice)
+                                break
+
+                            case 'bid_item_not_exist':
+                                this.stopTrack({
+                                    id: metadata.databaseId,
+                                    showAlert: false
+                                })
+                                this.loadItemsOnSale()
+                                break
+                        }
+                    }
+                })
+                .catch(err => SPB_LOG('Cant update price\n', err))
         },
         async run() {
             this.setProcessRunning()
 
             if(this.trackedItems.length == 0) {
                 this.pushAlert({
-                    type: this.alertTypes.INFO,
+                    type: alertType.INFO,
                     message: 'Sale Guard terminated - empty set'
                 })
 
@@ -252,29 +245,26 @@ export default {
             }
 
             try {
-                for(let {item, metadata} of this.trackedItems) {
-                    const response = await fetch(this.shadowpayService.api.STACKED_ITEMS +
-                            `?item_id=${item.item_id}` +
-                            `&price_from=${metadata.minPrice}` +
-                            `&price_to=${metadata.maxPrice}` +
-                            `&game=csgo` +
-                            `&stack=false` +
-                            `&sort=asc` + 
-                            `&sort_dir=asc` +
-                            `&sort_column=price` +
-                            `&limit=50` +
-                            `&offset=0`, {
-                            credentials: 'include'
-                        })
-
-                    const {status, items} = await response.json()
+                for(let { item, metadata } of this.trackedItems) {
+                    const { status, items } = await market.getItems({
+                        item_id: item.item_id,
+                        price_from: metadata.minPrice,
+                        price_to: metadata.maxPrice,
+                        game: 'csgo',
+                        stack: false,
+                        sort: 'asc',
+                        sort_dir: 'asc',
+                        sort_column: 'price',
+                        limit: 50,
+                        offset: 0
+                    })
 
                     if(status != 'success') continue
 
                     let newPrice = metadata.maxPrice
 
                     for(let marketItem of items) {
-                        if(marketItem.is_my_item || marketItem.item_id != item.item_id) continue
+                        if(marketItem.is_my_item) continue
 
                         if(marketItem.price_market_usd - this.itemBidStep > metadata.minPrice) {
                             newPrice = this.isFriendItem(marketItem.user_id) 

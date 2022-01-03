@@ -106,8 +106,9 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import actionMixin from '../mixins/actionMixin.js'
-import AppInput from './ui/AppInput.vue'
+import tabWindowState from '../enums/tabWindowState'
+import actionMixin from '../mixins/actionMixin'
+import AppInput from './ui/AppInput'
 
 export default {
     name: 'Settings',
@@ -122,7 +123,6 @@ export default {
     computed: {
         ...mapState({
             authenticated: state => state.session.authenticated,
-            tabStates: state => state.app.tabStates,
             runBots: state => state.bots.runBots
         }),
         runBotsButtonClass() {
@@ -229,7 +229,7 @@ export default {
     },
     watch: {
         authenticated(value) {
-            this.$emit('statusUpdate', value ? this.tabStates.OK : this.tabStates.ERROR)
+            this.$emit('statusUpdate', value ? tabWindowState.OK : tabWindowState.ERROR)
         }
     },
     methods: {

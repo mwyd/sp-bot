@@ -1,20 +1,18 @@
 import { createStore } from 'vuex'
-import appModule from './modules/app.js'
-import sessionModule from './modules/session.js'
-import botsModule from './modules/bots.js'
-import itemModule from './modules/item.js'
-import saleGuardModule from './modules/saleGuard.js'
-import presetManagerModule from './modules/presetManager.js'
-import friendManagerModule from './modules/friendManager.js'
+import app from './modules/app'
+import session from './modules/session'
+import bots from './modules/bots'
+import saleGuard from './modules/saleGuard'
+import presetManager from './modules/presetManager'
+import friendManager from './modules/friendManager'
 
 export default createStore({
     modules: {
-        app: appModule,
-        session: sessionModule,
-        item: itemModule,
-        bots: botsModule,
-        saleGuard: saleGuardModule,
-        presetManager: presetManagerModule,
-        friendManager: friendManagerModule
+        app,
+        session,
+        bots,
+        saleGuard,
+        presetManager,
+        friendManager
     }
 })

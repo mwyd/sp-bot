@@ -7,7 +7,7 @@ const services = Object.freeze({
         name: 'csgo_float'
     },
     self: {
-        name: 'self',
+        name: 'internal',
         actions: {
             INCREMENT_BUY_COUNTER: 'increment_buy_counter',
             GET_BUY_COUNTER: 'get_buy_counter'
@@ -49,7 +49,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             break
 
         case services.conduit.name:
-            fetch(services.conduit.baseApiUrl + data.path, data.config ?? {})
+            fetch(data.path, data.config ?? {})
             .then(res => res.json())
             .then(sendResponse)
             .catch(err => sendResponse({ success: false, error_message: err }))

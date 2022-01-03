@@ -1,3 +1,5 @@
+const path = require('path')
+
 module.exports = {
     filenameHashing: false,
     productionSourceMap: false,
@@ -5,7 +7,12 @@ module.exports = {
         extract: true
     },
     configureWebpack: {
-        devtool: 'inline-cheap-source-map'
+        devtool: 'inline-cheap-source-map',
+        resolve: {
+            alias: {
+                '@': path.resolve(__dirname, './src')
+            }
+        }
     },
     chainWebpack: config => {
         config.plugins.delete('html')

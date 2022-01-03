@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
-import App from './App.vue'
-import { initRoot } from './setup.js'
-import store from './store/index.js'
+import App from './App'
+import { initRoot } from './setup'
+import store from './store'
 import './assets/css/main.css'
 
 const app = createApp(App)

@@ -1,3 +1,5 @@
+import { checkInstanceTick } from '@/config'
+
 export default {
     namespaced: true,
     state: () => ({
@@ -5,12 +7,7 @@ export default {
         runBots: false,
         items: {
             finished: []
-        },
-        itemTypes: Object.freeze({
-            TO_CONFIRM: 'toConfirm',
-            PENDING: 'pending',
-            FINISHED: 'finished'
-        })
+        }
     }),
     getters: {
         items: state => type => {
@@ -30,18 +27,6 @@ export default {
             })
 
             return count
-        },
-        running(state) {
-            let running = false
-
-            state.instances.forEach(instance => {
-                if(instance.isRunning) {
-                    running = true
-                    return
-                }
-            })
-
-            return running
         }
     },
     mutations: {
@@ -56,11 +41,11 @@ export default {
         }
     },
     actions: {
-        openBots({rootGetters, commit}) {
+        openBots({ rootGetters, commit }) {
             if(!rootGetters['app/config']('openTabsAtStartup')) return
 
-            rootGetters['presetManager/sortedPresets'](true).forEach(([id]) => {
-                if(id == 0) return
+            for(let [id] of rootGetters['presetManager/sortedPresets'](true)) {
+                if(id == 0) continue
 
                 commit('app/addTab', {
                     isStatic: false,
@@ -69,9 +54,9 @@ export default {
                     childComponent: 'Bot',
                     tabMounted: tab => tab.$refs.tabWindow.$refs.childComponent.presetIdModel = id
                 }, { root: true })
-            })
+            }
         },
-        async toggleAllInstances({state, commit}) {
+        async toggleAllInstances({ state, commit }) {
             for(let instance of state.instances) {
                 if(instance.isProcessTerminated == state.runBots) continue
 
@@ -79,7 +64,7 @@ export default {
             }
 
             while(state.instances.findIndex(v => v.isProcessTerminated != state.runBots) > -1) {
-                await new Promise(resolve => setTimeout(resolve, 100))
+                await new Promise(resolve => setTimeout(resolve, checkInstanceTick * 1000))
             }
 
             commit('toggleRunBots')
