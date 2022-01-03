@@ -143,15 +143,18 @@ export default {
                 const updatedItems = new Map()
 
                 for(let item of items) {
+                    normalizeMarketItem(item)
+
                     const itemOnSale = state.items.get(item.id)
 
                     if(itemOnSale) {
-                        updatedItems.set(item.id, itemOnSale)
+                        updatedItems.set(item.id, {
+                            item,
+                            metadata: itemOnSale.metadata
+                        })
 
                         continue
                     }
-
-                    normalizeMarketItem(item)
 
                     let minPrice = item.price_market_usd
                     let maxPrice = roundNumber(item.steam_price_en * rootGetters['app/config']('saleGuardSafeDiscount'))
