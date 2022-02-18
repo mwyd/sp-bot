@@ -1,6 +1,6 @@
 {
   "name": "sp-bot",
-  "version": "3.1.5",
+  "version": "3.1.6",
   "private": true,
   "scripts": {
     "hot": "vue-cli-service build --mode development --watch",
