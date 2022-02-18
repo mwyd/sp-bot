@@ -101,17 +101,17 @@
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
-import { SPB_LOG } from '../utils/index'
-import { normalizeMarketItem, inspectItem } from '../resources/marketItem'
-import processMixin from '../mixins/processMixin'
+import { SPB_LOG } from '@/utils/index'
+import { normalizeMarketItem, inspectItem } from '@/resources/marketItem'
+import processMixin from '@/mixins/processMixin'
 import AppInput from './ui/AppInput'
 import DateFormat from 'dateformat'
-import alertType from '../enums/alertType'
-import tabWindowState from '../enums/tabWindowState'
-import { market } from '../api/shadowpay'
-import { background } from '../api/internal'
-import { steamMarketItem } from '../api/conduit'
-import { notificationSound } from '../config'
+import alertType from '@/enums/alertType'
+import tabWindowState from '@/enums/tabWindowState'
+import { market } from '@/api/shadowpay'
+import { background } from '@/api/internal'
+import { steamMarketItem } from '@/api/conduit'
+import { notificationSound } from '@/config'
 
 export default {
     name: 'Bot',

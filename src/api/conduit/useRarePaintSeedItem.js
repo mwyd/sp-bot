@@ -1,4 +1,4 @@
-import { fetchBackground } from '../../utils'
+import { fetchBackground } from '@/utils'
 
 export default function({ baseUrl, service }) {
     const get = (token, { steam_short_name, paintseed }) => fetchBackground({

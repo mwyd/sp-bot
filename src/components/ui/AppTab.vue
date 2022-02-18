@@ -35,7 +35,7 @@
 <script>
 import { mapMutations } from 'vuex'
 import AppTabWindow from './AppTabWindow'
-import tabWindowState from '../../enums/tabWindowState'
+import tabWindowState from '@/enums/tabWindowState'
 
 export default {
     name: 'AppTab',

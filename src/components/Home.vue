@@ -91,13 +91,13 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import tabWindowState from '../enums/tabWindowState'
+import tabWindowState from '@/enums/tabWindowState'
 import HomeItem from './HomeItem'
 import AppInput from './ui/AppInput'
 import AppMultipleSwitch from './ui/AppMultipleSwitch'
-import botItemType from '../enums/botItemType'
-import itemSortType from '../enums/itemSortType'
-import { itemSortBy } from '../resources/marketItem'
+import botItemType from '@/enums/botItemType'
+import itemSortType from '@/enums/itemSortType'
+import { itemSortBy } from '@/resources/marketItem'
 
 const views = Object.freeze({
     ACTIVE: 'Active',
