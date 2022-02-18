@@ -106,8 +106,8 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import tabWindowState from '../enums/tabWindowState'
-import actionMixin from '../mixins/actionMixin'
+import tabWindowState from '@/enums/tabWindowState'
+import actionMixin from '@/mixins/actionMixin'
 import AppInput from './ui/AppInput'
 
 export default {

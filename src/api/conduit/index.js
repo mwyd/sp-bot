@@ -1,4 +1,4 @@
-import apiService from '../../enums/apiService'
+import apiService from '@/enums/apiService'
 import useSaleGuardItem from './useSaleGuardItem'
 import useUser from './useUser'
 import useUserConfig from './useUserConfig'

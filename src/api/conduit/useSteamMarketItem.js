@@ -1,4 +1,4 @@
-import { fetchBackground } from '../../utils'
+import { fetchBackground } from '@/utils'
 
 export default function({ baseUrl, service }) {
     const single = hashName => fetchBackground({

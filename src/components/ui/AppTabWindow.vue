@@ -14,12 +14,12 @@
 </template>
 
 <script>
-import Home from '../Home'
-import SaleGuard from '../SaleGuard'
-import PresetManager from '../PresetManager'
-import FriendManager from '../FriendManager'
-import Settings from '../Settings'
-import Bot from '../Bot'
+import Home from '@/components/Home'
+import SaleGuard from '@/components/SaleGuard'
+import PresetManager from '@/components/PresetManager'
+import FriendManager from '@/components/FriendManager'
+import Settings from '@/components/Settings'
+import Bot from '@/components/Bot'
 
 export default {
     name: 'AppTabWindow',

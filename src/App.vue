@@ -8,13 +8,8 @@
         <div class="spb-tab-bar__wrapper">
             <app-tab 
                 v-for="tab in staticTabs"
+                v-bind="tab"
                 :key="'tab-' + tab.id"
-                :id="tab.id"
-                :is-static="tab.isStatic"
-                :name="tab.name"
-                :symbol="tab.symbol"
-                :child-component="tab.childComponent"
-                :tab-mounted="tab.tabMounted"
             >
             </app-tab>
             <div class="spb-tab">
@@ -30,13 +25,8 @@
             </div>
             <app-tab 
                 v-for="tab in dynamicTabs"
+                v-bind="tab"
                 :key="'tab-' + tab.id"
-                :id="tab.id"
-                :is-static="tab.isStatic"
-                :name="tab.name"
-                :symbol="tab.symbol"
-                :child-component="tab.childComponent"
-                :tab-mounted="tab.tabMounted"
             >
             </app-tab>
         </div>

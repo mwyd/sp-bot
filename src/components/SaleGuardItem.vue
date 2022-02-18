@@ -49,7 +49,7 @@
 <script>
 import { mapActions } from 'vuex'
 import BaseItem from './base/BaseItem'
-import actionMixin from '../mixins/actionMixin'
+import actionMixin from '@/mixins/actionMixin'
 import AppInput from './ui/AppInput'
 
 export default {

@@ -94,16 +94,16 @@
 
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
-import { SPB_LOG, roundNumber } from '../utils/index'
-import actionMixin from '../mixins/actionMixin'
-import processMixin from '../mixins/processMixin'
+import { SPB_LOG, roundNumber } from '@/utils/index'
+import actionMixin from '@/mixins/actionMixin'
+import processMixin from '@/mixins/processMixin'
 import AppInput from './ui/AppInput'
 import SaleGuardItem from './SaleGuardItem'
-import alertType from '../enums/alertType'
-import tabWindowState from '../enums/tabWindowState'
-import itemSortType from '../enums/itemSortType'
-import { itemSortBy } from '../resources/marketItem'
-import { itemOnSale, market } from '../api/shadowpay'
+import alertType from '@/enums/alertType'
+import tabWindowState from '@/enums/tabWindowState'
+import itemSortType from '@/enums/itemSortType'
+import { itemSortBy } from '@/resources/marketItem'
+import { itemOnSale, market } from '@/api/shadowpay'
 
 export default {
     name: 'SaleGuard',

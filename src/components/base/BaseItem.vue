@@ -114,10 +114,10 @@
 </template>
 
 <script>
-import { copyToClipboard } from '../../utils'
-import { significantProperties, shadowpayStatistics, isFloatProfitable } from '../../resources/marketItem'
-import { shadowpaySoldItem } from '../../api/conduit'
-import { steamMarket, csgoGallery, buff163 } from '../../config'
+import { copyToClipboard } from '@/utils'
+import { significantProperties, shadowpayStatistics, isFloatProfitable } from '@/resources/marketItem'
+import { shadowpaySoldItem } from '@/api/conduit'
+import { steamMarket, csgoGallery, buff163 } from '@/config'
 
 export default {
     name: 'Item',

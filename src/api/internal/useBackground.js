@@ -1,5 +1,5 @@
-import { fetchBackground } from '../../utils'
-import internalAction from '../../enums/internalAction'
+import { fetchBackground } from '@/utils'
+import internalAction from '@/enums/internalAction'
 
 export default function({ service }) {
     const getBuyCounter = async () => fetchBackground({

@@ -36,11 +36,11 @@
 </template>
 
 <script>
-import { getItemOwnerSteamId } from '../resources/marketItem'
+import { getItemOwnerSteamId } from '@/resources/marketItem'
 import BaseItem from './base/BaseItem.vue'
 import DateFormat from 'dateformat'
-import botItemType from '../enums/botItemType'
-import { steamMarket } from '../config'
+import botItemType from '@/enums/botItemType'
+import { steamMarket } from '@/config'
 
 export default {
     name: 'HomeItem',

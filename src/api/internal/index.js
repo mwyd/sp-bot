@@ -1,5 +1,5 @@
 import useBackground from './useBackground'
-import apiService from '../../enums/apiService'
+import apiService from '@/enums/apiService'
 
 const defaults = {
     service: apiService.INTERNAL

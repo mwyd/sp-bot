@@ -1,5 +1,5 @@
 import useInspectTool from './useInspectTool'
-import apiService from '../../enums/apiService'
+import apiService from '@/enums/apiService'
 
 const defaults = {
     baseUrl: 'https://api.csgofloat.com',
