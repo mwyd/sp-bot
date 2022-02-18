@@ -201,6 +201,10 @@ export default {
     padding: 4px; 
 }
 
+.spb-item__sticker {
+    z-index: 1;
+}
+
 .spb-item__sticker > img {
     height: 24px;
 }
