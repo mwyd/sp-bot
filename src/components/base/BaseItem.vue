@@ -201,10 +201,6 @@ export default {
     padding: 4px; 
 }
 
-.spb-item__sticker {
-    z-index: 1;
-}
-
 .spb-item__sticker > img {
     height: 24px;
 }
@@ -214,6 +210,7 @@ export default {
     background: var(--main-background-color);
     border-radius: 1px;
     box-shadow: 0 0 70px rgb(0 0 0 / 60%);
+    z-index: 1;
 }
 
 .spb-item__sticker:hover::after {
