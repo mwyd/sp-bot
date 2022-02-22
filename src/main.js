@@ -1,9 +1,17 @@
 import { createApp } from 'vue'
-import App from './App'
 import { initRoot } from './setup'
+import App from './App'
 import store from './store'
 import './assets/css/main.css'
+import { SPB_LOG } from './utils'
 
-const app = createApp(App)
-app.use(store)
-app.mount(initRoot())
+try {
+    const root = initRoot()
+
+    const app = createApp(App)
+    app.use(store)
+    app.mount(root)
+}
+catch(err) {
+    SPB_LOG(err)
+}
