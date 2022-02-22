@@ -192,6 +192,11 @@ export default {
     width: 100%;
 }
 
+.spb-item__name a {
+    display: flex;
+    align-items: center;
+}
+
 .spb-item__name img {
     padding-right: 10px; 
     height: 50px;
