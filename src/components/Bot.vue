@@ -392,6 +392,8 @@ export default {
                             && item.price_market_usd >= this.preset.minPrice
                         )
 
+                        this.updateToConfirm()
+
                         for(let item of this.items.filtered) {
                             if(this.items.toConfirm.has(item.id)) continue
 
@@ -431,7 +433,6 @@ export default {
             }
 
             this.updatePending()
-            this.updateToConfirm()
                     
             switch(this.processState) {
                 case this.processStates.RUNNING:

@@ -125,6 +125,10 @@ export default {
     font-family: Gilroy, sans-serif;
 }
 
+#spb-root * {
+    box-sizing: border-box;
+}
+
 .spb-tab-bar {
     width: 100%;
     height: 100%;
