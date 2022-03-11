@@ -3,6 +3,11 @@
     "name": "SP-BOT",
     "version": "3.1.7",
     "description": "",
+    "icons": {
+        "16": "assets/icons/spb-16x16.png",
+        "48": "assets/icons/spb-48x48.png",
+        "128": "assets/icons/spb-128x128.png"
+    },
     "content_scripts": [{
         "js": [
             "/js/chunk-vendors.js",
