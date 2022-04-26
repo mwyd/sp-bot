@@ -101,7 +101,7 @@
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
-import { SPB_LOG } from '@/utils/index'
+import { calculateDiscount, SPB_LOG } from '@/utils'
 import { normalizeMarketItem, inspectItem } from '@/resources/marketItem'
 import processMixin from '@/mixins/processMixin'
 import AppInput from './ui/AppInput'
@@ -110,7 +110,7 @@ import alertType from '@/enums/alertType'
 import tabWindowState from '@/enums/tabWindowState'
 import { market } from '@/api/shadowpay'
 import { background } from '@/api/internal'
-import { steamMarketItem } from '@/api/conduit'
+import { buffMarketItem, steamMarketItem } from '@/api/conduit'
 import { notificationSound } from '@/config'
 
 export default {
@@ -252,18 +252,22 @@ export default {
                     item.price_usd = filteredItem.price_usd
                     item.price_market_usd = filteredItem.price_market_usd
 
-                    if(item._updated) this.calculateIncome(item)
-                    if(this.canBuyItem(item)) this.buyItem(item)
+                    if(item._buff_updated) {
+                        item._buff_discount = calculateDiscount(item.price_market_usd, item._buff_price)
+                    }
+
+                    if(item._steam_updated) {
+                        item._steam_discount = calculateDiscount(item.price_market_usd, item._steam_price)
+                    }
+
+                    if(this.canBuyItem(item)) {
+                        this.buyItem(item)
+                    }
                 }
             })       
         },
-        calculateIncome(item) {
-            item._app_income = ((0.87 * item._steam_price) - item.price_market_usd).toFixed(2)
-            item._app_income_percentage = 100 - Math.round((item.price_market_usd - item._app_income) * 100 / item.price_market_usd)
-            item._real_discount = 100 - Math.round(item.price_market_usd * 100 / item._steam_price)
-        },
         canBuyItem(item) {
-            return item._updated && item._real_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume >= this.steamVolumeLimit
+            return item._steam_updated && item._steam_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume >= this.steamVolumeLimit
         },
         buyItem(item) {
             if(this.items.pending.has(item.id) || item.price_market_usd + this.moneySpent > this.preset.toSpend) return
@@ -399,24 +403,37 @@ export default {
 
                             normalizeMarketItem(item)
 
-                            item._updated = false
+                            item._buff_updated = false
+                            item._steam_updated = false
 
-                            const { success, data } = await steamMarketItem.single(item._conduit_hash_name)
+                            const [buffResponse, steamResponse] = await Promise.all([
+                                buffMarketItem.single(item._conduit_hash_name),
+                                steamMarketItem.single(item._conduit_hash_name)
+                            ])
 
-                            if(success) {
-                                item._updated = true
-                                item._steam_price = data.price
-                                item._steam_volume = data.volume
+                            if(buffResponse.success) {
+                                const { price, volume, good_id } = buffResponse.data
 
-                                this.calculateIncome(item)
+                                item._buff_updated = true
+                                item._buff_price = price
+                                item._buff_volume = volume
+                                item._buff_good_id = good_id
+                                item._buff_discount = calculateDiscount(item.steam_market_hash_name, price)
+                            }
 
-                                item._buy = () => {
-                                    this.buyItem(item)
-                                }
+                            if(steamResponse.success) {
+                                const { price, volume } = steamResponse.data
 
-                                if(this.canBuyItem(item)) {
-                                    this.buyItem(item)
-                                }
+                                item._steam_updated = true
+                                item._steam_price = price
+                                item._steam_volume = volume
+                                item._steam_discount = calculateDiscount(item.price_market_usd, price)
+                            }
+
+                            item._buy = () => this.buyItem(item)
+
+                            if(this.canBuyItem(item)) {
+                                this.buyItem(item)
                             }
                             
                             if(this.isProcessRunning) {

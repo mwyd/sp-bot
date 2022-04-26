@@ -7,6 +7,7 @@ import useUserPreset from './useUserPreset'
 import useRarePaintSeedItem from './useRarePaintSeedItem'
 import useShadowpaySoldItem from './useShadowpaySoldItem'
 import useSteamMarketItem from './useSteamMarketItem'
+import useBuffMarketItem from './useBuffMarketItem'
 
 const defaults = {
     baseUrl: 'https://conduit.ddns.net/api/v1',
@@ -21,6 +22,7 @@ const saleGuardItem = useSaleGuardItem(defaults)
 const rarePaintSeedItem = useRarePaintSeedItem(defaults)
 const shadowpaySoldItem = useShadowpaySoldItem(defaults)
 const steamMarketItem = useSteamMarketItem(defaults)
+const buffMarketItem = useBuffMarketItem(defaults)
 
 export {
     user,
@@ -30,5 +32,6 @@ export {
     saleGuardItem,
     rarePaintSeedItem,
     shadowpaySoldItem,
-    steamMarketItem
+    steamMarketItem,
+    buffMarketItem
 }

@@ -127,7 +127,7 @@ export default {
             },
             search: '',
             frozenToConfirm: false,
-            sortByModel: itemSortType.REAL_DISCOUNT,
+            sortByModel: itemSortType.STEAM_DISCOUNT,
             sortDirAsc: false
         }
     },

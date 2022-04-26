@@ -23,7 +23,7 @@
             </div>
             <div class="spb-item__column spb-item__price">
                 <span class="spb--font-weight-light">$ {{ item.price_market_usd.toFixed(2) }}
-                    <sup>{{ (item._real_discount != null ? item._real_discount + '% | ': '') + item.discount }}%</sup>
+                    <sup>{{ (item._steam_discount != null ? item._steam_discount + '% | ': '') + item.discount }}%</sup>
                 </span>
             </div>
             <slot name="modal-columns"></slot>
@@ -86,9 +86,9 @@
                 <a 
                     target="_blank" 
                     class="spb--link"
-                    :href="buff163.MARKET + '#search=' + item.steam_market_hash_name"
+                    :href="buffMarketLink"
                 > 
-                    Buff.163
+                    Buff
                     <span class="spb--text-green">
                         market
                     </span>
@@ -130,7 +130,6 @@ export default {
             shadowpayStatistics,
             steamMarket,
             csgoGallery,
-            buff163,
             mutableShadowpayStatistics: {},
             displayStatistics: this.$store.getters['app/config']('displayItemStatistics'),
             hideMoreStatisticsButton: false
@@ -142,6 +141,11 @@ export default {
         },
         existingShadowpayStatistics() {
             return Object.keys(this.shadowpayStatistics).filter(key => this.mutableShadowpayStatistics[key])
+        },
+        buffMarketLink() {
+            return this.item._buff_good_id
+                ? buff163.URL + '/goods/' + this.item._buff_good_id
+                : buff163.URL + '/market/csgo#search=' + this.item.steam_market_hash_name
         }
     },
     methods: {

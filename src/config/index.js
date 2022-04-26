@@ -9,7 +9,7 @@ const csgoGallery = Object.freeze({
 })
 
 const buff163 = Object.freeze({
-    MARKET: 'https://buff.163.com/market/csgo'
+    URL: 'https://buff.163.com',
 })
 
 const notificationSound = new Audio(chrome.runtime.getURL('/assets/audio/Jestem_zrujnowany.mp3'))

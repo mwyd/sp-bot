@@ -65,13 +65,13 @@ const significantProperties = Object.freeze({
         name: 'Steam volume',
         unit: ''
     },
-    _app_income: {
-        name: 'Income',
+    _buff_price: {
+        name: 'Buff price',
         unit: '$'
     },
-    _app_income_percentage: {
-        name: 'Income',
-        unit: '%'
+    _buff_volume: {
+        name: 'Buff volume',
+        unit: ''
     }
 })
 
@@ -95,11 +95,19 @@ const shadowpayStatistics = Object.freeze({
 })
 
 const itemSortBy = new Map([
-    [itemSortType.REAL_DISCOUNT, 
+    [itemSortType.BUFF_DISCOUNT, 
+        {
+            name: 'Buff discount',
+            callback(asc) { 
+                return (a, b) => ((b._buff_discount ?? 0) - (a._buff_discount ?? 0)) * (asc ? -1 : 1)
+            }
+        }
+    ],
+    [itemSortType.STEAM_DISCOUNT, 
         {
             name: 'Steam discount',
             callback(asc) { 
-                return (a, b) => ((b._real_discount ?? 0) - (a._real_discount ?? 0)) * (asc ? -1 : 1)
+                return (a, b) => ((b._steam_discount ?? 0) - (a._steam_discount ?? 0)) * (asc ? -1 : 1)
             }
         }
     ],
