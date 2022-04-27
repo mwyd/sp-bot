@@ -13,19 +13,19 @@
                 </app-input>
                 <select 
                     class="spb-sale-guard__sort-by spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
-                    v-model="sortByModel"
+                    v-model="sortModel"
                 >
-                    <option v-for="sortById in Object.values(itemSortType)"
-                        :key="'sort-' + sortById"
-                        :value="sortById"
+                    <option v-for="[key, sort] in itemSortBy"
+                        :key="'sort-' + key"
+                        :value="key"
                     >
-                        {{ itemSortBy.get(sortById).name }}
+                        {{ sort.name }}
                     </option>
                 </select>
                 <div 
-                    class="spb-sale-guard__sort-dir spb--rounded-small spb--background-image-center spb--cursor-pointer"
+                    class="spb-sort-dir spb--rounded-small spb--background-image-center spb--cursor-pointer"
                     :class="sortDirClass"
-                    @click="() => sortDirAsc = !sortDirAsc"
+                    @click="sortDirAsc = !sortDirAsc"
                 ></div>
             </div>
         </div>
@@ -97,12 +97,12 @@ import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import { SPB_LOG, roundNumber } from '@/utils/index'
 import actionMixin from '@/mixins/actionMixin'
 import processMixin from '@/mixins/processMixin'
+import itemFilterMixin from '@/mixins/itemFilterMixin'
 import AppInput from './ui/AppInput'
 import SaleGuardItem from './SaleGuardItem'
 import alertType from '@/enums/alertType'
 import tabWindowState from '@/enums/tabWindowState'
 import itemSortType from '@/enums/itemSortType'
-import { itemSortBy } from '@/resources/marketItem'
 import { itemOnSale, market } from '@/api/shadowpay'
 
 export default {
@@ -111,18 +111,14 @@ export default {
         AppInput,
         SaleGuardItem
     },
-    mixins: [actionMixin, processMixin],
+    mixins: [actionMixin, processMixin, itemFilterMixin],
     props: {
         id: Number
     },
     emits: ['statusUpdate'],
     data() {
         return {
-            itemSortType,
-            itemSortBy,
-            search: '',
-            sortByModel: itemSortType.MARKET_PRICE,
-            sortDirAsc: false,
+            sortModel: itemSortType.MARKET_PRICE,
             timeoutId: null
         }
     },
@@ -144,12 +140,7 @@ export default {
         filteredItems() {
             return [...this.itemsOnSale.values()]
                 .filter(data => data.item._search_steam_hash_name.includes(this.search.toLowerCase()))
-                .sort((a, b) => itemSortBy.get(this.sortByModel).callback(this.sortDirAsc)(a.item, b.item))
-        },
-        sortDirClass() {
-            return [
-                this.sortDirAsc ? 'spb-sale-guard__sort-dir--asc' : 'spb-sale-guard__sort-dir--desc'
-            ]
+                .sort((a, b) => this.itemSortBy.get(this.sortModel).callback(this.sortDirAsc)(a.item, b.item))
         },
         toggleProcessButtonClass() {
             return [
@@ -321,23 +312,6 @@ export default {
     width: 150px;
     height: 32px;
     flex-shrink: 0;
-}
-
-.spb-sale-guard__sort-dir {
-    margin-left: 4px;
-    width: 32px;
-    height: 32px;
-    flex-shrink: 0;
-    background-color: var(--secondary-background-color);
-    background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/arrow.svg');
-}
-
-.spb-sale-guard__sort-dir--desc {
-    transform: rotate(90deg);
-}
-
-.spb-sale-guard__sort-dir--asc {
-    transform: rotate(-90deg);
 }
 
 .spb-sale-guard__items {
