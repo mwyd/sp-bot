@@ -157,6 +157,9 @@ export default {
         },
         appLoaded() {
             return this.$store.state.app.loaded
+        },
+        targetMarket() {
+            return this.$store.getters['app/config']('targetMarket')
         }
     },
     watch: {
@@ -165,7 +168,7 @@ export default {
         },
         appLoaded(value) {
             if(value) {
-                this.sortByModel = this.$store.getters['app/config']('targetMarket') == targetMarketType.BUFF
+                this.sortByModel = this.targetMarket == targetMarketType.BUFF
                     ? itemSortType.BUFF_DISCOUNT
                     : itemSortType.STEAM_DISCOUNT
             }

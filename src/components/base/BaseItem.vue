@@ -147,11 +147,13 @@ export default {
                 ? buff163.URL + '/goods/' + this.item._buff_good_id
                 : buff163.URL + '/market/csgo#search=' + this.item.steam_market_hash_name
         },
+        targetMarket() {
+            return this.$store.getters['app/config']('targetMarket')
+        },
         discountText() {
             let text = `${this.item.discount}%`
 
-            const targetMarket = this.$store.getters['app/config']('targetMarket')
-            const targetMarketDiscount = this.item[`_${targetMarket}_discount`]
+            const targetMarketDiscount = this.item[`_${this.targetMarket}_discount`]
 
             if(targetMarketDiscount != null) {
                 text = `${targetMarketDiscount}% | ` + text

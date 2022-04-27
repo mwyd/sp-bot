@@ -26,7 +26,7 @@
                     <span class="spb-option__description">Preset</span>
                         <select 
                             class="spb-bot__preset-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
-                            v-model="presetIdModel"
+                            v-model="presetModel"
                         >
                             <option 
                                 v-for="[id, preset] in sortedPresets(true)" 
@@ -51,7 +51,7 @@
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal margin</span>
                     <app-input 
-                        v-model.number="preset.dealMargin"
+                        v-model.number="dealMargin"
                         :type="'number'" 
                         :validator="value => (value >= -preset.deal && value <= 1000 - preset.deal)"
                         :model-updated="checkToConfirm"
@@ -103,6 +103,7 @@
 import { mapState, mapMutations, mapActions } from 'vuex'
 import { calculateDiscount, SPB_LOG } from '@/utils'
 import { normalizeMarketItem, inspectItem } from '@/resources/marketItem'
+import presetMixin from '@/mixins/presetMixin'
 import processMixin from '@/mixins/processMixin'
 import AppInput from './ui/AppInput'
 import DateFormat from 'dateformat'
@@ -118,7 +119,7 @@ export default {
     components: {
         AppInput
     },
-    mixins: [processMixin],
+    mixins: [presetMixin, processMixin],
     props: {
         id: Number
     },
@@ -126,8 +127,6 @@ export default {
     data() {
         return {
             timeoutId: null,
-            presetId: 0,
-            preset: {},
             moneySpent: 0,
             initDate: Date.now(),
             lastPendingUpdate: Date.now(),
@@ -142,20 +141,9 @@ export default {
     computed: {
         ...mapState({
             csrfCookie: state => state.app.csrfCookie,
-            presets: state => state.presetManager.presets,
             finishedItems: state => state.bots.items.finished,
             token: state => state.session.token
         }),
-        presetIdModel: {
-            get() {
-                return this.presetId
-            },
-            set(value) {
-                this.presetId = value
-                this.preset = { ...this.getPreset(this.presetId) }
-                this.checkToConfirm()
-            }
-        },
         marketVolumeLimit() {
             return this.$store.getters['app/config']('marketVolumeLimit')
         },
@@ -163,15 +151,20 @@ export default {
             return [
                 !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
             ]
+        },
+        targetMarket() {
+            return this.$store.getters['app/config']('targetMarket')
         }
     },
     watch: {
+        presetModel() {
+            this.checkToConfirm()
+        },
         marketVolumeLimit() {
             this.checkToConfirm()
         }
     },
     beforeMount() {
-        this.presetIdModel = this.presetId
         this.startTrack(this)
     },
     beforeUnmount() {
@@ -188,12 +181,6 @@ export default {
         ...mapActions({
            pushAlert: 'app/pushAlert'
         }),
-        sortedPresets(sortAsc = true) {
-            return this.$store.getters['presetManager/sortedPresets'](sortAsc)
-        },
-        getPreset(id) {
-            return this.$store.getters['presetManager/preset'](id)
-        },
         clear() {
             this.items.filtered = []
             this.items.pending.forEach(item => item._current_run = false)
@@ -267,7 +254,9 @@ export default {
             })       
         },
         canBuyItem(item) {
-            return item._steam_updated && item._steam_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume >= this.marketVolumeLimit
+            return item[`_${this.targetMarket}_updated`]
+                && item[`_${this.targetMarket}_volume`] >= this.marketVolumeLimit
+                && item[`_${this.targetMarket}_discount`] >= this.preset.deal + this.dealMargin
         },
         buyItem(item) {
             if(this.items.pending.has(item.id) || item.price_market_usd + this.moneySpent > this.preset.toSpend) return

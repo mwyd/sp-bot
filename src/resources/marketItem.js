@@ -4,6 +4,7 @@ import { rarePaintSeedItem } from '@/api/conduit'
 import store from '@/store'
 import alertType from '@/enums/alertType'
 import itemSortType from '@/enums/itemSortType'
+import { steamBuffDiscountOffset } from '@/config'
 
 const inspectLinkSteamIdRange = [11, 17]
 
@@ -99,7 +100,7 @@ const itemSortBy = new Map([
         {
             name: 'Buff discount',
             callback(asc) { 
-                return (a, b) => ((b._buff_discount ?? 0) - (a._buff_discount ?? 0)) * (asc ? -1 : 1)
+                return (a, b) => ((b._buff_discount ?? -steamBuffDiscountOffset) - (a._buff_discount ?? -steamBuffDiscountOffset)) * (asc ? -1 : 1)
             }
         }
     ],

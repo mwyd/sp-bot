@@ -18,11 +18,14 @@ const alertLifeTime = 2.0
 
 const checkInstanceTick = 0.1
 
+const steamBuffDiscountOffset = 30
+
 export {
     steamMarket,
     csgoGallery,
     buff163,
     notificationSound,
     alertLifeTime,
-    checkInstanceTick
+    checkInstanceTick,
+    steamBuffDiscountOffset
 }
