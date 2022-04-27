@@ -76,25 +76,6 @@ const significantProperties = Object.freeze({
     }
 })
 
-const shadowpayStatistics = Object.freeze({
-    _app_sell_price: {
-        name: 'Average sell price',
-        unit: '$'
-    },
-    _avg_discount: {
-        name: 'Average discount',
-        unit: '%'
-    },
-    _sold: {
-        name: 'Sold',
-        unit: ''
-    },
-    _last_sold: {
-        name: 'Last sold',
-        unit: ''
-    }
-})
-
 const itemSortBy = new Map([
     [itemSortType.BUFF_DISCOUNT, 
         {
@@ -231,7 +212,6 @@ const inspectItem = async (item, showAlerts = true) => {
 
 export {
     significantProperties,
-    shadowpayStatistics,
     itemSortBy,
     isFloatProfitable,
     hasPaintSeedVariants,

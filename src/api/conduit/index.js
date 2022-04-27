@@ -5,7 +5,6 @@ import useUserConfig from './useUserConfig'
 import useUserFriend from './useUserFriend'
 import useUserPreset from './useUserPreset'
 import useRarePaintSeedItem from './useRarePaintSeedItem'
-import useShadowpaySoldItem from './useShadowpaySoldItem'
 import useSteamMarketItem from './useSteamMarketItem'
 import useBuffMarketItem from './useBuffMarketItem'
 
@@ -20,7 +19,6 @@ const userFriend = useUserFriend(defaults)
 const userConfig = useUserConfig(defaults)
 const saleGuardItem = useSaleGuardItem(defaults)
 const rarePaintSeedItem = useRarePaintSeedItem(defaults)
-const shadowpaySoldItem = useShadowpaySoldItem(defaults)
 const steamMarketItem = useSteamMarketItem(defaults)
 const buffMarketItem = useBuffMarketItem(defaults)
 
@@ -31,7 +29,6 @@ export {
     userConfig,
     saleGuardItem,
     rarePaintSeedItem,
-    shadowpaySoldItem,
     steamMarketItem,
     buffMarketItem
 }
