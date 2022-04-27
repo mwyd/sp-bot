@@ -26,7 +26,7 @@ export default {
                     dealMargin += steamBuffDiscountOffset 
                 }
 
-                this.presetModel.dealMargin = dealMargin
+                this.preset.dealMargin = dealMargin
             }
         }
     },
