@@ -4,10 +4,6 @@ const steamMarket = Object.freeze({
     USER_PROFILE: 'https://steamcommunity.com/profiles/'
 })
 
-const csgoGallery = Object.freeze({
-    SCREENSHOT: 'https://csgo.gallery/'
-})
-
 const buff163 = Object.freeze({
     URL: 'https://buff.163.com',
 })
@@ -22,7 +18,6 @@ const steamBuffDiscountOffset = 30
 
 export {
     steamMarket,
-    csgoGallery,
     buff163,
     notificationSound,
     alertLifeTime,

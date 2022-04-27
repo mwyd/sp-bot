@@ -2,12 +2,12 @@
     <div class="spb-item__row spb--rounded-small">
         <div class="spb-item spb--flex">
             <div class="spb-item__column spb-item__name">
+                <img :src="steamMarket.ITEM_IMAGE + item.steam_icon_url_large">
                 <a
                     target="_blank" 
                     class="spb--link"
                     :href="steamMarket.ITEM_SELL_LISTINGS + item.steam_market_hash_name"
                 >
-                    <img :src="steamMarket.ITEM_IMAGE + item.steam_icon_url_large">
                     {{ item.steam_market_hash_name }}
                 </a>
             </div>
@@ -29,7 +29,7 @@
             <slot name="modal-columns"></slot>
             <div 
                 class="spb-item__column spb-item__info spb-item__info--ico"
-                @click="toggleDisplayStatistics"
+                @click="displayStatistics = !displayStatistics"
             ></div>
         </div>
         <div 
@@ -82,18 +82,6 @@
                 Inspect
                 <span class="spb--text-green">link</span>
             </div>
-            <div class="spb-item__stat spb--cursor-pointer">
-                <a 
-                    target="_blank" 
-                    class="spb--link"
-                    :href="csgoGallery.SCREENSHOT + item.inspect_url"
-                > 
-                    Screenshot
-                    <span class="spb--text-green">
-                        cs.deals
-                    </span>
-                </a>
-            </div>
         </div>
     </div>
 </template>
@@ -101,7 +89,7 @@
 <script>
 import { copyToClipboard } from '@/utils'
 import { significantProperties, isFloatProfitable } from '@/resources/marketItem'
-import { steamMarket, csgoGallery, buff163 } from '@/config'
+import { steamMarket, buff163 } from '@/config'
 
 export default {
     name: 'Item',
@@ -112,7 +100,6 @@ export default {
         return {
             significantProperties,
             steamMarket,
-            csgoGallery,
             displayStatistics: this.$store.getters['app/config']('displayItemStatistics')
         }
     },
@@ -169,9 +156,6 @@ export default {
 
 .spb-item__name {
     width: 100%;
-}
-
-.spb-item__name a {
     display: flex;
     align-items: center;
 }
