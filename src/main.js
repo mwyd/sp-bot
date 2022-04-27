@@ -9,6 +9,7 @@ try {
     const root = initRoot()
 
     const app = createApp(App)
+    
     app.use(store)
     app.mount(root)
 }
