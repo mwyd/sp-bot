@@ -4,6 +4,7 @@ import { rarePaintSeedItem } from '@/api/conduit'
 import store from '@/store'
 import alertType from '@/enums/alertType'
 import itemSortType from '@/enums/itemSortType'
+import { steamBuffDiscountOffset } from '@/config'
 
 const inspectLinkSteamIdRange = [11, 17]
 
@@ -65,41 +66,30 @@ const significantProperties = Object.freeze({
         name: 'Steam volume',
         unit: ''
     },
-    _app_income: {
-        name: 'Income',
+    _buff_price: {
+        name: 'Buff price',
         unit: '$'
     },
-    _app_income_percentage: {
-        name: 'Income',
-        unit: '%'
-    }
-})
-
-const shadowpayStatistics = Object.freeze({
-    _app_sell_price: {
-        name: 'Average sell price',
-        unit: '$'
-    },
-    _avg_discount: {
-        name: 'Average discount',
-        unit: '%'
-    },
-    _sold: {
-        name: 'Sold',
-        unit: ''
-    },
-    _last_sold: {
-        name: 'Last sold',
+    _buff_volume: {
+        name: 'Buff volume',
         unit: ''
     }
 })
 
 const itemSortBy = new Map([
-    [itemSortType.REAL_DISCOUNT, 
+    [itemSortType.BUFF_DISCOUNT, 
+        {
+            name: 'Buff discount',
+            callback(asc) { 
+                return (a, b) => ((b._buff_discount ?? -steamBuffDiscountOffset) - (a._buff_discount ?? -steamBuffDiscountOffset)) * (asc ? -1 : 1)
+            }
+        }
+    ],
+    [itemSortType.STEAM_DISCOUNT, 
         {
             name: 'Steam discount',
             callback(asc) { 
-                return (a, b) => ((b._real_discount ?? 0) - (a._real_discount ?? 0)) * (asc ? -1 : 1)
+                return (a, b) => ((b._steam_discount ?? 0) - (a._steam_discount ?? 0)) * (asc ? -1 : 1)
             }
         }
     ],
@@ -222,7 +212,6 @@ const inspectItem = async (item, showAlerts = true) => {
 
 export {
     significantProperties,
-    shadowpayStatistics,
     itemSortBy,
     isFloatProfitable,
     hasPaintSeedVariants,

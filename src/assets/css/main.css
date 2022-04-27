@@ -158,3 +158,20 @@
     display: block;
     padding-bottom: 8px;
 }
+
+.spb-sort-dir {
+    margin-left: 4px;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    background-color: var(--secondary-background-color);
+    background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/arrow.svg');
+}
+
+.spb-sort-dir--desc {
+    transform: rotate(90deg);
+}
+
+.spb-sort-dir--asc {
+    transform: rotate(-90deg);
+}

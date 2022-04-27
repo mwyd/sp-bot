@@ -43,11 +43,18 @@ const syncStorage = {
     get: key => new Promise(resolve => chrome.storage.sync.get([key], data => resolve(data[key])))
 }
 
+const calculateDiscount = (a, b, round = true) => {
+    const discount =  (1 - (a / b)) * 100
+
+    return round ? Math.round(discount) : discount
+}
+
 export { 
     SPB_LOG, 
     roundNumber,
     copyToClipboard,
     fetchBackground,
     fetchJson,
-    syncStorage
+    syncStorage,
+    calculateDiscount
 }

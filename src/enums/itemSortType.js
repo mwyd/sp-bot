@@ -1,6 +1,7 @@
 export default Object.freeze({
-    REAL_DISCOUNT: 0,
-    SHADOWPAY_DISCOUNT: 1,
-    ITEM_FLOAT: 2,
-    MARKET_PRICE: 3
+    BUFF_DISCOUNT: 0,
+    STEAM_DISCOUNT: 1,
+    SHADOWPAY_DISCOUNT: 2,
+    ITEM_FLOAT: 3,
+    MARKET_PRICE: 4
 })

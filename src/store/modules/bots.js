@@ -52,7 +52,7 @@ export default {
                     name: 'Bot',
                     symbol: 'B',
                     childComponent: 'Bot',
-                    tabMounted: tab => tab.$refs.tabWindow.$refs.childComponent.presetIdModel = id
+                    tabMounted: tab => tab.$refs.tabWindow.$refs.childComponent.presetModel = id
                 }, { root: true })
             }
         },

@@ -21,9 +21,6 @@ export default {
         sortedFriends: state => sortAsc => {
             return [...state.friends].sort((a, b) => (a[1].shadowpayUserId - b[1].shadowpayUserId) * (sortAsc ? 1 : -1))
         },
-        friendIds(state) {
-            return [...state.friends.keys()]
-        },
         itemOwner: state => shadowpayUserId => {
             let name = null
 

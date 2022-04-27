@@ -26,9 +26,6 @@ export default {
         },
         sortedPresets: state => sortAsc => {
             return [...state.presets].sort((a, b) => (a[1].maxPrice - b[1].maxPrice) * (sortAsc ? 1 : -1))
-        },
-        presetIds(state) {
-            return [...state.presets.keys()]
         }
     },
     mutations: {

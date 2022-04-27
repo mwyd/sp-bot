@@ -19,19 +19,19 @@
                 </app-input>
                 <select 
                     class="spb-home__sort-by spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
-                    v-model="sortByModel"
+                    v-model="sortModel"
                 >
-                    <option v-for="sortById in Object.values(itemSortType)"
-                        :key="'sort-' + sortById"
-                        :value="sortById"
+                    <option v-for="[key, sort] in itemSortBy"
+                        :key="'sort-' + key"
+                        :value="key"
                     >
-                        {{ itemSortBy.get(sortById).name }}
+                        {{ sort.name }}
                     </option>
                 </select>
                 <div 
-                    class="spb-home__sort-dir spb--rounded-small spb--background-image-center spb--cursor-pointer"
+                    class="spb-sort-dir spb--rounded-small spb--background-image-center spb--cursor-pointer"
                     :class="sortDirClass"
-                    @click="() => sortDirAsc = !sortDirAsc"
+                    @click="sortDirAsc = !sortDirAsc"
                 ></div>
             </div>
         </div>  
@@ -95,9 +95,10 @@ import tabWindowState from '@/enums/tabWindowState'
 import HomeItem from './HomeItem'
 import AppInput from './ui/AppInput'
 import AppMultipleSwitch from './ui/AppMultipleSwitch'
+import itemFilterMixin from '@/mixins/itemFilterMixin'
 import botItemType from '@/enums/botItemType'
 import itemSortType from '@/enums/itemSortType'
-import { itemSortBy } from '@/resources/marketItem'
+import targetMarketType from '@/enums/targetMarketType'
 
 const views = Object.freeze({
     ACTIVE: 'Active',
@@ -111,24 +112,21 @@ export default {
         AppInput,
         AppMultipleSwitch
     },
+    mixins: [itemFilterMixin],
     props: {
         id: Number
     },
     emits: ['statusUpdate'],
     data() {
         return {
-            itemSortType,
             botItemType,
             views,
-            itemSortBy,
             currentView: views.ACTIVE,
             itemsCache: {
                 toConfirm: []
             },
-            search: '',
             frozenToConfirm: false,
-            sortByModel: itemSortType.REAL_DISCOUNT,
-            sortDirAsc: false
+            sortModel: itemSortType.STEAM_DISCOUNT
         }
     },
     computed: {
@@ -149,15 +147,23 @@ export default {
         pendingItems() {
             return this.$store.getters['bots/items'](botItemType.PENDING)
         },
-        sortDirClass() {
-            return [
-                this.sortDirAsc ? 'spb-home__sort-dir--asc' : 'spb-home__sort-dir--desc'
-            ]
+        appLoaded() {
+            return this.$store.state.app.loaded
+        },
+        targetMarket() {
+            return this.$store.getters['app/config']('targetMarket')
         }
     },
     watch: {
         pendingItems(items) {
             if(this.currentView != this.views.BUY_HISTORY && items.length > 0) this.$emit('statusUpdate', tabWindowState.PENDING)
+        },
+        appLoaded(value) {
+            if(value) {
+                this.sortModel = this.targetMarket == targetMarketType.BUFF
+                    ? itemSortType.BUFF_DISCOUNT
+                    : itemSortType.STEAM_DISCOUNT
+            }
         }
     },
     methods: {
@@ -184,7 +190,7 @@ export default {
 
             return items
                 .filter(item => item._search_steam_hash_name.includes(this.search.toLowerCase()))
-                .sort(this.itemSortBy.get(this.sortByModel).callback(this.sortDirAsc))
+                .sort(this.itemSortBy.get(this.sortModel).callback(this.sortDirAsc))
         },
         freezeToConfirm(value) {
             if(value) this.itemsCache.toConfirm = this.$store.getters['bots/items'](botItemType.TO_CONFIRM)
@@ -217,23 +223,6 @@ export default {
     width: 150px;
     height: 32px;
     flex-shrink: 0;
-}
-
-.spb-home__sort-dir {
-    margin-left: 4px;
-    width: 32px;
-    height: 32px;
-    flex-shrink: 0;
-    background-color: var(--secondary-background-color);
-    background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/arrow.svg');
-}
-
-.spb-home__sort-dir--desc {
-    transform: rotate(90deg);
-}
-
-.spb-home__sort-dir--asc {
-    transform: rotate(-90deg);
 }
 
 .spb-home__items-header {

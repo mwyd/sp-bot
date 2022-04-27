@@ -5,61 +5,28 @@ import { market } from '@/api/shadowpay'
 import { background } from '@/api/internal'
 import { alertLifeTime } from '@/config'
 import alertType from '@/enums/alertType'
+import targetMarketType from '@/enums/targetMarketType'
+import tabs from '@/resources/tabs'
 
 export default {
     namespaced: true,
     state: () => ({
         loaded: null,
         backgroundMounted: false, 
-        tabs: [
-            {
-                id: 0,
-                isStatic: true,
-                name: 'Home',
-                symbol: 'H',
-                childComponent: 'Home'
-            },
-            {
-                id: 1,
-                isStatic: true,
-                name: 'SaleGuard',
-                symbol: 'G',
-                childComponent: 'SaleGuard'
-            },
-            {
-                id: 2,
-                isStatic: true,
-                name: 'PresetManager',
-                symbol: 'P',
-                childComponent: 'PresetManager'
-            },
-            {
-                id: 3,
-                isStatic: true,
-                name: 'FriendManager',
-                symbol: 'F',
-                childComponent: 'FriendManager'
-            },
-            {
-                id: 4,
-                isStatic: true,
-                name: 'Settings',
-                symbol: 'S',
-                childComponent: 'Settings'
-            }
-        ],
+        tabs: tabs,
         tabReservedIds: [...new Array(5).keys()],
         tabFreeIds: [...new Array(45).keys()].map(e => e += 5),
         alerts: new Map(),
         config: {
-            steamVolumeLimit: 10,
+            marketVolumeLimit: 10,
             displayItemStatistics: false,
             displayTabPreview: true,
             displayInterfaceOnTop: false,
             openTabsAtStartup: false,
             saleGuardBidStep: 0.01,
             saleGuardSafeDiscount: 0.97,
-            saleGuardUpdateDelay: 4.0
+            saleGuardUpdateDelay: 4.0,
+            targetMarket: targetMarketType.STEAM
         },
         csrfCookie: Cookies.get('csrf_cookie')
     }),

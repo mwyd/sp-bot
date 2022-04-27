@@ -11,7 +11,7 @@
             <span class="spb-option__description">Select preset</span>
             <select 
                 class="spb-preset-manager__preset-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
-                v-model="currentPresetIdModel"
+                v-model="presetModel"
             >
                 <option 
                     v-for="[id, preset] in sortedPresets(true)" 
@@ -27,7 +27,7 @@
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal</span>
                     <app-input 
-                        v-model.number="currentPreset.deal"
+                        v-model.number="preset.deal"
                         :type="'number'"
                         :validator="value => (value >= -1000 && value <= 100)"
                     >
@@ -36,16 +36,16 @@
                 <div class="spb-option">
                     <span class="spb-option__description">$ Item min price</span>
                     <app-input 
-                        v-model.number="currentPreset.minPrice"
+                        v-model.number="preset.minPrice"
                         :type="'number'" 
-                        :validator="value => (value >= 0 && value <= currentPreset.maxPrice)"
+                        :validator="value => (value >= 0 && value <= preset.maxPrice)"
                     >
                     </app-input>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">Name</span>
                     <app-input 
-                        v-model="currentPreset.name"
+                        v-model="preset.name"
                         :type="'text'" 
                     >
                     </app-input>    
@@ -53,7 +53,7 @@
                 <div class="spb-option">
                     <span class="spb-option__description">Search</span>
                     <app-input 
-                        v-model="currentPreset.search"
+                        v-model="preset.search"
                         :type="'text'" 
                         :placeholder="'Search...'"
                     >
@@ -64,34 +64,34 @@
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal margin</span>
                     <app-input 
-                        v-model.number="currentPreset.dealMargin"
+                        v-model.number="dealMargin"
                         :type="'number'" 
-                        :validator="value => (value >= -currentPreset.deal && value <= 1000 - currentPreset.deal)"
+                        :validator="value => (value >= -preset.deal && value <= 1000 - preset.deal)"
                     >
                     </app-input>
                 </div>  
                 <div class="spb-option">
                     <span class="spb-option__description">$ Item max price</span>
                     <app-input 
-                        v-model.number="currentPreset.maxPrice"
+                        v-model.number="preset.maxPrice"
                         :type="'number'" 
-                        :validator="value => (value >= currentPreset.minPrice && value <= currentPreset.toSpend)"
+                        :validator="value => (value >= preset.minPrice && value <= preset.toSpend)"
                     >
                     </app-input>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">$ Money to spend</span>
                     <app-input 
-                        v-model.number="currentPreset.toSpend"
+                        v-model.number="preset.toSpend"
                         :type="'number'" 
-                        :validator="value => (value >= currentPreset.maxPrice && value <= 1000000)"
+                        :validator="value => (value >= preset.maxPrice && value <= 1000000)"
                     >
                     </app-input>
                 </div>
                 <div class="spb-option">
                     <span class="spb-option__description">Refresh time</span>
                     <app-input
-                        v-model.number="currentPreset.runDelay" 
+                        v-model.number="preset.runDelay" 
                         :type="'number'" 
                         :validator="value => (value >= 0 && value <= 1200)"
                     >
@@ -104,7 +104,7 @@
                 <button 
                     class="spb-button spb-button--green"
                     :disabled="actionsDisabled" 
-                    @click="disableActions(addPreset(currentPreset))"
+                    @click="disableActions(addPreset(preset))"
                 >
                 add
                 </button>
@@ -112,15 +112,15 @@
             <div v-else class="spb--flex">
                 <button 
                     class="spb-preset-manager__button-update spb-button spb-button--green" 
-                    :disabled="currentPresetId == 0 || actionsDisabled"
-                    @click="disableActions(updatePreset({id: currentPresetId, preset: currentPreset}))"
+                    :disabled="presetModel == 0 || actionsDisabled"
+                    @click="disableActions(updatePreset({id: presetModel, preset: preset}))"
                 >
                 update
                 </button>
                 <button 
                     class="spb-preset-manager__button-delete spb-button spb-button--red" 
-                    :disabled="currentPresetId == 0 || actionsDisabled"
-                    @click="disableActions(deletePreset(currentPresetId).then(shiftCurrentPresetIdModel))"
+                    :disabled="presetModel == 0 || actionsDisabled"
+                    @click="disableActions(deletePreset(presetModel).then(resetPresetModel))"
                 >
                 delete
                 </button>
@@ -130,8 +130,9 @@
 </template>
 
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import tabWindowState from '@/enums/tabWindowState'
+import presetMixin from '@/mixins/presetMixin'
 import actionMixin from '@/mixins/actionMixin'
 import AppInput from './ui/AppInput'
 import AppMultipleSwitch from './ui/AppMultipleSwitch'
@@ -147,7 +148,7 @@ export default {
         AppInput,
         AppMultipleSwitch
     },
-    mixins: [actionMixin],
+    mixins: [presetMixin, actionMixin],
     props: {
         id: Number
     },
@@ -155,32 +156,17 @@ export default {
     data() {
         return {
             views,
-            currentView: views.ADD,
-            currentPresetId: 0,
-            currentPreset: { ...this.getPreset(0) }
+            currentView: views.ADD
         }
     },
     computed: {
         ...mapState({
-            presets: state => state.presetManager.presets,
             presetsLoaded: state => state.presetManager.loaded
-        }),
-        ...mapGetters({
-            presetIds: 'presetManager/presetIds'
-        }),
-        currentPresetIdModel: {
-            get() {
-                return this.currentPresetId
-            },
-            set(value) {
-                this.currentPresetId = value
-                this.currentPreset = { ...this.getPreset(this.currentPresetId) }
-            }
-        }
+        })
     },
     watch: {
         currentView() {
-            this.currentPresetIdModel = 0
+            this.presetModel = 0
         },
         presetsLoaded(value) {
             this.$emit('statusUpdate', value ? tabWindowState.OK : tabWindowState.ERROR)
@@ -192,17 +178,8 @@ export default {
             updatePreset: 'presetManager/updatePreset',
             deletePreset: 'presetManager/deletePreset'
         }),
-        sortedPresets(sortAsc = true) {
-            return this.$store.getters['presetManager/sortedPresets'](sortAsc)
-        },
-        getPreset(id) {
-            return this.$store.getters['presetManager/preset'](id)
-        },
-        shiftCurrentPresetIdModel(success) {
-            if(success) {
-                const { length } = this.presetIds
-                if(length > 0) this.currentPresetIdModel = this.presetIds[length - 1]
-            }
+        resetPresetModel(success) {
+            if(success) this.presetModel = 0
         }
     }
 }

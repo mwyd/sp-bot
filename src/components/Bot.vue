@@ -26,7 +26,7 @@
                     <span class="spb-option__description">Preset</span>
                         <select 
                             class="spb-bot__preset-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
-                            v-model="presetIdModel"
+                            v-model="presetModel"
                         >
                             <option 
                                 v-for="[id, preset] in sortedPresets(true)" 
@@ -51,7 +51,7 @@
                 <div class="spb-option">
                     <span class="spb-option__description">% Deal margin</span>
                     <app-input 
-                        v-model.number="preset.dealMargin"
+                        v-model.number="dealMargin"
                         :type="'number'" 
                         :validator="value => (value >= -preset.deal && value <= 1000 - preset.deal)"
                         :model-updated="checkToConfirm"
@@ -101,8 +101,9 @@
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
-import { SPB_LOG } from '@/utils/index'
+import { calculateDiscount, SPB_LOG } from '@/utils'
 import { normalizeMarketItem, inspectItem } from '@/resources/marketItem'
+import presetMixin from '@/mixins/presetMixin'
 import processMixin from '@/mixins/processMixin'
 import AppInput from './ui/AppInput'
 import DateFormat from 'dateformat'
@@ -110,7 +111,7 @@ import alertType from '@/enums/alertType'
 import tabWindowState from '@/enums/tabWindowState'
 import { market } from '@/api/shadowpay'
 import { background } from '@/api/internal'
-import { steamMarketItem } from '@/api/conduit'
+import { buffMarketItem, steamMarketItem } from '@/api/conduit'
 import { notificationSound } from '@/config'
 
 export default {
@@ -118,7 +119,7 @@ export default {
     components: {
         AppInput
     },
-    mixins: [processMixin],
+    mixins: [presetMixin, processMixin],
     props: {
         id: Number
     },
@@ -126,8 +127,6 @@ export default {
     data() {
         return {
             timeoutId: null,
-            presetId: 0,
-            preset: {},
             moneySpent: 0,
             initDate: Date.now(),
             lastPendingUpdate: Date.now(),
@@ -142,36 +141,25 @@ export default {
     computed: {
         ...mapState({
             csrfCookie: state => state.app.csrfCookie,
-            presets: state => state.presetManager.presets,
             finishedItems: state => state.bots.items.finished,
             token: state => state.session.token
         }),
-        presetIdModel: {
-            get() {
-                return this.presetId
-            },
-            set(value) {
-                this.presetId = value
-                this.preset = { ...this.getPreset(this.presetId) }
-                this.checkToConfirm()
-            }
+        marketVolumeLimit() {
+            return this.$store.getters['app/config']('marketVolumeLimit')
         },
-        steamVolumeLimit() {
-            return this.$store.getters['app/config']('steamVolumeLimit')
-        },
-        toggleProcessButtonClass() {
-            return [
-                !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
-            ]
+        targetMarket() {
+            return this.$store.getters['app/config']('targetMarket')
         }
     },
     watch: {
-        steamVolumeLimit() {
+        presetModel() {
+            this.checkToConfirm()
+        },
+        marketVolumeLimit() {
             this.checkToConfirm()
         }
     },
     beforeMount() {
-        this.presetIdModel = this.presetId
         this.startTrack(this)
     },
     beforeUnmount() {
@@ -188,12 +176,6 @@ export default {
         ...mapActions({
            pushAlert: 'app/pushAlert'
         }),
-        sortedPresets(sortAsc = true) {
-            return this.$store.getters['presetManager/sortedPresets'](sortAsc)
-        },
-        getPreset(id) {
-            return this.$store.getters['presetManager/preset'](id)
-        },
         clear() {
             this.items.filtered = []
             this.items.pending.forEach(item => item._current_run = false)
@@ -252,18 +234,24 @@ export default {
                     item.price_usd = filteredItem.price_usd
                     item.price_market_usd = filteredItem.price_market_usd
 
-                    if(item._updated) this.calculateIncome(item)
-                    if(this.canBuyItem(item)) this.buyItem(item)
+                    if(item._buff_updated) {
+                        item._buff_discount = calculateDiscount(item.price_market_usd, item._buff_price)
+                    }
+
+                    if(item._steam_updated) {
+                        item._steam_discount = calculateDiscount(item.price_market_usd, item._steam_price)
+                    }
+
+                    if(this.canBuyItem(item)) {
+                        this.buyItem(item)
+                    }
                 }
             })       
         },
-        calculateIncome(item) {
-            item._app_income = ((0.87 * item._steam_price) - item.price_market_usd).toFixed(2)
-            item._app_income_percentage = 100 - Math.round((item.price_market_usd - item._app_income) * 100 / item.price_market_usd)
-            item._real_discount = 100 - Math.round(item.price_market_usd * 100 / item._steam_price)
-        },
         canBuyItem(item) {
-            return item._updated && item._real_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume >= this.steamVolumeLimit
+            return item[`_${this.targetMarket}_updated`]
+                && item[`_${this.targetMarket}_volume`] >= this.marketVolumeLimit
+                && item[`_${this.targetMarket}_discount`] >= this.preset.deal + this.dealMargin
         },
         buyItem(item) {
             if(this.items.pending.has(item.id) || item.price_market_usd + this.moneySpent > this.preset.toSpend) return
@@ -399,24 +387,37 @@ export default {
 
                             normalizeMarketItem(item)
 
-                            item._updated = false
+                            item._buff_updated = false
+                            item._steam_updated = false
 
-                            const { success, data } = await steamMarketItem.single(item._conduit_hash_name)
+                            const [buffResponse, steamResponse] = await Promise.all([
+                                buffMarketItem.single(item.steam_market_hash_name),
+                                steamMarketItem.single(item._conduit_hash_name)
+                            ])
 
-                            if(success) {
-                                item._updated = true
-                                item._steam_price = data.price
-                                item._steam_volume = data.volume
+                            if(buffResponse.success) {
+                                const { price, volume, good_id } = buffResponse.data
 
-                                this.calculateIncome(item)
+                                item._buff_updated = true
+                                item._buff_price = price
+                                item._buff_volume = volume
+                                item._buff_good_id = good_id
+                                item._buff_discount = calculateDiscount(item.price_market_usd, price)
+                            }
 
-                                item._buy = () => {
-                                    this.buyItem(item)
-                                }
+                            if(steamResponse.success) {
+                                const { price, volume } = steamResponse.data
 
-                                if(this.canBuyItem(item)) {
-                                    this.buyItem(item)
-                                }
+                                item._steam_updated = true
+                                item._steam_price = price
+                                item._steam_volume = volume
+                                item._steam_discount = calculateDiscount(item.price_market_usd, price)
+                            }
+
+                            item._buy = () => this.buyItem(item)
+
+                            if(this.canBuyItem(item)) {
+                                this.buyItem(item)
                             }
                             
                             if(this.isProcessRunning) {

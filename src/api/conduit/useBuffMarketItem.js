@@ -1,14 +1,14 @@
 import { fetchBackground } from '@/utils'
 
 export default function({ baseUrl, service }) {
-    const get = hashName => fetchBackground({
+    const single = hashName => fetchBackground({
         service,
         data: {
-            path: baseUrl + `/shadowpay-sold-items?search=${hashName}`,
+            path: baseUrl + `/buff-market-csgo-items/${hashName}`
         }
     })
     
     return {
-        get
+        single
     }
 }

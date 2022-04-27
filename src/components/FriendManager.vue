@@ -11,7 +11,7 @@
             <span class="spb-option__description">Select friend</span>
             <select 
                 class="spb-friend-manager__friend-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
-                v-model="currentFriendIdModel"
+                v-model="friendModel"
             >
                 <option 
                     v-for="[id, friend] in sortedFriends(true)" 
@@ -26,7 +26,7 @@
             <div class="spb-option">
                 <span class="spb-option__description">Shadowpay id</span>
                 <app-input 
-                    v-model.number="currentFriend.shadowpayUserId"
+                    v-model.number="friend.shadowpayUserId"
                     :type="'number'"
                     :placeholder="'Enter id...'"
                 >
@@ -35,7 +35,7 @@
             <div class="spb-option">
                 <span class="spb-option__description">Name</span>
                 <app-input 
-                    v-model="currentFriend.name"
+                    v-model="friend.name"
                     :type="'text'" 
                     :placeholder="'Enter name...'"
                 >
@@ -47,7 +47,7 @@
                 <button 
                     class="spb-button spb-button--green" 
                     :disabled="actionsDisabled"
-                    @click="disableActions(addFriend(currentFriend))"
+                    @click="disableActions(addFriend(friend))"
                 >
                 add
                 </button>
@@ -55,15 +55,15 @@
             <div v-else class="spb--flex">
                 <button 
                     class="spb-friend-manager__button-update spb-button spb-button--green" 
-                    :disabled="currentFriendId == 0 || actionsDisabled"
-                    @click="disableActions(updateFriend({id: currentFriendId, friend: currentFriend}))"
+                    :disabled="friendModel == 0 || actionsDisabled"
+                    @click="disableActions(updateFriend({id: friendModel, friend: friend}))"
                 >
                 update
                 </button>
                 <button 
                     class="spb-friend-manager__button-delete spb-button spb-button--red" 
-                    :disabled="currentFriendId == 0 || actionsDisabled"
-                    @click="disableActions(deleteFriend(currentFriendId).then(shiftCurrentFriendIdModel))"
+                    :disabled="friendModel == 0 || actionsDisabled"
+                    @click="disableActions(deleteFriend(friendModel).then(resetFriendModel))"
                 >
                 delete
                 </button>
@@ -73,7 +73,7 @@
 </template>
 
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import tabWindowState from '@/enums/tabWindowState'
 import actionMixin from '@/mixins/actionMixin'
 import AppInput from './ui/AppInput'
@@ -99,31 +99,21 @@ export default {
         return {
             views,
             currentView: views.ADD,
-            currentFriendId: 0,
-            currentFriend: { ...this.getFriend(0) }
+            friendModel: 0,
+            friend: { ...this.getFriend(0) }
         }
     },
     computed: {
         ...mapState({
-            friends: state => state.friendManager.friends,
             friendsLoaded: state => state.friendManager.loaded
-        }),
-        ...mapGetters({
-            friendIds: 'friendManager/friendIds'
-        }),
-        currentFriendIdModel: {
-            get() {
-                return this.currentFriendId
-            },
-            set(value) {
-                this.currentFriendId = value
-                this.currentFriend = { ...this.getFriend(this.currentFriendId) }
-            }
-        }
+        })
     },
     watch: {
+        friendModel(value) {
+            this.friend = { ...this.getFriend(value) }
+        },
         currentView() {
-            this.currentFriendIdModel = 0
+            this.friendModel = 0
         },
         friendsLoaded(value) {
             this.$emit('statusUpdate', value ? tabWindowState.OK : tabWindowState.ERROR)
@@ -141,11 +131,8 @@ export default {
         getFriend(id) {
             return this.$store.getters['friendManager/friend'](id)
         },
-        shiftCurrentFriendIdModel(success) {
-            if(success) {
-                const { length } = this.friendIds
-                if(length > 0) this.currentFriendIdModel = this.friendIds[length - 1]
-            }
+        resetFriendModel(success) {
+            if(success) this.friendModel = 0
         }
     }
 }

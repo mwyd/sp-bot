@@ -4,12 +4,8 @@ const steamMarket = Object.freeze({
     USER_PROFILE: 'https://steamcommunity.com/profiles/'
 })
 
-const csgoGallery = Object.freeze({
-    SCREENSHOT: 'https://csgo.gallery/'
-})
-
 const buff163 = Object.freeze({
-    MARKET: 'https://buff.163.com/market/csgo'
+    URL: 'https://buff.163.com',
 })
 
 const notificationSound = new Audio(chrome.runtime.getURL('/assets/audio/Jestem_zrujnowany.mp3'))
@@ -18,11 +14,13 @@ const alertLifeTime = 2.0
 
 const checkInstanceTick = 0.1
 
+const steamBuffDiscountOffset = 30
+
 export {
     steamMarket,
-    csgoGallery,
     buff163,
     notificationSound,
     alertLifeTime,
-    checkInstanceTick
+    checkInstanceTick,
+    steamBuffDiscountOffset
 }

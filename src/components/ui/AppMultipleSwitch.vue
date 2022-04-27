@@ -5,7 +5,7 @@
                 v-for="(option, index) in options"
                 class="spb-multiple-switch__option spb--rounded-small"
                 :key="`option-${sanitizedOption(option)}-${index}`"
-                :class="{'spb-multiple-switch__option--active': option == selected}"
+                :class="{ 'spb-multiple-switch__option--active': option == selected }"
                 @click="$emit('optionUpdate', option)"
             >
                 {{ option }}
