@@ -147,11 +147,6 @@ export default {
         marketVolumeLimit() {
             return this.$store.getters['app/config']('marketVolumeLimit')
         },
-        toggleProcessButtonClass() {
-            return [
-                !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
-            ]
-        },
         targetMarket() {
             return this.$store.getters['app/config']('targetMarket')
         }

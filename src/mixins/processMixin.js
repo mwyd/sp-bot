@@ -22,6 +22,11 @@ export default {
         },
         isProcessTerminated() {
             return this.processState == this.processStates.TERMINATED
+        },
+        toggleProcessButtonClass() {
+            return [
+                !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
+            ]
         }
     },
     methods: {

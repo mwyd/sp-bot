@@ -141,11 +141,6 @@ export default {
             return [...this.itemsOnSale.values()]
                 .filter(data => data.item._search_steam_hash_name.includes(this.search.toLowerCase()))
                 .sort((a, b) => this.itemSortBy.get(this.sortModel).callback(this.sortDirAsc)(a.item, b.item))
-        },
-        toggleProcessButtonClass() {
-            return [
-                !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
-            ]
         }
     },
     watch: {
