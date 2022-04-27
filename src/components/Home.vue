@@ -98,6 +98,7 @@ import AppMultipleSwitch from './ui/AppMultipleSwitch'
 import botItemType from '@/enums/botItemType'
 import itemSortType from '@/enums/itemSortType'
 import { itemSortBy } from '@/resources/marketItem'
+import targetMarketType from '@/enums/targetMarketType'
 
 const views = Object.freeze({
     ACTIVE: 'Active',
@@ -153,11 +154,21 @@ export default {
             return [
                 this.sortDirAsc ? 'spb-home__sort-dir--asc' : 'spb-home__sort-dir--desc'
             ]
+        },
+        appLoaded() {
+            return this.$store.state.app.loaded
         }
     },
     watch: {
         pendingItems(items) {
             if(this.currentView != this.views.BUY_HISTORY && items.length > 0) this.$emit('statusUpdate', tabWindowState.PENDING)
+        },
+        appLoaded(value) {
+            if(value) {
+                this.sortByModel = this.$store.getters['app/config']('targetMarket') == targetMarketType.BUFF
+                    ? itemSortType.BUFF_DISCOUNT
+                    : itemSortType.STEAM_DISCOUNT
+            }
         }
     },
     methods: {

@@ -50,15 +50,32 @@
             <div class="spb-option spb--font-size-big">
                 <span class="spb-option__description spb--clear-padding">Bot</span>
                 <div class="spb--flex spb-option__row spb--font-size-medium">
-                    <div>Steam volume limit</div>
+                    <div>Market volume limit</div>
                     <app-input 
-                        v-model.number="steamVolumeLimit"
-                        class="spb-settings__safe-discount"
+                        v-model.number="marketVolumeLimit"
+                        class="spb-settings__option-value"
                         :type="'number'"
                         :validator="value => value >= 0 && value <= 100"
                     >
                     </app-input>
                 </div>
+
+                <div class="spb--flex spb-option__row spb--font-size-medium">
+                    <div>Target market</div>
+                    <select 
+                        class="spb-settings__target-market spb-settings__option-value spb-input__field spb-input__field--ok spb--rounded-small"
+                        v-model="targetMarket"
+                    >
+                        <option 
+                            v-for="market in Object.values(targetMarketType)"
+                            :key="`target-${market}`"
+                            :value="market"
+                        >
+                            {{ market }}
+                        </option>
+                    </select>
+                </div>
+
             </div>
             <div class="spb-option spb--font-size-big">
                 <span class="spb-option__description spb--clear-padding">Sale Guard</span>
@@ -66,7 +83,7 @@
                     <div>Bid step</div>
                     <app-input 
                         v-model.number="bidStep"
-                        class="spb-settings__bid-step"
+                        class="spb-settings__option-value"
                         :type="'number'"
                         :validator="value => value >= 0.01 && value <= 100"
                     >
@@ -76,7 +93,7 @@
                     <div>Safe discount</div>
                     <app-input 
                         v-model.number="safeDiscount"
-                        class="spb-settings__safe-discount"
+                        class="spb-settings__option-value"
                         :type="'number'"
                         :validator="value => value >= 1 && value <= 1000"
                     >
@@ -86,7 +103,7 @@
                     <div>Update delay</div>
                     <app-input 
                         v-model.number="updateDelay"
-                        class="spb-settings__item-update-delay"
+                        class="spb-settings__option-value"
                         :type="'number'"
                         :validator="value => value >= 0 && value <= 1200"
                     >
@@ -109,6 +126,7 @@ import { mapState, mapActions } from 'vuex'
 import tabWindowState from '@/enums/tabWindowState'
 import actionMixin from '@/mixins/actionMixin'
 import AppInput from './ui/AppInput'
+import targetMarketType from '@/enums/targetMarketType'
 
 export default {
     name: 'Settings',
@@ -120,6 +138,11 @@ export default {
         id: Number
     },
     emits: ['statusUpdate'],
+    data() {
+        return {
+            targetMarketType
+        }
+    },
     computed: {
         ...mapState({
             authenticated: state => state.session.authenticated,
@@ -138,13 +161,24 @@ export default {
                 this.$store.commit('session/setToken', value)
             }
         },
-        steamVolumeLimit: {
+        marketVolumeLimit: {
             get() {
-                return this.$store.getters['app/config']('steamVolumeLimit')
+                return this.$store.getters['app/config']('marketVolumeLimit')
             },
             set(value) {
                 this.$store.commit('app/setConfig', {
-                    type: 'steamVolumeLimit',
+                    type: 'marketVolumeLimit',
+                    value: value
+                })
+            }
+        },
+        targetMarket: {
+            get() {
+                return this.$store.getters['app/config']('targetMarket')
+            },
+            set(value) {
+                this.$store.commit('app/setConfig', {
+                    type: 'targetMarket',
                     value: value
                 })
             }
@@ -251,10 +285,14 @@ export default {
     width: 365px;
 }
 
-.spb-settings__bid-step, .spb-settings__safe-discount, .spb-settings__item-update-delay {
+.spb-settings__option-value {
     width: 54px;
     height: 18px;
     font-size: 12px;
+}
+
+.spb-settings__target-market {
+    background-color: var(--secondary-background-color);
 }
 
 .spb-settings__save-button {

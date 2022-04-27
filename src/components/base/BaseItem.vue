@@ -23,7 +23,7 @@
             </div>
             <div class="spb-item__column spb-item__price">
                 <span class="spb--font-weight-light">$ {{ item.price_market_usd.toFixed(2) }}
-                    <sup>{{ (item._steam_discount != null ? item._steam_discount + '% | ': '') + item.discount }}%</sup>
+                    <sup>{{ discountText }}</sup>
                 </span>
             </div>
             <slot name="modal-columns"></slot>
@@ -146,6 +146,18 @@ export default {
             return this.item._buff_good_id
                 ? buff163.URL + '/goods/' + this.item._buff_good_id
                 : buff163.URL + '/market/csgo#search=' + this.item.steam_market_hash_name
+        },
+        discountText() {
+            let text = `${this.item.discount}%`
+
+            const targetMarket = this.$store.getters['app/config']('targetMarket')
+            const targetMarketDiscount = this.item[`_${targetMarket}_discount`]
+
+            if(targetMarketDiscount != null) {
+                text = `${targetMarketDiscount}% | ` + text
+            }
+
+            return text
         }
     },
     methods: {

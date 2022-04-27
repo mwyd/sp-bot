@@ -5,6 +5,7 @@ import { market } from '@/api/shadowpay'
 import { background } from '@/api/internal'
 import { alertLifeTime } from '@/config'
 import alertType from '@/enums/alertType'
+import targetMarketType from '@/enums/targetMarketType'
 
 export default {
     namespaced: true,
@@ -52,14 +53,15 @@ export default {
         tabFreeIds: [...new Array(45).keys()].map(e => e += 5),
         alerts: new Map(),
         config: {
-            steamVolumeLimit: 10,
+            marketVolumeLimit: 10,
             displayItemStatistics: false,
             displayTabPreview: true,
             displayInterfaceOnTop: false,
             openTabsAtStartup: false,
             saleGuardBidStep: 0.01,
             saleGuardSafeDiscount: 0.97,
-            saleGuardUpdateDelay: 4.0
+            saleGuardUpdateDelay: 4.0,
+            targetMarket: targetMarketType.STEAM
         },
         csrfCookie: Cookies.get('csrf_cookie')
     }),

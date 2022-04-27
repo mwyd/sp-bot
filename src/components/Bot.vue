@@ -156,8 +156,8 @@ export default {
                 this.checkToConfirm()
             }
         },
-        steamVolumeLimit() {
-            return this.$store.getters['app/config']('steamVolumeLimit')
+        marketVolumeLimit() {
+            return this.$store.getters['app/config']('marketVolumeLimit')
         },
         toggleProcessButtonClass() {
             return [
@@ -166,7 +166,7 @@ export default {
         }
     },
     watch: {
-        steamVolumeLimit() {
+        marketVolumeLimit() {
             this.checkToConfirm()
         }
     },
@@ -267,7 +267,7 @@ export default {
             })       
         },
         canBuyItem(item) {
-            return item._steam_updated && item._steam_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume >= this.steamVolumeLimit
+            return item._steam_updated && item._steam_discount >= this.preset.deal + this.preset.dealMargin && item._steam_volume >= this.marketVolumeLimit
         },
         buyItem(item) {
             if(this.items.pending.has(item.id) || item.price_market_usd + this.moneySpent > this.preset.toSpend) return
@@ -407,7 +407,7 @@ export default {
                             item._steam_updated = false
 
                             const [buffResponse, steamResponse] = await Promise.all([
-                                buffMarketItem.single(item._conduit_hash_name),
+                                buffMarketItem.single(item.steam_market_hash_name),
                                 steamMarketItem.single(item._conduit_hash_name)
                             ])
 
@@ -418,7 +418,7 @@ export default {
                                 item._buff_price = price
                                 item._buff_volume = volume
                                 item._buff_good_id = good_id
-                                item._buff_discount = calculateDiscount(item.steam_market_hash_name, price)
+                                item._buff_discount = calculateDiscount(item.price_market_usd, price)
                             }
 
                             if(steamResponse.success) {
