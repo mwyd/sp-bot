@@ -1,4 +1,3 @@
-import Cookies from 'js-cookie'
 import { v4 as uuidv4 } from 'uuid'
 import { userConfig } from '@/api/conduit'
 import { market } from '@/api/shadowpay'
@@ -27,13 +26,12 @@ export default {
             saleGuardSafeDiscount: 0.97,
             saleGuardUpdateDelay: 4.0,
             targetMarket: targetMarketType.STEAM
-        },
-        csrfCookie: Cookies.get('csrf_cookie')
+        }
     }),
     getters: {
         config: state => type => {
             return type == '*' ? state.config : state.config[type]
-        }  
+        }
     },
     mutations: {
         setLoaded(state, value) {
@@ -44,9 +42,6 @@ export default {
         },
         setConfig(state, { type, value }) {
             type == '*' ? Object.assign(state.config, value) : state.config[type] = value
-        },
-        setCsrfCookie(state, cookie) {
-            state.csrfCookie = cookie
         },
         addTab(state, tabProps) {
             if(state.tabFreeIds.length == 0) return

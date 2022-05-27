@@ -140,9 +140,7 @@ export default {
     },
     computed: {
         ...mapState({
-            csrfCookie: state => state.app.csrfCookie,
-            finishedItems: state => state.bots.items.finished,
-            token: state => state.session.token
+            finishedItems: state => state.bots.items.finished
         }),
         marketVolumeLimit() {
             return this.$store.getters['app/config']('marketVolumeLimit')
@@ -168,7 +166,6 @@ export default {
     },
     methods: {
         ...mapMutations({
-            setCsrfCookie: 'app/setCsrfCookie',
             startTrack: 'bots/addBot',
             stopTrack: 'bots/closeBot',
             deleteAlert: 'app/deleteAlert'
@@ -263,20 +260,16 @@ export default {
             this.items.pending.set(item.id, item)
             this.moneySpent += item.price_market_usd
     
-            market.buy(this.csrfCookie, item)
+            market.buy(item.id, item.price_market_usd)
                 .then(data => {
                     SPB_LOG('Buy info', { ...data, _item: item })
 
-                    const { status, error_message, token, id } = data
+                    const { status, id } = data
 
                     if(status == 'error') {
                         this.items.pending.delete(item.id)
                         this.moneySpent -= item.price_market_usd
 
-                        if(error_message == 'wrong_token') {
-                            this.setCsrfCookie(token)
-                            this.buyItem(item)
-                        }
                         return
                     }
 
@@ -284,8 +277,8 @@ export default {
                         item._transaction_id = id
                             
                         background.incrementBuyCounter()
-
                         notificationSound.play()
+
                         return
                     }
                 })

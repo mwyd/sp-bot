@@ -124,7 +124,6 @@ export default {
     },
     computed: {
         ...mapState({
-            csrfCookie: state => state.app.csrfCookie,
             itemsOnSale: state => state.saleGuard.items,
             saleGuardItemsLoaded: state => state.saleGuard.loaded
         }),
@@ -150,7 +149,6 @@ export default {
     },
     methods: {
         ...mapMutations({
-            setCsrfCookie: 'app/setCsrfCookie',
             setItemMarketPrice: 'saleGuard/setItemMarketPrice'
         }),
         ...mapActions({
@@ -191,8 +189,8 @@ export default {
             }
         },
         updateItemPrice(item, metadata, newPrice) {
-            itemOnSale.update(this.csrfCookie, item.id, newPrice)
-                .then(({ status, error_message, token }) => {
+            itemOnSale.update(item.id, newPrice)
+                .then(({ status, error_message }) => {
                     if(status == 'success') {
                         this.setItemMarketPrice({
                             id: item.id,
@@ -201,11 +199,6 @@ export default {
                     }
                     else {
                         switch(error_message) {
-                            case 'wrong_token':
-                                this.setCsrfCookie(token)
-                                this.updateItemPrice(item, metadata, newPrice)
-                                break
-
                             case 'bid_item_not_exist':
                                 this.stopTrack({
                                     id: metadata.databaseId,

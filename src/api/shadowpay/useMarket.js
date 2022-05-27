@@ -1,24 +1,23 @@
 import { fetchJson } from '@/utils'
 
 export default function({ baseUrl, credentials, headers }) {
-    const getStatus = () => fetchJson(baseUrl + '/api/market/is_logged', { credentials, headers })
+    const getStatus = () => fetchJson(baseUrl + '/api/market/is_logged', { credentials, headers: headers() })
 
     const getItems = query => {
         const queryParams = new URLSearchParams(query)
 
-        return fetchJson(baseUrl + `/api/market/get_items?${queryParams.toString()}`, { credentials, headers })
+        return fetchJson(baseUrl + `/api/market/get_items?${queryParams.toString()}`, { credentials, headers: headers() })
     }
 
-    const buy = (csrfCookie, { id, price_market_usd }) => fetchJson(baseUrl + '/api/market/buy_item', {
+    const buy = (id, price_market_usd) => fetchJson(baseUrl + '/api/market/buy_item', {
         credentials,
         method: 'POST',
         headers: {
-            ...headers,
+            ...headers(),
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: `id=${id}`
             + `&price=${price_market_usd}`
-            + `&csrf_token=${csrfCookie}`
     })
 
     const getBuyHistory = query => {
@@ -28,7 +27,7 @@ export default function({ baseUrl, credentials, headers }) {
             credentials,
             method: 'POST',
             headers: {
-                ...headers,
+                ...headers(),
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: formData.toString()
