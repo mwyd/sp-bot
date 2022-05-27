@@ -278,8 +278,6 @@ export default {
                             
                         background.incrementBuyCounter()
                         notificationSound.play()
-
-                        return
                     }
                 })
                 .catch(err => {

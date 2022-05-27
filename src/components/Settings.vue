@@ -270,7 +270,6 @@ export default {
         ...mapActions({
             setupApp: 'app/setupApp',
             saveConfig: 'app/saveConfig',
-            authenticate: 'session/authenticate',
             saveToken: 'session/saveToken',
             toggleAllBots: 'bots/toggleAllInstances'
         })

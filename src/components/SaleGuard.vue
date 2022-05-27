@@ -154,7 +154,6 @@ export default {
         ...mapActions({
             loadSaleGuardItems: 'saleGuard/loadSaleGuardItems',
             loadItemsOnSale: 'saleGuard/loadItemsOnSale',
-            toggleSaleGuard: 'saleGuard/toggleSaleGuard',
             startTrackAll: 'saleGuard/startTrackAll',
             stopTrackAll: 'saleGuard/stopTrackAll',
             stopTrack: 'saleGuard/stopTrack',
@@ -191,22 +190,21 @@ export default {
         updateItemPrice(item, metadata, newPrice) {
             itemOnSale.update(item.id, newPrice)
                 .then(({ status, error_message }) => {
+                    if(status == 'error' && error_message == 'bid_item_not_exist') {
+                        this.stopTrack({
+                            id: metadata.databaseId,
+                            showAlert: false
+                        })
+                        
+                        this.loadItemsOnSale()
+                        return
+                    }
+
                     if(status == 'success') {
                         this.setItemMarketPrice({
                             id: item.id,
                             price: newPrice
                         })
-                    }
-                    else {
-                        switch(error_message) {
-                            case 'bid_item_not_exist':
-                                this.stopTrack({
-                                    id: metadata.databaseId,
-                                    showAlert: false
-                                })
-                                this.loadItemsOnSale()
-                                break
-                        }
                     }
                 })
                 .catch(err => SPB_LOG('Cant update price\n', err))
