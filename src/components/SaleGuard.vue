@@ -243,10 +243,12 @@ export default {
                     for(let marketItem of items) {
                         if(marketItem.is_my_item) continue
 
-                        if(marketItem.price_market_usd - this.itemBidStep > metadata.minPrice) {
+                        let targetPrice = marketItem.price_market_usd - this.itemBidStep
+
+                        if(targetPrice > metadata.minPrice) {
                             newPrice = this.isFriendItem(marketItem.user_id) 
                                 ? marketItem.price_market_usd
-                                : roundNumber(marketItem.price_market_usd - this.itemBidStep)
+                                : roundNumber(targetPrice)
                             break
                         }
                     }

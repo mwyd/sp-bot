@@ -52,7 +52,6 @@
                     :type="botItemType.TO_CONFIRM" 
                     :item="item" 
                     :key="'item-' + item.id"
-                    @overBuyButton="freezeToConfirm"
                 >
                 </home-item>
             </div>
@@ -122,10 +121,6 @@ export default {
             botItemType,
             views,
             currentView: views.ACTIVE,
-            itemsCache: {
-                toConfirm: []
-            },
-            frozenToConfirm: false,
             sortModel: itemSortType.STEAM_DISCOUNT
         }
     },
@@ -142,7 +137,7 @@ export default {
                 : this.itemsCount(botItemType.PENDING) + this.finishedItems.length 
         },
         toConfirmItems() {
-            return this.frozenToConfirm ? this.itemsCache.toConfirm : this.$store.getters['bots/items'](botItemType.TO_CONFIRM)
+            return this.$store.getters['bots/items'](botItemType.TO_CONFIRM)
         },
         pendingItems() {
             return this.$store.getters['bots/items'](botItemType.PENDING)
@@ -191,10 +186,6 @@ export default {
             return items
                 .filter(item => item._search_steam_hash_name.includes(this.search.toLowerCase()))
                 .sort(this.itemSortBy.get(this.sortModel).callback(this.sortDirAsc))
-        },
-        freezeToConfirm(value) {
-            if(value) this.itemsCache.toConfirm = this.$store.getters['bots/items'](botItemType.TO_CONFIRM)
-            this.frozenToConfirm = value
         },
         clearPendingStatus() {
             if(this.$parent.$parent.status == tabWindowState.PENDING) {

@@ -7,10 +7,7 @@
                     <app-input
                         v-model="token"
                         :type="'password'"
-                        :model-updated="() => {
-                            saveToken()
-                            setupApp()
-                        }"
+                        :model-updated="reloadSettings"
                     >
                     </app-input>
             </div>
@@ -272,7 +269,11 @@ export default {
             saveConfig: 'app/saveConfig',
             saveToken: 'session/saveToken',
             toggleAllBots: 'bots/toggleAllInstances'
-        })
+        }),
+        reloadSettings() {
+            this.saveToken()
+            this.setupApp()
+        }
     }
 }
 </script>

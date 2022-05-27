@@ -9,9 +9,8 @@
                 <button 
                     class="spb-button spb--font-size-small spb-button--green"
                     v-if="type == botItemType.TO_CONFIRM" 
-                    @click="item._buy" 
-                    @mouseenter="overBuyButton(true)" 
-                    @mouseleave="overBuyButton(false)" 
+                    :disabled="actionsDisabled"
+                    @click="disableActions(item._buy())" 
                 >
                     Buy now
                 </button>
@@ -37,6 +36,7 @@
 
 <script>
 import { getItemOwnerSteamId } from '@/resources/marketItem'
+import actionMixin from '@/mixins/actionMixin'
 import BaseItem from './base/BaseItem.vue'
 import DateFormat from 'dateformat'
 import botItemType from '@/enums/botItemType'
@@ -47,11 +47,11 @@ export default {
     components: {
         BaseItem
     },
+    mixins: [actionMixin],
     props: {
         type: String,
         item: Object
     },
-    emits: ['overBuyButton'],
     data() {
         return {
             steamMarket,
@@ -70,10 +70,7 @@ export default {
         }
     },
     methods: {
-        getItemOwnerSteamId,
-        overBuyButton(value) {
-            this.$emit('overBuyButton', value)
-        }
+        getItemOwnerSteamId
     }
 }
 </script>
