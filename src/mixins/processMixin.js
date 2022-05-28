@@ -1,12 +1,9 @@
+import processStateType from '@/enums/processStateType'
+
 export default {
     data() {
         return {
-            processStates: Object.freeze({
-                IDLE: 0,
-                RUNNING: 1,
-                TERMINATING: 2,
-                TERMINATED: 3
-            }),
+            processStates: processStateType,
             processState: 3
         }
     },
