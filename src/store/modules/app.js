@@ -13,8 +13,8 @@ export default {
         loaded: null,
         backgroundMounted: false, 
         tabs: tabs,
-        tabReservedIds: [...new Array(5).keys()],
-        tabFreeIds: [...new Array(45).keys()].map(e => e += 5),
+        tabReservedIds: [...new Array(tabs.length).keys()],
+        tabFreeIds: [...new Array(50 - tabs.length).keys()].map(e => e += tabs.length),
         alerts: new Map(),
         config: {
             marketVolumeLimit: 10,
