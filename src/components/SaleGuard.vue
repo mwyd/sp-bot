@@ -124,7 +124,6 @@ export default {
     },
     computed: {
         ...mapState({
-            csrfCookie: state => state.app.csrfCookie,
             itemsOnSale: state => state.saleGuard.items,
             saleGuardItemsLoaded: state => state.saleGuard.loaded
         }),
@@ -150,13 +149,11 @@ export default {
     },
     methods: {
         ...mapMutations({
-            setCsrfCookie: 'app/setCsrfCookie',
             setItemMarketPrice: 'saleGuard/setItemMarketPrice'
         }),
         ...mapActions({
             loadSaleGuardItems: 'saleGuard/loadSaleGuardItems',
             loadItemsOnSale: 'saleGuard/loadItemsOnSale',
-            toggleSaleGuard: 'saleGuard/toggleSaleGuard',
             startTrackAll: 'saleGuard/startTrackAll',
             stopTrackAll: 'saleGuard/stopTrackAll',
             stopTrack: 'saleGuard/stopTrack',
@@ -191,29 +188,23 @@ export default {
             }
         },
         updateItemPrice(item, metadata, newPrice) {
-            itemOnSale.update(this.csrfCookie, item.id, newPrice)
-                .then(({ status, error_message, token }) => {
+            itemOnSale.update(item.id, newPrice)
+                .then(({ status, error_message }) => {
+                    if(status == 'error' && error_message == 'bid_item_not_exist') {
+                        this.stopTrack({
+                            id: metadata.databaseId,
+                            showAlert: false
+                        })
+                        
+                        this.loadItemsOnSale()
+                        return
+                    }
+
                     if(status == 'success') {
                         this.setItemMarketPrice({
                             id: item.id,
                             price: newPrice
                         })
-                    }
-                    else {
-                        switch(error_message) {
-                            case 'wrong_token':
-                                this.setCsrfCookie(token)
-                                this.updateItemPrice(item, metadata, newPrice)
-                                break
-
-                            case 'bid_item_not_exist':
-                                this.stopTrack({
-                                    id: metadata.databaseId,
-                                    showAlert: false
-                                })
-                                this.loadItemsOnSale()
-                                break
-                        }
                     }
                 })
                 .catch(err => SPB_LOG('Cant update price\n', err))
@@ -252,10 +243,12 @@ export default {
                     for(let marketItem of items) {
                         if(marketItem.is_my_item) continue
 
-                        if(marketItem.price_market_usd - this.itemBidStep > metadata.minPrice) {
+                        let targetPrice = marketItem.price_market_usd - this.itemBidStep
+
+                        if(targetPrice > metadata.minPrice) {
                             newPrice = this.isFriendItem(marketItem.user_id) 
                                 ? marketItem.price_market_usd
-                                : roundNumber(marketItem.price_market_usd - this.itemBidStep)
+                                : roundNumber(targetPrice)
                             break
                         }
                     }

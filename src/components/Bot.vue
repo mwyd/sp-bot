@@ -140,9 +140,7 @@ export default {
     },
     computed: {
         ...mapState({
-            csrfCookie: state => state.app.csrfCookie,
-            finishedItems: state => state.bots.items.finished,
-            token: state => state.session.token
+            finishedItems: state => state.bots.items.finished
         }),
         marketVolumeLimit() {
             return this.$store.getters['app/config']('marketVolumeLimit')
@@ -168,7 +166,6 @@ export default {
     },
     methods: {
         ...mapMutations({
-            setCsrfCookie: 'app/setCsrfCookie',
             startTrack: 'bots/addBot',
             stopTrack: 'bots/closeBot',
             deleteAlert: 'app/deleteAlert'
@@ -253,7 +250,7 @@ export default {
                 && item[`_${this.targetMarket}_volume`] >= this.marketVolumeLimit
                 && item[`_${this.targetMarket}_discount`] >= this.preset.deal + this.dealMargin
         },
-        buyItem(item) {
+        async buyItem(item) {
             if(this.items.pending.has(item.id) || item.price_market_usd + this.moneySpent > this.preset.toSpend) return
 
             item._current_run = true
@@ -263,38 +260,32 @@ export default {
             this.items.pending.set(item.id, item)
             this.moneySpent += item.price_market_usd
     
-            market.buy(this.csrfCookie, item)
-                .then(data => {
-                    SPB_LOG('Buy info', { ...data, _item: item })
+            try {
+                const data = await market.buy(item.id, item.price_market_usd)
 
-                    const { status, error_message, token, id } = data
+                SPB_LOG('Buy info', { ...data, _item: item })
 
-                    if(status == 'error') {
-                        this.items.pending.delete(item.id)
-                        this.moneySpent -= item.price_market_usd
+                const { status, id } = data
 
-                        if(error_message == 'wrong_token') {
-                            this.setCsrfCookie(token)
-                            this.buyItem(item)
-                        }
-                        return
-                    }
-
-                    if(status == 'success') {
-                        item._transaction_id = id
-                            
-                        background.incrementBuyCounter()
-
-                        notificationSound.play()
-                        return
-                    }
-                })
-                .catch(err => {
-                    SPB_LOG('\n', new Error(err))
-
+                if(status == 'error') {
                     this.items.pending.delete(item.id)
                     this.moneySpent -= item.price_market_usd
-                })
+
+                    return
+                }
+
+                if(status == 'success') {
+                    item._transaction_id = id
+                        
+                    background.incrementBuyCounter()
+                    notificationSound.play()
+                }
+            } catch(err) {
+                SPB_LOG('\n', new Error(err))
+
+                this.items.pending.delete(item.id)
+                this.moneySpent -= item.price_market_usd
+            }
         },
         updatePending() {
             if(this.items.pending.size == 0 || Date.now() - this.lastPendingUpdate < this.pendingUpdateDelay * 1000) return

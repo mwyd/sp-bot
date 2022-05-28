@@ -1,7 +1,6 @@
 const services = Object.freeze({
     conduit: {
-        name: 'conduit',
-        baseApiUrl: 'https://conduit.ddns.net/api/v1'
+        name: 'conduit'
     },
     csgoFloat: {
         name: 'csgo_float'
@@ -50,16 +49,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
         case services.conduit.name:
             fetch(data.path, data.config ?? {})
-            .then(res => res.json())
-            .then(sendResponse)
-            .catch(err => sendResponse({ success: false, error_message: err }))
+                .then(res => res.json())
+                .then(sendResponse)
+                .catch(err => sendResponse({ success: false, error_message: err?.message ?? 'Conduit error' }))
             break
 
         case services.csgoFloat.name:
             fetch(data.path, data.config ?? {})
-            .then(res => res.json())
-            .then(data => sendResponse({ success: true, data: data }))
-            .catch(err => sendResponse({ success: false, error_message: err }))
+                .then(res => res.json())
+                .then(data => sendResponse({ success: true, data: data }))
+                .catch(err => sendResponse({ success: false, error_message: err?.message ?? 'Csgo float error' }))
             break
     }
 

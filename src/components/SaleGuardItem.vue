@@ -109,31 +109,31 @@ export default {
         updateTracked() {
             if(!this.metadata.tracked) return
 
-            this.disableActions(
-                this.$store.dispatch('saleGuard/updateTracked', {
-                    id: this.metadata.databaseId,
-                    data: {
-                        shadowpayOfferId: this.item.id,
-                        minPrice: this.metadata.minPrice,
-                        maxPrice: this.metadata.maxPrice
-                    }
-                })
-            )
+            const promise = this.$store.dispatch('saleGuard/updateTracked', {
+                id: this.metadata.databaseId,
+                data: {
+                    shadowpayOfferId: this.item.id,
+                    minPrice: this.metadata.minPrice,
+                    maxPrice: this.metadata.maxPrice
+                }
+            })
+
+            this.disableActions(promise)
         },
         toggleTracked() {
-            this.disableActions(
-                this.metadata.tracked 
-                    ? this.stopTrack({
-                        id: this.metadata.databaseId,
-                        showAlert: true
-                    }) 
-                    : this.startTrack({
-                        hashName: this.item._conduit_hash_name,
-                        shadowpayOfferId: this.item.id,
-                        minPrice: this.metadata.minPrice,
-                        maxPrice: this.metadata.maxPrice
-                    })
-            )
+            const promise = this.metadata.tracked 
+                ? this.stopTrack({
+                    id: this.metadata.databaseId,
+                    showAlert: true
+                }) 
+                : this.startTrack({
+                    hashName: this.item._conduit_hash_name,
+                    shadowpayOfferId: this.item.id,
+                    minPrice: this.metadata.minPrice,
+                    maxPrice: this.metadata.maxPrice
+                })
+
+            this.disableActions(promise)
         }
     }
 }
