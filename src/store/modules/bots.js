@@ -57,10 +57,12 @@ export default {
             }
         },
         async toggleAllInstances({ state, commit }) {
-            for(let instance of state.instances) {
+            for(let i = 0; i < state.instances.length; i++) {
+                const instance = state.instances[i]
+
                 if(instance.isProcessTerminated == state.runBots) continue
 
-                instance.toggleProcess()
+                setTimeout(instance.toggleProcess, i * checkInstanceTick * 1000)
             }
 
             while(state.instances.findIndex(v => v.isProcessTerminated != state.runBots) > -1) {
