@@ -3,41 +3,35 @@ import processStateType from '@/enums/processStateType'
 export default {
     data() {
         return {
-            processStates: processStateType,
-            processState: 3
+            processState: processStateType.TERMINATED
         }
     },
     computed: {
         isProcessIdle() {
-            return this.processState == this.processStates.IDLE
+            return this.processState == processStateType.IDLE
         },
         isProcessRunning() {
-            return this.processState == this.processStates.RUNNING
+            return this.processState == processStateType.RUNNING
         },
         isProcessTerminating() {
-            return this.processState == this.processStates.TERMINATING
+            return this.processState == processStateType.TERMINATING
         },
         isProcessTerminated() {
-            return this.processState == this.processStates.TERMINATED
-        },
-        toggleProcessButtonClass() {
-            return [
-                !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
-            ]
+            return this.processState == processStateType.TERMINATED
         }
     },
     methods: {
         setProcessIdle() {
-            this.processState = this.processStates.IDLE
+            this.processState = processStateType.IDLE
         },
         setProcessRunning() {
-            this.processState = this.processStates.RUNNING
+            this.processState = processStateType.RUNNING
         },
         setProcessTerminating() {
-            this.processState = this.processStates.TERMINATING
+            this.processState = processStateType.TERMINATING
         },
         setProcessTerminated() {
-            this.processState = this.processStates.TERMINATED
+            this.processState = processStateType.TERMINATED
         }
     }
 }

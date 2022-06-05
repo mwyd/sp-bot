@@ -147,6 +147,11 @@ export default {
         },
         targetMarket() {
             return this.$store.getters['app/config']('targetMarket')
+        },
+        toggleProcessButtonClass() {
+            return [
+                !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
+            ]
         }
     },
     watch: {
@@ -184,27 +189,24 @@ export default {
             this.items.toConfirm = new Map()
             this.moneySpent = 0
         },
-        stopProcess() {
-            this.$emit('statusUpdate', tabWindowState.IDLE)
+        toggleProcess() {
+            if(this.isProcessRunning) {
+                this.setProcessTerminating()
+                return
+            }
+
+            if(this.isProcessTerminated) {
+                this.$emit('statusUpdate', tabWindowState.RUNNING)
+                this.run()
+                return
+            }
+
+            clearTimeout(this.timeoutId)
+
             this.clear()
             this.setProcessTerminated()
-        },
-        toggleProcess() {
-            switch(this.processState) {
-                case this.processStates.IDLE:
-                    clearTimeout(this.timeoutId)
-                    this.stopProcess()
-                    break
 
-                case this.processStates.RUNNING:
-                    this.setProcessTerminating()
-                    break
-
-                case this.processStates.TERMINATED:
-                    this.$emit('statusUpdate', tabWindowState.RUNNING)
-                    this.run()
-                    break
-            }
+            this.$emit('statusUpdate', tabWindowState.IDLE)
         },
         checkToConfirm() {
             if(this.isProcessTerminating || this.isProcessTerminated) return
@@ -280,7 +282,8 @@ export default {
                     background.incrementBuyCounter()
                     notificationSound.play()
                 }
-            } catch(err) {
+            } 
+            catch(err) {
                 SPB_LOG('\n', new Error(err))
 
                 this.items.pending.delete(item.id)
@@ -377,6 +380,7 @@ export default {
                             if(this.items.toConfirm.has(item.id)) continue
 
                             normalizeMarketItem(item)
+                            inspectItem(item)
 
                             item._buff_updated = false
                             item._steam_updated = false
@@ -411,11 +415,7 @@ export default {
                                 this.buyItem(item)
                             }
                             
-                            if(this.isProcessRunning) {
-                                this.items.toConfirm.set(item.id, item)
-                                
-                                inspectItem(item)
-                            }
+                            this.items.toConfirm.set(item.id, item)
                         }
                     }
                 }
@@ -425,17 +425,15 @@ export default {
             }
 
             this.updatePending()
-                    
-            switch(this.processState) {
-                case this.processStates.RUNNING:
-                    this.timeoutId = setTimeout(this.run, this.preset.runDelay * 1000)
-                    this.setProcessIdle()
-                    break
 
-                case this.processStates.TERMINATING:
-                    this.stopProcess()
-                    break
+            if(this.isProcessTerminating) {
+                this.toggleProcess()
+                return
             }
+
+            this.timeoutId = setTimeout(this.run, this.preset.runDelay * 1000)
+
+            this.setProcessIdle()
         }
     }
 }

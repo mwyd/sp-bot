@@ -140,6 +140,11 @@ export default {
             return [...this.itemsOnSale.values()]
                 .filter(data => data.item._search_steam_hash_name.includes(this.search.toLowerCase()))
                 .sort((a, b) => this.itemSortBy.get(this.sortModel).callback(this.sortDirAsc)(a.item, b.item))
+        },
+        toggleProcessButtonClass() {
+            return [
+                !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
+            ]
         }
     },
     watch: {
@@ -166,48 +171,48 @@ export default {
             await this.loadItemsOnSale()
             await this.loadSaleGuardItems()
         },
-        stopProcess() {
-            this.$emit('statusUpdate', this.saleGuardItemsLoaded ? tabWindowState.OK : tabWindowState.ERROR)
-            this.setProcessTerminated()
-        },
         toggleProcess() {
-            switch(this.processState) {
-                case this.processStates.IDLE:
-                    clearTimeout(this.timeoutId)
-                    this.stopProcess()
-                    break
-
-                case this.processStates.RUNNING:
-                    this.setProcessTerminating()
-                    break
-
-                case this.processStates.TERMINATED:
-                    this.$emit('statusUpdate', tabWindowState.RUNNING)
-                    this.run()
-                    break
+            if(this.isProcessRunning) {
+                this.setProcessTerminating()
+                return
             }
-        },
-        updateItemPrice(item, metadata, newPrice) {
-            itemOnSale.update(item.id, newPrice)
-                .then(({ status, error_message }) => {
-                    if(status == 'error' && error_message == 'bid_item_not_exist') {
-                        this.stopTrack({
-                            id: metadata.databaseId,
-                            showAlert: false
-                        })
-                        
-                        this.loadItemsOnSale()
-                        return
-                    }
 
-                    if(status == 'success') {
-                        this.setItemMarketPrice({
-                            id: item.id,
-                            price: newPrice
-                        })
-                    }
-                })
-                .catch(err => SPB_LOG('Cant update price\n', err))
+            if(this.isProcessTerminated) {
+                this.$emit('statusUpdate', tabWindowState.RUNNING)
+                this.run()
+                return
+            }
+
+            clearTimeout(this.timeoutId)
+
+            this.setProcessTerminated()
+
+            this.$emit('statusUpdate', this.saleGuardItemsLoaded ? tabWindowState.OK : tabWindowState.ERROR)
+        },
+        async updateItemPrice(item, metadata, newPrice) {
+            try {
+                const { status, error_message } = await itemOnSale.update(item.id, newPrice)
+
+                if(status == 'error' && error_message == 'bid_item_not_exist') {
+                    this.stopTrack({
+                        id: metadata.databaseId,
+                        showAlert: false
+                    })
+                    
+                    this.loadItemsOnSale()
+                    return
+                }
+
+                if(status == 'success') {
+                    this.setItemMarketPrice({
+                        id: item.id,
+                        price: newPrice
+                    })
+                }
+            } 
+            catch(err) {
+                SPB_LOG('Cant update price\n', err)
+            }
         },
         async run() {
             this.setProcessRunning()
@@ -262,16 +267,14 @@ export default {
                 SPB_LOG('\n', new Error(err))
             }
 
-            switch(this.processState) {
-                case this.processStates.RUNNING:
-                    this.timeoutId = setTimeout(this.run, this.updateDelay * 1000)
-                    this.setProcessIdle()
-                    break
-
-                case this.processStates.TERMINATING:
-                    this.stopProcess()
-                    break
+            if(this.isProcessTerminating) {
+                this.toggleProcess()
+                return
             }
+
+            this.timeoutId = setTimeout(this.run, this.updateDelay * 1000)
+            
+            this.setProcessIdle()
         }
     }
 }
