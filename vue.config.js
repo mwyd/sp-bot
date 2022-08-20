@@ -8,6 +8,10 @@ module.exports = {
   },
   configureWebpack: {
     devtool: 'inline-cheap-source-map',
+    entry: {
+      app: './src/main.js',
+      background: './src/background.js'
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src')

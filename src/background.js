@@ -1,18 +1,5 @@
-const services = Object.freeze({
-  conduit: {
-    name: 'conduit'
-  },
-  csgoFloat: {
-    name: 'csgo_float'
-  },
-  self: {
-    name: 'internal',
-    actions: {
-      INCREMENT_BUY_COUNTER: 'increment_buy_counter',
-      GET_BUY_COUNTER: 'get_buy_counter'
-    }
-  }
-})
+import apiService from '@/enums/apiService'
+import internalAction from '@/enums/internalAction'
 
 const setBuyCounter = counter => {
   chrome.storage.local.set({ buyCounter: counter })
@@ -32,9 +19,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const { service, data } = request
 
   switch (service) {
-    case services.self.name:
+    case apiService.INTERNAL:
       switch (data.action) {
-        case services.self.actions.INCREMENT_BUY_COUNTER:
+        case internalAction.INCREMENT_BUY_COUNTER:
           getBuyCounter(buyCounter => {
             buyCounter++
 
@@ -43,20 +30,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           })
           break
 
-        case services.self.actions.GET_BUY_COUNTER:
+        case internalAction.GET_BUY_COUNTER:
           getBuyCounter(buyCounter => sendResponse({ data: buyCounter }))
           break
       }
       break
 
-    case services.conduit.name:
+    case apiService.CONDUIT:
       fetch(data.path, data.config ?? {})
         .then(res => res.json())
         .then(sendResponse)
         .catch(err => sendResponse({ success: false, error_message: err?.message ?? 'Conduit error' }))
       break
 
-    case services.csgoFloat.name:
+    case apiService.CSGO_FLOAT:
       fetch(data.path, data.config ?? {})
         .then(res => res.json())
         .then(data => sendResponse({ success: true, data: data }))
