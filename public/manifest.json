@@ -1,35 +1,45 @@
 {
-    "manifest_version": 3,
-    "name": "SP-BOT",
-    "version": "3.1.9",
-    "description": "",
-    "icons": {
-        "16": "assets/icons/spb-16x16.png",
-        "48": "assets/icons/spb-48x48.png",
-        "128": "assets/icons/spb-128x128.png"
-    },
-    "content_scripts": [{
-        "js": [
-            "/js/chunk-vendors.js",
-            "/js/app.js"
-        ],
-        "css": [
-          "/css/app.css"
-        ],
-        "matches": ["https://shadowpay.com/*"]
-      }],
-    "background": {
-      "service_worker": "background.js"
-    },
-    "permissions": [
-      "storage"
-    ],
-    "host_permissions": [
-      "https://api.csgofloat.com/*"
-    ],
-    "web_accessible_resources": [{
-      "resources": ["/assets/*"],
-      "matches": ["https://shadowpay.com/*"],
+  "manifest_version": 3,
+  "name": "SP-BOT",
+  "version": "3.1.9",
+  "description": "",
+  "icons": {
+    "16": "assets/icons/spb-16x16.png",
+    "48": "assets/icons/spb-48x48.png",
+    "128": "assets/icons/spb-128x128.png"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "/js/chunk-vendors.js",
+        "/js/app.js"
+      ],
+      "css": [
+        "/css/app.css"
+      ],
+      "matches": [
+        "https://shadowpay.com/*"
+      ]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.csgofloat.com/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "/assets/*"
+      ],
+      "matches": [
+        "https://shadowpay.com/*"
+      ],
       "extension_ids": []
-    }]
+    }
+  ]
 }
