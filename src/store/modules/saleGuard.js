@@ -12,10 +12,22 @@ export default {
   }),
   getters: {
     trackedItems(state) {
-      return [...state.items.values()].filter(item => item.metadata.tracked)
+      return function* () {
+        for (const item of state.items.values()) {
+          if (item.metadata.tracked) {
+            yield item
+          }
+        }
+      }
     },
     untrackedItems(state) {
-      return [...state.items.values()].filter(item => !item.metadata.tracked)
+      return function* () {
+        for (const item of state.items.values()) {
+          if (!item.metadata.tracked) {
+            yield item
+          }
+        }
+      }
     }
   },
   mutations: {
@@ -75,7 +87,7 @@ export default {
       dispatch('app/pushAlert', alert, { root: true })
     },
     async startTrackAll({ getters, dispatch }) {
-      for (let { item, metadata } of getters.untrackedItems) {
+      for (const { item, metadata } of getters.untrackedItems()) {
         await dispatch('startTrack', {
           shadowpayOfferId: item.id,
           hashName: item._conduit_hash_name,
@@ -128,7 +140,7 @@ export default {
       }
     },
     async stopTrackAll({ getters, dispatch }) {
-      for (let { metadata } of getters.trackedItems) {
+      for (const { metadata } of getters.trackedItems()) {
         await dispatch('stopTrack', {
           id: metadata.databaseId
         })
@@ -144,7 +156,7 @@ export default {
 
         const updatedItems = new Map()
 
-        for (let item of items) {
+        for (const item of items) {
           normalizeMarketItem(item)
 
           const itemOnSale = state.items.get(item.id)
@@ -158,7 +170,7 @@ export default {
             continue
           }
 
-          let minPrice = item.price_market_usd
+          const minPrice = item.price_market_usd
           let maxPrice = round(item.steam_price_en * rootGetters['app/config']('saleGuardSafeDiscount'))
 
           if (maxPrice < minPrice) {
@@ -188,7 +200,7 @@ export default {
       let loopLimit = 1
 
       let loaded = true
-      let missingItems = []
+      const missingItems = []
 
       for (let i = 0; i < loopLimit; i++) {
         const { success, data } = await saleGuardItem.all(rootState.session.token, { offset: i * limit, limit })
@@ -199,7 +211,7 @@ export default {
           break
         }
 
-        for (let item of data) {
+        for (const item of data) {
           if (!state.items.has(item.shadowpay_offer_id)) {
             missingItems.push(item.id)
 
@@ -223,7 +235,7 @@ export default {
         }
       }
 
-      for (let id of missingItems) {
+      for (const id of missingItems) {
         await saleGuardItem.remove(rootState.session.token, id)
       }
 

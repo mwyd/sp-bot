@@ -65,24 +65,25 @@
           :disabled="actionsDisabled"
           @click="disableActions(refreshItems())"
         >
-          <div class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-refresh"></div>
-          <div class="spb-sale-guard__control-name">Refresh</div>
+          <span
+            class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-refresh"></span>
+          <span class="spb-sale-guard__control-name">Refresh</span>
         </button>
         <button
           class="spb-sale-guard__control spb--flex"
           :disabled="actionsDisabled"
           @click="disableActions(startTrackAll())"
         >
-          <div class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-add-all"></div>
-          <div class="spb-sale-guard__control-name">Add all</div>
+          <span class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-add-all"></span>
+          <span class="spb-sale-guard__control-name">Add all</span>
         </button>
         <button
           class="spb-sale-guard__control spb--flex"
           :disabled="actionsDisabled"
           @click="disableActions(stopTrackAll())"
         >
-          <div class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-remove-all"></div>
-          <div class="spb-sale-guard__control-name">Remove all</div>
+          <span class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-remove-all"></span>
+          <span class="spb-sale-guard__control-name">Remove all</span>
         </button>
         <div
           class="spb-sale-guard__control spb--flex"
@@ -152,7 +153,10 @@ export default {
   },
   watch: {
     saleGuardItemsLoaded(value) {
-      this.$emit('statusUpdate', value ? (!this.isProcessTerminated ? tabWindowState.RUNNING : tabWindowState.OK) : tabWindowState.ERROR)
+      this.$emit('statusUpdate', value
+        ? (!this.isProcessTerminated ? tabWindowState.RUNNING : tabWindowState.OK)
+        : tabWindowState.ERROR
+      )
     }
   },
   methods: {
@@ -174,6 +178,116 @@ export default {
       await this.loadItemsOnSale()
       await this.loadSaleGuardItems()
     },
+    async updateTrackedItemPrice(item, metadata, newPrice) {
+      try {
+        const { status, error_message } = await itemOnSale.update(item.id, newPrice)
+
+        if (status === 'error' && error_message === 'bid_item_not_exist') {
+          await this.stopTrack({
+            id: metadata.databaseId,
+            showAlert: false
+          })
+
+          await this.loadItemsOnSale()
+
+          return
+        }
+
+        if (status === 'success') {
+          this.setItemMarketPrice({
+            id: item.id,
+            price: newPrice
+          })
+        }
+      } catch (err) {
+        SPB_LOG('Cant update price\n', err)
+      }
+    },
+    async checkTrackedItemPrice(trackedItem) {
+      const { item, metadata } = trackedItem
+
+      try {
+        const { status, items: marketItems } = await market.getItems({
+          item_id: item.item_id,
+          price_from: metadata.minPrice,
+          price_to: metadata.maxPrice,
+          game: 'csgo',
+          stack: false,
+          sort: 'asc',
+          sort_dir: 'asc',
+          sort_column: 'price',
+          limit: 50,
+          offset: 0
+        })
+
+        if (status !== 'success') {
+          return
+        }
+
+        let newPrice = metadata.maxPrice
+
+        for (const marketItem of marketItems) {
+          if (marketItem.is_my_item) {
+            continue
+          }
+
+          let targetPrice = round(marketItem.price_market_usd - this.itemBidStep)
+
+          if (targetPrice > metadata.minPrice) {
+            newPrice = this.isFriendItem(marketItem.user_id) ? marketItem.price_market_usd : targetPrice
+
+            break
+          }
+        }
+
+        if (item.price_market_usd !== newPrice) {
+          await this.updateTrackedItemPrice(item, metadata, newPrice)
+        }
+      } catch (err) {
+        SPB_LOG('\n', new Error(err))
+      }
+    },
+    async handleTrackedItems(trackedItems) {
+      this.setProcessRunning()
+
+      const { value: trackedItem, done } = trackedItems.next()
+
+      if (done) {
+        this.run()
+
+        return
+      }
+
+      await this.checkTrackedItemPrice(trackedItem)
+
+      if (this.isProcessTerminating) {
+        this.toggleProcess()
+
+        return
+      }
+
+      this.timeoutId = setTimeout(() => this.handleTrackedItems(trackedItems), this.updateDelay * 1000)
+
+      this.setProcessIdle()
+    },
+    run() {
+      this.setProcessIdle()
+
+      if ([...this.trackedItems()].length === 0) {
+        this.pushAlert({
+          type: alertType.INFO,
+          message: 'Sale Guard terminated - empty set'
+        })
+
+        this.toggleProcess()
+
+        return
+      }
+
+      this.handleTrackedItems(
+        this.trackedItems()
+      )
+    },
     toggleProcess() {
       if (this.isProcessRunning) {
         this.setProcessTerminating()
@@ -193,99 +307,6 @@ export default {
       this.setProcessTerminated()
 
       this.$emit('statusUpdate', this.saleGuardItemsLoaded ? tabWindowState.OK : tabWindowState.ERROR)
-    },
-    async updateItemPrice(item, metadata, newPrice) {
-      try {
-        const { status, error_message } = await itemOnSale.update(item.id, newPrice)
-
-        if (status === 'error' && error_message === 'bid_item_not_exist') {
-          this.stopTrack({
-            id: metadata.databaseId,
-            showAlert: false
-          })
-
-          this.loadItemsOnSale()
-          return
-        }
-
-        if (status === 'success') {
-          this.setItemMarketPrice({
-            id: item.id,
-            price: newPrice
-          })
-        }
-      } catch (err) {
-        SPB_LOG('Cant update price\n', err)
-      }
-    },
-    async run() {
-      this.setProcessRunning()
-
-      if (this.trackedItems.length === 0) {
-        this.pushAlert({
-          type: alertType.INFO,
-          message: 'Sale Guard terminated - empty set'
-        })
-
-        this.setProcessTerminating()
-      }
-
-      try {
-        for (let { item, metadata } of this.trackedItems) {
-          const { status, items } = await market.getItems({
-            item_id: item.item_id,
-            price_from: metadata.minPrice,
-            price_to: metadata.maxPrice,
-            game: 'csgo',
-            stack: false,
-            sort: 'asc',
-            sort_dir: 'asc',
-            sort_column: 'price',
-            limit: 50,
-            offset: 0
-          })
-
-          if (status !== 'success') {
-            continue
-          }
-
-          let newPrice = metadata.maxPrice
-
-          for (let marketItem of items) {
-            if (marketItem.is_my_item) {
-              continue
-            }
-
-            let targetPrice = marketItem.price_market_usd - this.itemBidStep
-
-            if (targetPrice > metadata.minPrice) {
-              newPrice = this.isFriendItem(marketItem.user_id)
-                ? marketItem.price_market_usd
-                : round(targetPrice)
-
-              break
-            }
-          }
-
-          if (item.price_market_usd === newPrice) {
-            continue
-          }
-
-          this.updateItemPrice(item, metadata, newPrice)
-        }
-      } catch (err) {
-        SPB_LOG('\n', new Error(err))
-      }
-
-      if (this.isProcessTerminating) {
-        this.toggleProcess()
-
-        return
-      }
-
-      this.timeoutId = setTimeout(this.run, this.updateDelay * 1000)
-
-      this.setProcessIdle()
     }
   }
 }

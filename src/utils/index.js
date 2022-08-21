@@ -32,9 +32,8 @@ const fetchBackground = message => new Promise(resolve => chrome.runtime.sendMes
 
 const fetchJson = async (url, config = {}) => {
   const response = await fetch(url, config)
-  const data = await response.json()
 
-  return data
+  return response.json()
 }
 
 const syncStorage = {
