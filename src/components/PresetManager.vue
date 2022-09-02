@@ -22,81 +22,74 @@
         </option>
       </select>
     </div>
-    <div class="spb--flex spb-preset-manager__wrapper">
-      <div>
-        <div class="spb-option">
-          <span class="spb-option__description">% Deal</span>
-          <app-input
-            v-model.number="preset.deal"
-            :type="'number'"
-            :validator="value => (value >= -1000 && value <= 100)"
-          >
-          </app-input>
+    <div class="spb-preset-manager__preset">
+      <div class="spb--flex spb-preset-manager__preset-layout">
+        <div>
+          <div class="spb-option">
+            <span class="spb-option__description">% Deal</span>
+            <app-input
+              v-model.number="preset.deal"
+              :type="'number'"
+              :validator="value => (value >= -1000 && value <= 100)"
+            >
+            </app-input>
+          </div>
+          <div class="spb-option">
+            <span class="spb-option__description">$ Item min price</span>
+            <app-input
+              v-model.number="preset.minPrice"
+              :type="'number'"
+              :validator="value => (value >= 0 && value <= preset.maxPrice)"
+            >
+            </app-input>
+          </div>
+          <div class="spb-option">
+            <span class="spb-option__description">Name</span>
+            <app-input
+              v-model="preset.name"
+              :type="'text'"
+            >
+            </app-input>
+          </div>
         </div>
-        <div class="spb-option">
-          <span class="spb-option__description">$ Item min price</span>
-          <app-input
-            v-model.number="preset.minPrice"
-            :type="'number'"
-            :validator="value => (value >= 0 && value <= preset.maxPrice)"
-          >
-          </app-input>
-        </div>
-        <div class="spb-option">
-          <span class="spb-option__description">Name</span>
-          <app-input
-            v-model="preset.name"
-            :type="'text'"
-          >
-          </app-input>
-        </div>
-        <div class="spb-option">
-          <span class="spb-option__description">Search</span>
-          <app-input
-            v-model="preset.search"
-            :type="'text'"
-            :placeholder="'Search...'"
-          >
-          </app-input>
+        <div>
+          <div class="spb-option">
+            <span class="spb-option__description">% Deal margin</span>
+            <app-input
+              v-model.number="dealMargin"
+              :type="'number'"
+              :validator="value => (value >= -preset.deal && value <= 1000 - preset.deal)"
+            >
+            </app-input>
+          </div>
+          <div class="spb-option">
+            <span class="spb-option__description">$ Item max price</span>
+            <app-input
+              v-model.number="preset.maxPrice"
+              :type="'number'"
+              :validator="value => (value >= preset.minPrice && value <= 1000000)"
+            >
+            </app-input>
+          </div>
+          <div class="spb-option">
+            <span class="spb-option__description">Refresh time</span>
+            <app-input
+              v-model.number="preset.runDelay"
+              :type="'number'"
+              :validator="value => (value >= 0 && value <= 1200)"
+            >
+            </app-input>
+          </div>
         </div>
       </div>
-      <div>
-        <div class="spb-option">
-          <span class="spb-option__description">% Deal margin</span>
-          <app-input
-            v-model.number="dealMargin"
-            :type="'number'"
-            :validator="value => (value >= -preset.deal && value <= 1000 - preset.deal)"
-          >
-          </app-input>
-        </div>
-        <div class="spb-option">
-          <span class="spb-option__description">$ Item max price</span>
-          <app-input
-            v-model.number="preset.maxPrice"
-            :type="'number'"
-            :validator="value => (value >= preset.minPrice && value <= preset.toSpend)"
-          >
-          </app-input>
-        </div>
-        <div class="spb-option">
-          <span class="spb-option__description">$ Money to spend</span>
-          <app-input
-            v-model.number="preset.toSpend"
-            :type="'number'"
-            :validator="value => (value >= preset.maxPrice && value <= 1000000)"
-          >
-          </app-input>
-        </div>
-        <div class="spb-option">
-          <span class="spb-option__description">Refresh time</span>
-          <app-input
-            v-model.number="preset.runDelay"
-            :type="'number'"
-            :validator="value => (value >= 0 && value <= 1200)"
-          >
-          </app-input>
-        </div>
+      <div class="spb-option">
+        <span class="spb-option__description">Search</span>
+        <app-input
+          v-model="preset.search"
+          :type="'text'"
+          :placeholder="'Search...'"
+        >
+        </app-input>
       </div>
     </div>
     <div class="spb-preset-manager__buttons-wrapper">
@@ -200,8 +193,12 @@ export default {
   height: 32px;
 }
 
-.spb-preset-manager__wrapper {
-  justify-content: space-around;
+.spb-preset-manager__preset {
+  padding: 0 2px;
+}
+
+.spb-preset-manager__preset-layout {
+  justify-content: space-between;
 }
 
 .spb-preset-manager__buttons-wrapper {

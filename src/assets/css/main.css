@@ -10,6 +10,10 @@
   color: var(--main-text-color);
 }
 
+.spb-button:disabled {
+  opacity: 0.7;
+}
+
 .spb-button-tiny {
   height: 16px;
   width: 40px;

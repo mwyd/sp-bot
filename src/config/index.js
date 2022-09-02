@@ -14,6 +14,8 @@ const alertLifeTime = 2.0
 
 const checkInstanceTick = 0.1
 
+const checkBuyHistoryTick = 10
+
 const steamBuffDiscountOffset = 30
 
 export {
@@ -22,5 +24,6 @@ export {
   notificationSound,
   alertLifeTime,
   checkInstanceTick,
+  checkBuyHistoryTick,
   steamBuffDiscountOffset
 }

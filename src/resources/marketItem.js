@@ -120,7 +120,7 @@ const itemSortBy = new Map([
 ])
 
 const isFloatProfitable = float => {
-  for (let [min, max] of profitableFloatRanges) {
+  for (const [min, max] of profitableFloatRanges) {
     if (float >= min && float <= max) {
       return true
     }
@@ -130,7 +130,7 @@ const isFloatProfitable = float => {
 }
 
 const hasPaintSeedVariants = name => {
-  for (let keyword of paintSeedVariantKeywords) {
+  for (const keyword of paintSeedVariantKeywords) {
     if (name.search(keyword) > -1) {
       return true
     }
@@ -151,7 +151,7 @@ const normalizeMarketItem = item => {
   item._search_steam_hash_name = item.steam_market_hash_name.toLowerCase()
   item._conduit_hash_name = item.steam_market_hash_name
 
-  for (let phase of dopplerPhases) {
+  for (const phase of dopplerPhases) {
     let position = item.steam_market_hash_name.search(` ${phase}`)
 
     if (position > -1) {

@@ -47,6 +47,10 @@ const calculateDiscount = (a, b, round = true) => {
   return round ? Math.round(discount) : discount
 }
 
+const shadowpayDate = () => {
+  return new Date(Date.now() - 4 * 60 * 60 * 1000)
+}
+
 export {
   SPB_LOG,
   round,
@@ -54,5 +58,6 @@ export {
   fetchBackground,
   fetchJson,
   syncStorage,
-  calculateDiscount
+  calculateDiscount,
+  shadowpayDate
 }

@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 import { userConfig } from '@/api/conduit'
 import { market } from '@/api/shadowpay'
-import { background } from '@/api/internal'
 import { alertLifeTime } from '@/config'
 import alertType from '@/enums/alertType'
 import targetMarketType from '@/enums/targetMarketType'
@@ -11,7 +10,6 @@ export default {
   namespaced: true,
   state: () => ({
     loaded: null,
-    backgroundMounted: false,
     tabs: tabs,
     tabReservedIds: [...new Array(tabs.length).keys()],
     tabFreeIds: [...new Array(50 - tabs.length).keys()].map(e => e + tabs.length),
@@ -36,9 +34,6 @@ export default {
   mutations: {
     setLoaded(state, value) {
       state.loaded = value
-    },
-    setBackgroundMounted(state, value) {
-      state.backgroundMounted = value
     },
     setConfig(state, { type, value }) {
       type === '*' ? Object.assign(state.config, value) : state.config[type] = value
@@ -106,17 +101,6 @@ export default {
 
       return uuid
     },
-    async checkBackgroundMounted({ commit }) {
-      const { data } = await background.getBuyCounter()
-
-      if (data !== undefined) {
-        commit('setBackgroundMounted', true)
-
-        return
-      }
-
-      throw 'Background not mounted correctly - restart browser'
-    },
     async checkUserLogged({ commit }) {
       const { is_logged } = await market.getStatus()
 
@@ -131,8 +115,6 @@ export default {
     async setupApp({ dispatch, commit }) {
       try {
         await dispatch('checkUserLogged')
-
-        await dispatch('checkBackgroundMounted')
 
         await dispatch('session/loadToken', null, { root: true })
         await dispatch('session/authenticate', null, { root: true })

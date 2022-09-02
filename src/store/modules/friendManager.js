@@ -24,7 +24,7 @@ export default {
     itemOwner: state => shadowpayUserId => {
       let name = null
 
-      for (let [id, friend] of state.friends) {
+      for (const [id, friend] of state.friends) {
         if (id === 0) {
           continue
         }
@@ -66,7 +66,7 @@ export default {
           break
         }
 
-        for (let friend of data) {
+        for (const friend of data) {
           commit('setFriend', {
             id: friend.id,
             friend: {
@@ -137,8 +137,9 @@ export default {
         message: 'Friend deleted'
       }
 
-      if (success) commit('removeFriend', data.id)
-      else {
+      if (success) {
+        commit('removeFriend', data.id)
+      } else {
         alert.type = alertType.ERROR
         alert.message = error_message
       }

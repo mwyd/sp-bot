@@ -82,7 +82,7 @@
       >
         <div class="spb-home__control-icon spb--background-image-center spb-home__control-items"></div>
         <div class="spb-home__control-name">
-          {{ countedItems }} Items
+          {{ itemsCounter }} Items
         </div>
       </div>
     </div>
@@ -130,18 +130,13 @@ export default {
       finishedItems: state => state.bots.items.finished
     }),
     ...mapGetters({
-      itemsCount: 'bots/itemsCount'
+      toConfirmItems: 'bots/toConfirmItems',
+      pendingItems: 'bots/pendingItems'
     }),
-    countedItems() {
+    itemsCounter() {
       return this.currentView === this.views.ACTIVE
-        ? this.itemsCount(botItemType.TO_CONFIRM)
-        : this.itemsCount(botItemType.PENDING) + this.finishedItems.length
-    },
-    toConfirmItems() {
-      return this.$store.getters['bots/items'](botItemType.TO_CONFIRM)
-    },
-    pendingItems() {
-      return this.$store.getters['bots/items'](botItemType.PENDING)
+        ? this.toConfirmItems.length
+        : this.pendingItems.length + this.finishedItems.length
     },
     appLoaded() {
       return this.$store.state.app.loaded
@@ -166,10 +161,11 @@ export default {
   },
   methods: {
     updateView(view) {
-      this.currentView = view
       if (view === this.views.BUY_HISTORY) {
         this.clearPendingStatus()
       }
+
+      this.currentView = view
     },
     filteredItems(type) {
       let items = []

@@ -12,8 +12,7 @@ export default {
           deal: 15,
           dealMargin: 50,
           minPrice: 1.00,
-          maxPrice: 10.00,
-          toSpend: 20.00,
+          maxPrice: 100.00,
           runDelay: 4.0,
           search: ''
         }
@@ -55,7 +54,7 @@ export default {
           break
         }
 
-        for (let preset of data) {
+        for (const preset of data) {
           commit('setPreset', {
             id: preset.id,
             preset: preset.preset
@@ -117,8 +116,9 @@ export default {
         message: 'Preset deleted'
       }
 
-      if (success) commit('removePreset', data.id)
-      else {
+      if (success) {
+        commit('removePreset', data.id)
+      } else {
         alert.type = alertType.ERROR
         alert.message = error_message
       }

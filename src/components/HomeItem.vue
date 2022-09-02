@@ -10,7 +10,7 @@
           class="spb-button spb--font-size-small spb-button--green"
           v-if="type === botItemType.TO_CONFIRM"
           :disabled="actionsDisabled"
-          @click="disableActions(item._buy())"
+          @click="disableActions(buyItem(item))"
         >
           Buy now
         </button>
@@ -35,6 +35,7 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
 import { getItemOwnerSteamId } from '@/resources/marketItem'
 import actionMixin from '@/mixins/actionMixin'
 import BaseItem from './base/BaseItem.vue'
@@ -70,6 +71,9 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      buyItem: 'bots/buyItem'
+    }),
     getItemOwnerSteamId
   }
 }

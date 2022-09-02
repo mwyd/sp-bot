@@ -1,9 +1,8 @@
 <template>
   <div class="spb-tab-bar spb--flex spb--theme-dark">
     <div
-      v-if="!appLoaded || !backgroundMounted"
-      class="spb-tab-bar__loader spb--z-1200"
-      :class="tabBarLoaderClass"
+      v-if="!appLoaded"
+      class="spb-tab-bar__loader spb--z-1200 spb--cursor-wait"
     >
     </div>
     <div class="spb-tab-bar__wrapper">
@@ -64,8 +63,7 @@ export default {
     ...mapState({
       tabs: state => state.app.tabs,
       alerts: state => state.app.alerts,
-      appLoaded: state => state.app.loaded,
-      backgroundMounted: state => state.app.backgroundMounted
+      appLoaded: state => state.app.loaded
     }),
     staticTabs() {
       return this.tabs.filter(tab => tab.isStatic)
@@ -75,11 +73,6 @@ export default {
     },
     displayInterfaceOnTop() {
       return this.$store.getters['app/config']('displayInterfaceOnTop')
-    },
-    tabBarLoaderClass() {
-      return [
-        !this.backgroundMounted ? 'spb--cursor-not-allowed' : 'spb--cursor-wait'
-      ]
     },
     alertBoxClass() {
       const alertsExists = this.alerts.size > 0
