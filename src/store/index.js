@@ -7,12 +7,12 @@ import presetManager from './modules/presetManager'
 import friendManager from './modules/friendManager'
 
 export default createStore({
-    modules: {
-        app,
-        session,
-        bots,
-        saleGuard,
-        presetManager,
-        friendManager
-    }
+  modules: {
+    app,
+    session,
+    bots,
+    saleGuard,
+    presetManager,
+    friendManager
+  }
 })

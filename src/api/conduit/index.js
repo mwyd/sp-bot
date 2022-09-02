@@ -9,8 +9,8 @@ import useSteamMarketItem from './useSteamMarketItem'
 import useBuffMarketItem from './useBuffMarketItem'
 
 const defaults = {
-    baseUrl: 'https://conduit.ddns.net/api/v1',
-    service: apiService.CONDUIT
+  baseUrl: 'https://conduit.ddns.net/api/v1',
+  service: apiService.CONDUIT
 }
 
 const user = useUser(defaults)
@@ -23,12 +23,12 @@ const steamMarketItem = useSteamMarketItem(defaults)
 const buffMarketItem = useBuffMarketItem(defaults)
 
 export {
-    user,
-    userPreset,
-    userFriend,
-    userConfig,
-    saleGuardItem,
-    rarePaintSeedItem,
-    steamMarketItem,
-    buffMarketItem
+  user,
+  userPreset,
+  userFriend,
+  userConfig,
+  saleGuardItem,
+  rarePaintSeedItem,
+  steamMarketItem,
+  buffMarketItem
 }
