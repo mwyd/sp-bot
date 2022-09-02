@@ -100,7 +100,7 @@ import processMixin from '@/mixins/processMixin'
 import AppInput from './ui/AppInput'
 import tabWindowState from '@/enums/tabWindowState'
 import { market } from '@/api/shadowpay'
-import { buffMarketItem, steamMarketItem } from '@/api/conduit'
+import { getBuffMarketItemData, getSteamMarketItemData } from '@/cache/conduit'
 
 export default {
   name: 'Bot',
@@ -244,13 +244,13 @@ export default {
       item._buff_updated = false
       item._steam_updated = false
 
-      const [buffResponse, steamResponse] = await Promise.all([
-        buffMarketItem.single(item.steam_market_hash_name),
-        steamMarketItem.single(item._conduit_hash_name)
+      const [buffData, steamData] = await Promise.all([
+        getBuffMarketItemData(item.steam_market_hash_name),
+        getSteamMarketItemData(item._conduit_hash_name)
       ])
 
-      if (buffResponse.success) {
-        const { price, volume, good_id } = buffResponse.data
+      if (buffData) {
+        const { price, volume, good_id } = buffData
 
         item._buff_updated = true
         item._buff_price = price
@@ -259,8 +259,8 @@ export default {
         item._buff_discount = calculateDiscount(item.price_market_usd, price)
       }
 
-      if (steamResponse.success) {
-        const { price, volume } = steamResponse.data
+      if (steamData) {
+        const { price, volume } = steamData
 
         item._steam_updated = true
         item._steam_price = price
