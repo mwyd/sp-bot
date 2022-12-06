@@ -2,6 +2,7 @@ import { SPB_LOG, round } from '@/utils'
 import { saleGuardItem } from '@/api/conduit'
 import { itemOnSale } from '@/api/shadowpay'
 import { inspectItem, normalizeMarketItem } from '@/resources/marketItem'
+import { getMarketItemData } from '@/cache/conduit'
 import alertType from '@/enums/alertType'
 
 export default {
@@ -111,6 +112,40 @@ export default {
 
       dispatch('app/pushAlert', alert, { root: true })
     },
+    async adjustTracked({ rootGetters, getters, commit, dispatch }) {
+      for (const { item, metadata } of getters.trackedItems()) {
+        const marketData = await getMarketItemData(item)
+
+        if (!marketData) {
+          continue
+        }
+
+        const minPrice = round(rootGetters['app/config']('saleGuardLowerLimit') * marketData.price)
+        const maxPrice = round(rootGetters['app/config']('saleGuardUpperLimit') * marketData.price)
+
+        if (minPrice === metadata.minPrice && maxPrice === metadata.maxPrice) {
+          continue
+        }
+
+        commit('setItemMetadata', {
+          id: item.id,
+          metadata: {
+            ...metadata,
+            minPrice,
+            maxPrice
+          }
+        })
+
+        await dispatch('updateTracked', {
+          id: metadata.databaseId,
+          data: {
+            shadowpayOfferId: item.id,
+            minPrice,
+            maxPrice
+          }
+        })
+      }
+    },
     async stopTrack({ rootState, commit, dispatch }, { id, showAlert = true }) {
       const { success, data, error_message } = await saleGuardItem.remove(rootState.session.token, id)
 
@@ -171,7 +206,7 @@ export default {
           }
 
           const minPrice = item.price_market_usd
-          let maxPrice = round(item.steam_price_en * rootGetters['app/config']('saleGuardSafeDiscount'))
+          let maxPrice = round(item.steam_price_en)
 
           if (maxPrice < minPrice) {
             maxPrice = round(minPrice + rootGetters['app/config']('saleGuardBidStep'))

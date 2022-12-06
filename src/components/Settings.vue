@@ -87,12 +87,22 @@
           </app-input>
         </div>
         <div class="spb--flex spb-option__row spb--font-size-medium">
-          <div>Safe discount</div>
+          <div>Lower limit</div>
           <app-input
-            v-model.number="safeDiscount"
+            v-model.number="lowerLimit"
             class="spb-settings__option-value"
             :type="'number'"
-            :validator="value => value >= 1 && value <= 1000"
+            :validator="value => value >= 1 && value <= upperLimit"
+          >
+          </app-input>
+        </div>
+        <div class="spb--flex spb-option__row spb--font-size-medium">
+          <div>Upper limit</div>
+          <app-input
+            v-model.number="upperLimit"
+            class="spb-settings__option-value"
+            :type="'number'"
+            :validator="value => value >= lowerLimit && value <= 1000"
           >
           </app-input>
         </div>
@@ -235,13 +245,24 @@ export default {
         })
       }
     },
-    safeDiscount: {
+    lowerLimit: {
       get() {
-        return this.$store.getters['app/config']('saleGuardSafeDiscount') * 100
+        return this.$store.getters['app/config']('saleGuardLowerLimit') * 100
       },
       set(value) {
         this.$store.commit('app/setConfig', {
-          type: 'saleGuardSafeDiscount',
+          type: 'saleGuardLowerLimit',
+          value: value / 100
+        })
+      }
+    },
+    upperLimit: {
+      get() {
+        return this.$store.getters['app/config']('saleGuardUpperLimit') * 100
+      },
+      set(value) {
+        this.$store.commit('app/setConfig', {
+          type: 'saleGuardUpperLimit',
           value: value / 100
         })
       }

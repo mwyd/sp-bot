@@ -62,28 +62,15 @@
       <div class="spb--flex spb--font-weight-light spb--font-size-medium">
         <button
           class="spb-sale-guard__control spb--flex"
+          v-for="(action, index) in actions"
+          :key="`${action.name}-${index}`"
           :disabled="actionsDisabled"
-          @click="disableActions(refreshItems())"
+          @click="disableActions(action.callback())"
         >
-          <span
-            class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-refresh"></span>
-          <span class="spb-sale-guard__control-name">Refresh</span>
-        </button>
-        <button
-          class="spb-sale-guard__control spb--flex"
-          :disabled="actionsDisabled"
-          @click="disableActions(startTrackAll())"
-        >
-          <span class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-add-all"></span>
-          <span class="spb-sale-guard__control-name">Add all</span>
-        </button>
-        <button
-          class="spb-sale-guard__control spb--flex"
-          :disabled="actionsDisabled"
-          @click="disableActions(stopTrackAll())"
-        >
-          <span class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-remove-all"></span>
-          <span class="spb-sale-guard__control-name">Remove all</span>
+          <span :class="['spb-sale-guard__control-icon', 'spb--background-image-center', action.class]"></span>
+          <span class="spb-sale-guard__control-name">
+            {{ action.name }}
+          </span>
         </button>
         <div
           class="spb-sale-guard__control spb--flex"
@@ -123,7 +110,13 @@ export default {
   data() {
     return {
       sortModel: itemSortType.MARKET_PRICE,
-      timeoutId: null
+      timeoutId: null,
+      actions: [
+        { name: 'Refresh', class: 'spb-sale-guard__control-refresh', callback: () => this.refreshItems() },
+        { name: 'Adjust', class: 'spb-sale-guard__control-adjust', callback: () => this.adjustTracked() },
+        { name: 'Add all', class: 'spb-sale-guard__control-add-all', callback: () => this.startTrackAll() },
+        { name: 'Remove all', class: 'spb-sale-guard__control-remove-all', callback: () => this.stopTrackAll() }
+      ]
     }
   },
   computed: {
@@ -166,6 +159,7 @@ export default {
     ...mapActions({
       loadSaleGuardItems: 'saleGuard/loadSaleGuardItems',
       loadItemsOnSale: 'saleGuard/loadItemsOnSale',
+      adjustTracked: 'saleGuard/adjustTracked',
       startTrackAll: 'saleGuard/startTrackAll',
       stopTrackAll: 'saleGuard/stopTrackAll',
       stopTrack: 'saleGuard/stopTrack',
@@ -373,6 +367,10 @@ export default {
 
 .spb-sale-guard__control-refresh {
   background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/refresh.svg');
+}
+
+.spb-sale-guard__control-adjust {
+  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/stack.svg');
 }
 
 .spb-sale-guard__control-add-all {

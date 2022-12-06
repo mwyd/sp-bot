@@ -21,7 +21,8 @@ export default {
       displayInterfaceOnTop: false,
       openTabsAtStartup: false,
       saleGuardBidStep: 0.01,
-      saleGuardSafeDiscount: 0.97,
+      saleGuardLowerLimit: 0.87,
+      saleGuardUpperLimit: 0.97,
       saleGuardUpdateDelay: 4.0,
       targetMarket: targetMarketType.STEAM
     }
