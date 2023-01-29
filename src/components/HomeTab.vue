@@ -106,7 +106,7 @@ const views = Object.freeze({
 })
 
 export default {
-  name: 'Home',
+  name: 'HomeTab',
   components: {
     HomeItem,
     AppInput,

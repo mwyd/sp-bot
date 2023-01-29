@@ -75,7 +75,7 @@ export default {
           isStatic: false,
           name: 'Bot',
           symbol: 'B',
-          childComponent: 'Bot',
+          childComponent: 'BotInstance',
           tabMounted: tab => tab.$refs.tabWindow.$refs.childComponent.presetModel = id
         }, { root: true })
       }

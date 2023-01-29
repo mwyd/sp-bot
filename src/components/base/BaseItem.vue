@@ -102,7 +102,7 @@ import { significantProperties, isFloatProfitable } from '@/resources/marketItem
 import { steamMarket, buff163 } from '@/config'
 
 export default {
-  name: 'Item',
+  name: 'BaseItem',
   props: {
     item: Object
   },

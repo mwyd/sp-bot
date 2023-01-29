@@ -14,22 +14,22 @@
 </template>
 
 <script>
-import Home from '@/components/Home'
+import HomeTab from '@/components/HomeTab'
 import SaleGuard from '@/components/SaleGuard'
 import PresetManager from '@/components/PresetManager'
 import FriendManager from '@/components/FriendManager'
-import Settings from '@/components/Settings'
-import Bot from '@/components/Bot'
+import SettingsTab from '@/components/SettingsTab'
+import BotInstance from '@/components/BotInstance'
 
 export default {
   name: 'AppTabWindow',
   components: {
-    Home,
+    HomeTab,
     SaleGuard,
     PresetManager,
     FriendManager,
-    Settings,
-    Bot
+    SettingsTab,
+    BotInstance
   },
   props: {
     id: Number,

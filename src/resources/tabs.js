@@ -4,7 +4,7 @@ export default [
     isStatic: true,
     name: 'Home',
     symbol: 'H',
-    childComponent: 'Home'
+    childComponent: 'HomeTab'
   },
   {
     id: 1,
@@ -32,6 +32,6 @@ export default [
     isStatic: true,
     name: 'Settings',
     symbol: 'S',
-    childComponent: 'Settings'
+    childComponent: 'SettingsTab'
   }
 ]

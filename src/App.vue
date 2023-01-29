@@ -19,7 +19,7 @@
             isStatic: false,
             name: 'Bot',
             symbol: 'B',
-            childComponent: 'Bot'
+            childComponent: 'BotInstance'
           })"
         >
           +

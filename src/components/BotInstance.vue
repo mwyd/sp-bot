@@ -103,7 +103,7 @@ import { market } from '@/api/shadowpay'
 import { getBuffMarketItemData, getSteamMarketItemData } from '@/cache/conduit'
 
 export default {
-  name: 'Bot',
+  name: 'BotInstance',
   components: {
     AppInput
   },

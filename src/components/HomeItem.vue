@@ -38,7 +38,7 @@
 import { mapActions } from 'vuex'
 import { getItemOwnerSteamId } from '@/resources/marketItem'
 import actionMixin from '@/mixins/actionMixin'
-import BaseItem from './base/BaseItem.vue'
+import BaseItem from './base/BaseItem'
 import DateFormat from 'dateformat'
 import botItemType from '@/enums/botItemType'
 import { steamMarket } from '@/config'

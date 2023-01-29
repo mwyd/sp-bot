@@ -136,7 +136,7 @@ import AppInput from './ui/AppInput'
 import targetMarketType from '@/enums/targetMarketType'
 
 export default {
-  name: 'Settings',
+  name: 'SettingsTab',
   components: {
     AppInput
   },
