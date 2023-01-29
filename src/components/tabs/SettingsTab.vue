@@ -1,6 +1,8 @@
 <template>
   <div class="spb-settings">
-    <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">Settings</h3>
+    <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">
+      Settings
+    </h3>
     <div>
       <div class="spb-option spb--font-size-big">
         <span class="spb-option__description">Token</span>
@@ -8,8 +10,7 @@
           v-model="token"
           :type="'password'"
           :model-updated="reloadSettings"
-        >
-        </app-input>
+        />
       </div>
       <div class="spb-option spb--font-size-big">
         <span class="spb-option__description spb--clear-padding">Manage</span>
@@ -29,19 +30,31 @@
         <span class="spb-option__description spb--clear-padding">Config</span>
         <div class="spb--flex spb-option__row spb--font-size-medium">
           <div>Display item statistics</div>
-          <input v-model="displayItemStatistics" type="checkbox">
+          <input
+            v-model="displayItemStatistics"
+            type="checkbox"
+          >
         </div>
         <div class="spb--flex spb-option__row spb--font-size-medium">
           <div>Display tab preview</div>
-          <input v-model="displayTabPreview" type="checkbox">
+          <input
+            v-model="displayTabPreview"
+            type="checkbox"
+          >
         </div>
         <div class="spb--flex spb-option__row spb--font-size-medium">
           <div>Display interface on top</div>
-          <input v-model="displayInterfaceOnTop" type="checkbox">
+          <input
+            v-model="displayInterfaceOnTop"
+            type="checkbox"
+          >
         </div>
         <div class="spb--flex spb-option__row spb--font-size-medium">
           <div>Open tabs at startup</div>
-          <input v-model="openTabsAtStartup" type="checkbox">
+          <input
+            v-model="openTabsAtStartup"
+            type="checkbox"
+          >
         </div>
       </div>
       <div class="spb-option spb--font-size-big">
@@ -53,15 +66,14 @@
             class="spb-settings__option-value"
             :type="'number'"
             :validator="value => value >= 0 && value <= 100"
-          >
-          </app-input>
+          />
         </div>
 
         <div class="spb--flex spb-option__row spb--font-size-medium">
           <div>Target market</div>
           <select
-            class="spb-settings__target-market spb-settings__option-value spb-input__field spb-input__field--ok spb--rounded-small"
             v-model="targetMarket"
+            class="spb-settings__target-market spb-settings__option-value spb-input__field spb-input__field--ok spb--rounded-small"
           >
             <option
               v-for="market in Object.values(targetMarketType)"
@@ -72,7 +84,6 @@
             </option>
           </select>
         </div>
-
       </div>
       <div class="spb-option spb--font-size-big">
         <span class="spb-option__description spb--clear-padding">Sale Guard</span>
@@ -83,8 +94,7 @@
             class="spb-settings__option-value"
             :type="'number'"
             :validator="value => value >= 0.01 && value <= 100"
-          >
-          </app-input>
+          />
         </div>
         <div class="spb--flex spb-option__row spb--font-size-medium">
           <div>Lower limit</div>
@@ -93,8 +103,7 @@
             class="spb-settings__option-value"
             :type="'number'"
             :validator="value => value >= 1 && value <= upperLimit"
-          >
-          </app-input>
+          />
         </div>
         <div class="spb--flex spb-option__row spb--font-size-medium">
           <div>Upper limit</div>
@@ -103,8 +112,7 @@
             class="spb-settings__option-value"
             :type="'number'"
             :validator="value => value >= lowerLimit && value <= 1000"
-          >
-          </app-input>
+          />
         </div>
         <div class="spb--flex spb-option__row spb--font-size-medium">
           <div>Update delay</div>
@@ -113,8 +121,7 @@
             class="spb-settings__option-value"
             :type="'number'"
             :validator="value => value >= 0 && value <= 1200"
-          >
-          </app-input>
+          />
         </div>
       </div>
     </div>
@@ -132,7 +139,7 @@
 import { mapState, mapActions } from 'vuex'
 import tabWindowState from '@/enums/tabWindowState'
 import actionMixin from '@/mixins/actionMixin'
-import AppInput from './ui/AppInput'
+import AppInput from '@/components/ui/AppInput'
 import targetMarketType from '@/enums/targetMarketType'
 
 export default {
@@ -142,7 +149,10 @@ export default {
   },
   mixins: [actionMixin],
   props: {
-    id: Number
+    id: {
+      type: Number,
+      required: true
+    }
   },
   emits: ['statusUpdate'],
   data() {
@@ -162,7 +172,7 @@ export default {
     },
     token: {
       get() {
-        return this.$store.state.session.token
+        return this.$store.state.session.token || ''
       },
       set(value) {
         this.$store.commit('session/setToken', value)

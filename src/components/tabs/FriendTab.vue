@@ -1,24 +1,28 @@
 <template>
   <div class="spb-friend-manager">
-    <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">Friend Manager</h3>
+    <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">
+      Friend Manager
+    </h3>
     <app-multiple-switch
       :options="Object.values(views)"
       :selected="currentView"
-      @optionUpdate="view => currentView = view"
+      @option-update="view => currentView = view"
+    />
+    <div
+      v-show="currentView === views.MANAGE"
+      class="spb-option"
     >
-    </app-multiple-switch>
-    <div v-show="currentView === views.MANAGE" class="spb-option">
       <span class="spb-option__description">Select friend</span>
       <select
-        class="spb-friend-manager__friend-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
         v-model="friendModel"
+        class="spb-friend-manager__friend-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
       >
         <option
-          v-for="[id, friend] in sortedFriends(true)"
-          :key="'friend-' + id"
-          :value="id"
+          v-for="[friendId, userFriend] in sortedFriends(true)"
+          :key="'friend-' + friendId"
+          :value="friendId"
         >
-          {{ friend.name }}
+          {{ userFriend.name }}
         </option>
       </select>
     </div>
@@ -29,8 +33,7 @@
           v-model.number="friend.shadowpayUserId"
           :type="'number'"
           :placeholder="'Enter id...'"
-        >
-        </app-input>
+        />
       </div>
       <div class="spb-option">
         <span class="spb-option__description">Name</span>
@@ -38,8 +41,7 @@
           v-model="friend.name"
           :type="'text'"
           :placeholder="'Enter name...'"
-        >
-        </app-input>
+        />
       </div>
     </div>
     <div class="spb-friend-manager__buttons-wrapper">
@@ -52,7 +54,10 @@
           add
         </button>
       </div>
-      <div v-else class="spb--flex">
+      <div
+        v-else
+        class="spb--flex"
+      >
         <button
           class="spb-friend-manager__button-update spb-button spb-button--green"
           :disabled="friendModel === 0 || actionsDisabled"
@@ -76,8 +81,8 @@
 import { mapState, mapActions } from 'vuex'
 import tabWindowState from '@/enums/tabWindowState'
 import actionMixin from '@/mixins/actionMixin'
-import AppInput from './ui/AppInput'
-import AppMultipleSwitch from './ui/AppMultipleSwitch'
+import AppInput from '@/components/ui/AppInput'
+import AppMultipleSwitch from '@/components/ui/AppMultipleSwitch'
 
 const views = Object.freeze({
   ADD: 'Add',
@@ -85,14 +90,17 @@ const views = Object.freeze({
 })
 
 export default {
-  name: 'FriendManager',
+  name: 'FriendTab',
   components: {
     AppInput,
     AppMultipleSwitch
   },
   mixins: [actionMixin],
   props: {
-    id: Number
+    id: {
+      type: Number,
+      required: true
+    }
   },
   emits: ['statusUpdate'],
   data() {

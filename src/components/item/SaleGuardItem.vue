@@ -3,25 +3,23 @@
     <template #modal-columns>
       <div class="spb-item__column spb-item__min-price">
         <app-input
-          class="spb-sale-guard-item__dark-input"
           v-model.number="minPrice"
+          class="spb-sale-guard-item__dark-input"
           :type="'number'"
           :validator="value => value >= 0.01 && value <= metadata.maxPrice"
           :disabled="actionsDisabled"
           :model-updated="updateTracked"
-        >
-        </app-input>
+        />
       </div>
       <div class="spb-item__column spb-item__max-price">
         <app-input
-          class="spb-sale-guard-item__dark-input"
           v-model.number="maxPrice"
+          class="spb-sale-guard-item__dark-input"
           :type="'number'"
           :validator="value => value >= metadata.minPrice"
           :disabled="actionsDisabled"
           :model-updated="updateTracked"
-        >
-        </app-input>
+        />
       </div>
       <div class="spb-item__column spb-item__watch">
         <button
@@ -48,9 +46,9 @@
 
 <script>
 import { mapActions } from 'vuex'
-import BaseItem from './base/BaseItem'
+import BaseItem from './BaseItem'
 import actionMixin from '@/mixins/actionMixin'
-import AppInput from './ui/AppInput'
+import AppInput from '@/components/ui/AppInput'
 
 export default {
   name: 'SaleGuardItem',
@@ -60,8 +58,14 @@ export default {
   },
   mixins: [actionMixin],
   props: {
-    item: Object,
-    metadata: Object
+    item: {
+      type: Object,
+      required: true
+    },
+    metadata: {
+      type: Object,
+      required: true
+    }
   },
   computed: {
     updateButtonClass() {

@@ -4,11 +4,13 @@
     :class="stateClass"
   >
     <template #modal-columns>
-      <div class="spb-item__column spb-item__status"> {{ item.state }}</div>
+      <div class="spb-item__column spb-item__status">
+        {{ item.state }}
+      </div>
       <div class="spb-item__column spb-item__date">
         <button
-          class="spb-button spb--font-size-small spb-button--green"
           v-if="type === botItemType.TO_CONFIRM"
+          class="spb-button spb--font-size-small spb-button--green"
           :disabled="actionsDisabled"
           @click="disableActions(buyItem(item))"
         >
@@ -38,7 +40,7 @@
 import { mapActions } from 'vuex'
 import { getItemOwnerSteamId } from '@/resources/marketItem'
 import actionMixin from '@/mixins/actionMixin'
-import BaseItem from './base/BaseItem'
+import BaseItem from './BaseItem'
 import DateFormat from 'dateformat'
 import botItemType from '@/enums/botItemType'
 import { steamMarket } from '@/config'
@@ -50,8 +52,14 @@ export default {
   },
   mixins: [actionMixin],
   props: {
-    type: String,
-    item: Object
+    type: {
+      type: String,
+      required: true
+    },
+    item: {
+      type: Object,
+      required: true
+    }
   },
   data() {
     return {

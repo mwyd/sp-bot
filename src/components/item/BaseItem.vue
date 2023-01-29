@@ -5,7 +5,7 @@
         <img
           :src="steamMarket.ITEM_IMAGE + item.steam_icon_url_large"
           :alt="item.id"
-        />
+        >
         <a
           target="_blank"
           class="spb--link"
@@ -16,16 +16,16 @@
       </div>
       <div class="spb-item__stickers spb--flex">
         <div
-          class="spb-item__sticker"
           v-for="(sticker, index) in item.stickers"
+          :key="'item-sticker-' + index"
+          class="spb-item__sticker"
           :data-spb-sticker-name="sticker.name"
           :data-spb-sticker-price="'$ ' + sticker.steam_price"
-          :key="'item-sticker-' + index"
         >
           <img
             :src="steamMarket.ITEM_IMAGE + sticker.icon_url"
             :alt="sticker.name"
-          />
+          >
         </div>
       </div>
       <div class="spb-item__column spb-item__price">
@@ -33,16 +33,15 @@
           <sup>{{ discountText }}</sup>
         </span>
       </div>
-      <slot name="modal-columns"></slot>
+      <slot name="modal-columns" />
       <div
         class="spb-item__column spb-item__info spb-item__info--ico"
         @click="displayStatistics = !displayStatistics"
-      >
-      </div>
+      />
     </div>
     <div
-      class="spb-item__stats spb--rounded-small"
       v-show="displayStatistics"
+      class="spb-item__stats spb--rounded-small"
     >
       <div
         v-if="item.floatvalue"
@@ -64,8 +63,8 @@
       </div>
       <div
         v-for="key in existingSignificantProperties"
-        class="spb-item__stat"
         :key="'item.' + key"
+        class="spb-item__stat"
       >
         {{ significantProperties[key].name }}
         <span class="spb--text-green">
@@ -84,7 +83,7 @@
           </span>
         </a>
       </div>
-      <slot name="modal-statistics"></slot>
+      <slot name="modal-statistics" />
       <div
         class="spb-item__stat spb--cursor-pointer"
         @click="copyToClipboard(item.inspect_url)"
@@ -104,7 +103,10 @@ import { steamMarket, buff163 } from '@/config'
 export default {
   name: 'BaseItem',
   props: {
-    item: Object
+    item: {
+      type: Object,
+      required: true
+    }
   },
   data() {
     return {

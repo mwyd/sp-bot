@@ -10,7 +10,7 @@
       @input="e => synchronized = (e.target.value === String(modelValue))"
       @focusout="rollbackInternalModel"
       @keydown.enter="validateInternalModel"
-    />
+    >
   </div>
 </template>
 
@@ -18,10 +18,20 @@
 export default {
   name: 'AppInput',
   props: {
-    type: String,
-    modelValue: [String, Number],
-    disabled: Boolean,
+    type: {
+      type: String,
+      default: 'text'
+    },
+    modelValue: {
+      type: [String, Number],
+      required: true
+    },
+    disabled: {
+      type: Boolean,
+      default: false
+    },
     modelModifiers: {
+      type: Object,
       default: () => ({})
     },
     placeholder: {

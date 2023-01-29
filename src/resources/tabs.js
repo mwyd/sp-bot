@@ -9,28 +9,28 @@ export default [
   {
     id: 1,
     isStatic: true,
-    name: 'SaleGuard',
+    name: 'SaleGuardTab',
     symbol: 'G',
-    childComponent: 'SaleGuard'
+    childComponent: 'SaleGuardTab'
   },
   {
     id: 2,
     isStatic: true,
-    name: 'PresetManager',
+    name: 'PresetTab',
     symbol: 'P',
-    childComponent: 'PresetManager'
+    childComponent: 'PresetTab'
   },
   {
     id: 3,
     isStatic: true,
-    name: 'FriendManager',
+    name: 'FriendTab',
     symbol: 'F',
-    childComponent: 'FriendManager'
+    childComponent: 'FriendTab'
   },
   {
     id: 4,
     isStatic: true,
-    name: 'Settings',
+    name: 'SettingsTab',
     symbol: 'S',
     childComponent: 'SettingsTab'
   }

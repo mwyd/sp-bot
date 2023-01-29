@@ -4,37 +4,45 @@
     :class="tabWindowClass"
   >
     <component
-      ref="childComponent"
-      :id="id"
       :is="childComponent"
-      @statusUpdate="statusUpdate"
-    >
-    </component>
+      :id="id"
+      ref="childComponent"
+      @status-update="statusUpdate"
+    />
   </div>
 </template>
 
 <script>
-import HomeTab from '@/components/HomeTab'
-import SaleGuard from '@/components/SaleGuard'
-import PresetManager from '@/components/PresetManager'
-import FriendManager from '@/components/FriendManager'
-import SettingsTab from '@/components/SettingsTab'
-import BotInstance from '@/components/BotInstance'
+import HomeTab from '@/components/tabs/HomeTab'
+import SaleGuardTab from '@/components/tabs/SaleGuardTab'
+import PresetTab from '@/components/tabs/PresetTab'
+import FriendTab from '@/components/tabs/FriendTab'
+import SettingsTab from '@/components/tabs/SettingsTab'
+import BotTab from '@/components/tabs/BotTab'
 
 export default {
   name: 'AppTabWindow',
   components: {
     HomeTab,
-    SaleGuard,
-    PresetManager,
-    FriendManager,
+    SaleGuardTab,
+    PresetTab,
+    FriendTab,
     SettingsTab,
-    BotInstance
+    BotTab
   },
   props: {
-    id: Number,
-    isOpen: Boolean,
-    childComponent: String
+    id: {
+      type: Number,
+      required: true
+    },
+    isOpen: {
+      type: Boolean,
+      required: true
+    },
+    childComponent: {
+      type: String,
+      required: true
+    }
   },
   emits: ['statusUpdate'],
   computed: {

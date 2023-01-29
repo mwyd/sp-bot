@@ -3,15 +3,13 @@
     <div
       v-if="!appLoaded"
       class="spb-tab-bar__loader spb--z-1200 spb--cursor-wait"
-    >
-    </div>
+    />
     <div class="spb-tab-bar__wrapper">
       <app-tab
         v-for="tab in staticTabs"
         v-bind="tab"
         :key="'tab-' + tab.id"
-      >
-      </app-tab>
+      />
       <div class="spb-tab">
         <div
           class="spb-tab__button spb--rounded-medium spb--cursor-pointer spb--flex"
@@ -19,7 +17,7 @@
             isStatic: false,
             name: 'Bot',
             symbol: 'B',
-            childComponent: 'BotInstance'
+            childComponent: 'BotTab'
           })"
         >
           +
@@ -29,8 +27,7 @@
         v-for="tab in dynamicTabs"
         v-bind="tab"
         :key="'tab-' + tab.id"
-      >
-      </app-tab>
+      />
     </div>
     <div
       ref="alertBox"
@@ -42,8 +39,7 @@
         :uuid="uuid"
         :type="alert.type"
         :message="alert.message"
-      >
-      </app-alert>
+      />
     </div>
   </div>
 </template>

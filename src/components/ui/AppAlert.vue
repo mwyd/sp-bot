@@ -7,13 +7,11 @@
     <div
       class="spb-alert__icon spb--background-image-center"
       :class="iconClass"
-    >
-    </div>
+    />
     <div
       class="spb-alert__message"
       v-html="message"
-    >
-    </div>
+    />
   </div>
 </template>
 
@@ -27,8 +25,14 @@ export default {
       type: String,
       required: true
     },
-    type: String,
-    message: String
+    type: {
+      type: String,
+      required: true
+    },
+    message: {
+      type: String,
+      default: ''
+    }
   },
   computed: {
     alertClass() {

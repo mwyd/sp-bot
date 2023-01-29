@@ -1,6 +1,8 @@
 <template>
   <div class="spb-bot">
-    <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">Options - Bot #{{ id }}</h3>
+    <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">
+      Options - Bot #{{ id }}
+    </h3>
     <div class="spb-bot__preset">
       <div class="spb--flex spb-bot__preset-wrapper">
         <div>
@@ -11,8 +13,7 @@
               :type="'number'"
               :validator="value => (value >= -1000 && value <= 100)"
               :model-updated="checkToConfirm"
-            >
-            </app-input>
+            />
           </div>
           <div class="spb-option">
             <span class="spb-option__description">$ Item min price</span>
@@ -20,21 +21,20 @@
               v-model.number="preset.minPrice"
               :type="'number'"
               :validator="value => (value >= 0 && value <= preset.maxPrice)"
-            >
-            </app-input>
+            />
           </div>
           <div class="spb-option">
             <span class="spb-option__description">Preset</span>
             <select
-              class="spb-bot__preset-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
               v-model="presetModel"
+              class="spb-bot__preset-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
             >
               <option
-                v-for="[id, preset] in sortedPresets(true)"
-                :key="'preset-' + id"
-                :value="id"
+                v-for="[presetId, userPreset] in sortedPresets(true)"
+                :key="'preset-' + presetId"
+                :value="presetId"
               >
-                {{ preset.name }}
+                {{ userPreset.name }}
               </option>
             </select>
           </div>
@@ -47,8 +47,7 @@
               :type="'number'"
               :validator="value => (value >= -preset.deal && value <= 1000 - preset.deal)"
               :model-updated="checkToConfirm"
-            >
-            </app-input>
+            />
           </div>
           <div class="spb-option">
             <span class="spb-option__description">$ Item max price</span>
@@ -56,8 +55,7 @@
               v-model.number="preset.maxPrice"
               :type="'number'"
               :validator="value => (value >= preset.minPrice && value <= 1000000)"
-            >
-            </app-input>
+            />
           </div>
           <div class="spb-option">
             <span class="spb-option__description">Refresh time</span>
@@ -65,8 +63,7 @@
               v-model.number="preset.runDelay"
               :type="'number'"
               :validator="value => (value >= 0 && value <= 1200)"
-            >
-            </app-input>
+            />
           </div>
         </div>
       </div>
@@ -76,8 +73,7 @@
           v-model="preset.search"
           :type="'text'"
           :placeholder="'Search...'"
-        >
-        </app-input>
+        />
       </div>
     </div>
     <button
@@ -97,19 +93,22 @@ import { calculateDiscount, SPB_LOG } from '@/utils'
 import { normalizeMarketItem, inspectItem } from '@/resources/marketItem'
 import presetMixin from '@/mixins/presetMixin'
 import processMixin from '@/mixins/processMixin'
-import AppInput from './ui/AppInput'
+import AppInput from '@/components/ui/AppInput'
 import tabWindowState from '@/enums/tabWindowState'
 import { market } from '@/api/shadowpay'
 import { getBuffMarketItemData, getSteamMarketItemData } from '@/cache/conduit'
 
 export default {
-  name: 'BotInstance',
+  name: 'BotTab',
   components: {
     AppInput
   },
   mixins: [presetMixin, processMixin],
   props: {
-    id: Number
+    id: {
+      type: Number,
+      required: true
+    }
   },
   emits: ['statusUpdate'],
   data() {

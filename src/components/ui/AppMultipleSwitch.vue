@@ -3,8 +3,8 @@
     <div class="spb-multiple-switch spb--cursor-pointer spb--rounded-small spb--flex">
       <div
         v-for="(option, index) in options"
-        class="spb-multiple-switch__option spb--rounded-small"
         :key="`option-${sanitizedOption(option)}-${index}`"
+        class="spb-multiple-switch__option spb--rounded-small"
         :class="{ 'spb-multiple-switch__option--active': option === selected }"
         @click="$emit('optionUpdate', option)"
       >

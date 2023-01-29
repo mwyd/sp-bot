@@ -1,22 +1,26 @@
 <template>
   <div class="spb-preset-manager">
-    <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">Preset Manager</h3>
+    <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">
+      Preset Manager
+    </h3>
     <app-multiple-switch
       :options="Object.values(views)"
       :selected="currentView"
-      @optionUpdate="view => currentView = view"
+      @option-update="view => currentView = view"
+    />
+    <div
+      v-show="currentView === views.MANAGE"
+      class="spb-option"
     >
-    </app-multiple-switch>
-    <div v-show="currentView === views.MANAGE" class="spb-option">
       <span class="spb-option__description">Select preset</span>
       <select
-        class="spb-preset-manager__preset-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
         v-model="presetModel"
+        class="spb-preset-manager__preset-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
       >
         <option
-          v-for="[id, preset] in sortedPresets(true)"
-          :key="'preset-' + id"
-          :value="id"
+          v-for="[presetId, preset] in sortedPresets(true)"
+          :key="'preset-' + presetId"
+          :value="presetId"
         >
           {{ preset.name }}
         </option>
@@ -31,8 +35,7 @@
               v-model.number="preset.deal"
               :type="'number'"
               :validator="value => (value >= -1000 && value <= 100)"
-            >
-            </app-input>
+            />
           </div>
           <div class="spb-option">
             <span class="spb-option__description">$ Item min price</span>
@@ -40,16 +43,14 @@
               v-model.number="preset.minPrice"
               :type="'number'"
               :validator="value => (value >= 0 && value <= preset.maxPrice)"
-            >
-            </app-input>
+            />
           </div>
           <div class="spb-option">
             <span class="spb-option__description">Name</span>
             <app-input
               v-model="preset.name"
               :type="'text'"
-            >
-            </app-input>
+            />
           </div>
         </div>
         <div>
@@ -59,8 +60,7 @@
               v-model.number="dealMargin"
               :type="'number'"
               :validator="value => (value >= -preset.deal && value <= 1000 - preset.deal)"
-            >
-            </app-input>
+            />
           </div>
           <div class="spb-option">
             <span class="spb-option__description">$ Item max price</span>
@@ -68,8 +68,7 @@
               v-model.number="preset.maxPrice"
               :type="'number'"
               :validator="value => (value >= preset.minPrice && value <= 1000000)"
-            >
-            </app-input>
+            />
           </div>
           <div class="spb-option">
             <span class="spb-option__description">Refresh time</span>
@@ -77,8 +76,7 @@
               v-model.number="preset.runDelay"
               :type="'number'"
               :validator="value => (value >= 0 && value <= 1200)"
-            >
-            </app-input>
+            />
           </div>
         </div>
       </div>
@@ -88,8 +86,7 @@
           v-model="preset.search"
           :type="'text'"
           :placeholder="'Search...'"
-        >
-        </app-input>
+        />
       </div>
     </div>
     <div class="spb-preset-manager__buttons-wrapper">
@@ -102,7 +99,10 @@
           add
         </button>
       </div>
-      <div v-else class="spb--flex">
+      <div
+        v-else
+        class="spb--flex"
+      >
         <button
           class="spb-preset-manager__button-update spb-button spb-button--green"
           :disabled="presetModel === 0 || actionsDisabled"
@@ -127,8 +127,8 @@ import { mapState, mapActions } from 'vuex'
 import tabWindowState from '@/enums/tabWindowState'
 import presetMixin from '@/mixins/presetMixin'
 import actionMixin from '@/mixins/actionMixin'
-import AppInput from './ui/AppInput'
-import AppMultipleSwitch from './ui/AppMultipleSwitch'
+import AppInput from '@/components/ui/AppInput'
+import AppMultipleSwitch from '@/components/ui/AppMultipleSwitch'
 
 const views = Object.freeze({
   ADD: 'Add',
@@ -136,14 +136,17 @@ const views = Object.freeze({
 })
 
 export default {
-  name: 'PresetManager',
+  name: 'PresetTab',
   components: {
     AppInput,
     AppMultipleSwitch
   },
   mixins: [presetMixin, actionMixin],
   props: {
-    id: Number
+    id: {
+      type: Number,
+      required: true
+    }
   },
   emits: ['statusUpdate'],
   data() {

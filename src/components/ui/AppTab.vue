@@ -13,22 +13,20 @@
         v-if="!isStatic && isMouseOver"
         class="spb-tab__icon spb-tab__icon--close spb-tab__icon--right"
         @click="close(id)"
-      >
-      </div>
+      />
       <div
         class="spb-tab__icon spb-tab__icon--left"
-        :class="statusClass">
-      </div>
+        :class="statusClass"
+      />
       {{ symbol }}
     </div>
     <app-tab-window
-      ref="tabWindow"
       :id="id"
+      ref="tabWindow"
       :is-open="isOpen"
       :child-component="childComponent"
-      @statusUpdate="newStatus => (status = newStatus)"
-    >
-    </app-tab-window>
+      @status-update="newStatus => (status = newStatus)"
+    />
   </div>
 </template>
 
@@ -43,11 +41,26 @@ export default {
     AppTabWindow
   },
   props: {
-    id: Number,
-    isStatic: Boolean,
-    name: String,
-    symbol: String,
-    childComponent: String,
+    id: {
+      type: Number,
+      required: true
+    },
+    isStatic: {
+      type: Boolean,
+      required: true
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    symbol: {
+      type: String,
+      required: true
+    },
+    childComponent: {
+      type: String,
+      required: true
+    },
     tabMounted: {
       type: Function,
       default: null,

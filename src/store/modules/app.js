@@ -111,7 +111,7 @@ export default {
         return
       }
 
-      throw 'Shadowpay login required'
+      throw new Error('Shadowpay login required')
     },
     async setupApp({ dispatch, commit }) {
       try {
@@ -134,7 +134,7 @@ export default {
         dispatch('pushAlert', {
           type: alertType.ERROR,
           persistent: true,
-          message: err
+          message: err?.message ?? 'Setup error'
         })
       }
 

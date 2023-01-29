@@ -1,12 +1,13 @@
 <template>
   <div class="spb-home">
-    <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">Home</h3>
+    <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">
+      Home
+    </h3>
     <app-multiple-switch
       :options="Object.values(views)"
       :selected="currentView"
-      @optionUpdate="updateView"
-    >
-    </app-multiple-switch>
+      @option-update="updateView"
+    />
     <div class="spb-option">
       <span class="spb-option__description">Manage</span>
       <div class="spb--flex">
@@ -15,11 +16,10 @@
           class="spb-home__search"
           :type="'text'"
           :placeholder="'Search...'"
-        >
-        </app-input>
+        />
         <select
-          class="spb-home__sort-by spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
           v-model="sortModel"
+          class="spb-home__sort-by spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
         >
           <option
             v-for="[key, sort] in itemSortBy"
@@ -33,15 +33,25 @@
           class="spb-sort-dir spb--rounded-small spb--background-image-center spb--cursor-pointer"
           :class="sortDirClass"
           @click="sortDirAsc = !sortDirAsc"
-        ></div>
+        />
       </div>
     </div>
     <div class="spb-home__items-header">
-      <div class="spb-item__column spb-item__name">Item</div>
-      <div class="spb-item__column spb-item__price">Price</div>
-      <div class="spb-item__column spb-item__status">Status</div>
-      <div class="spb-item__column spb-item__date">{{ currentView === views.ACTIVE ? 'Buy' : 'Date' }}</div>
-      <div class="spb-item__column spb-item__info">Info</div>
+      <div class="spb-item__column spb-item__name">
+        Item
+      </div>
+      <div class="spb-item__column spb-item__price">
+        Price
+      </div>
+      <div class="spb-item__column spb-item__status">
+        Status
+      </div>
+      <div class="spb-item__column spb-item__date">
+        {{ currentView === views.ACTIVE ? 'Buy' : 'Date' }}
+      </div>
+      <div class="spb-item__column spb-item__info">
+        Info
+      </div>
     </div>
     <div class="spb-home__items">
       <div
@@ -50,11 +60,10 @@
       >
         <home-item
           v-for="item in filteredItems(botItemType.TO_CONFIRM)"
+          :key="'item-' + item.id"
           :type="botItemType.TO_CONFIRM"
           :item="item"
-          :key="'item-' + item.id"
-        >
-        </home-item>
+        />
       </div>
       <div
         v-show="currentView === views.BUY_HISTORY"
@@ -62,25 +71,23 @@
       >
         <home-item
           v-for="item in filteredItems(botItemType.PENDING)"
+          :key="'item-' + item.id"
           :type="botItemType.PENDING"
           :item="item"
-          :key="'item-' + item.id"
-        >
-        </home-item>
+        />
         <home-item
           v-for="item in filteredItems(botItemType.FINISHED)"
+          :key="'item-' + item.id"
           :type="botItemType.FINISHED"
           :item="item"
-          :key="'item-' + item.id"
-        >
-        </home-item>
+        />
       </div>
     </div>
     <div class="spb-home__footer spb--font-size-medium">
       <div
         class="spb--flex spb-home__control"
       >
-        <div class="spb-home__control-icon spb--background-image-center spb-home__control-items"></div>
+        <div class="spb-home__control-icon spb--background-image-center spb-home__control-items" />
         <div class="spb-home__control-name">
           {{ itemsCounter }} Items
         </div>
@@ -92,9 +99,9 @@
 <script>
 import { mapState, mapGetters } from 'vuex'
 import tabWindowState from '@/enums/tabWindowState'
-import HomeItem from './HomeItem'
-import AppInput from './ui/AppInput'
-import AppMultipleSwitch from './ui/AppMultipleSwitch'
+import HomeItem from '@/components/item/HomeItem'
+import AppInput from '@/components/ui/AppInput'
+import AppMultipleSwitch from '@/components/ui/AppMultipleSwitch'
 import itemFilterMixin from '@/mixins/itemFilterMixin'
 import botItemType from '@/enums/botItemType'
 import itemSortType from '@/enums/itemSortType'
@@ -114,7 +121,10 @@ export default {
   },
   mixins: [itemFilterMixin],
   props: {
-    id: Number
+    id: {
+      type: Number,
+      required: true
+    }
   },
   emits: ['statusUpdate'],
   data() {

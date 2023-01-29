@@ -8,7 +8,7 @@ export default {
     friends: new Map([
       [0,
         {
-          shadowpayUserId: null,
+          shadowpayUserId: '',
           name: 'default'
         }
       ]

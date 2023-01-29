@@ -1,6 +1,8 @@
 <template>
   <div class="spb-sale-guard">
-    <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">Sale guard</h3>
+    <h3 class="spb--h3 spb--font-size-large spb--font-weight-heavy">
+      Sale guard
+    </h3>
     <div class="spb-option">
       <span class="spb-option__description">Manage</span>
       <div class="spb--flex">
@@ -9,11 +11,10 @@
           class="spb-sale-guard__search"
           :type="'text'"
           :placeholder="'Search...'"
-        >
-        </app-input>
+        />
         <select
-          class="spb-sale-guard__sort-by spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
           v-model="sortModel"
+          class="spb-sale-guard__sort-by spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
         >
           <option
             v-for="[key, sort] in itemSortBy"
@@ -27,17 +28,28 @@
           class="spb-sort-dir spb--rounded-small spb--background-image-center spb--cursor-pointer"
           :class="sortDirClass"
           @click="sortDirAsc = !sortDirAsc"
-        >
-        </div>
+        />
       </div>
     </div>
     <div class="spb-sale-guard__items-header">
-      <div class="spb-item__column spb-item__name">Item</div>
-      <div class="spb-item__column spb-item__price">Price</div>
-      <div class="spb-item__column spb-item__min-price">Min price</div>
-      <div class="spb-item__column spb-item__max-price">Max price</div>
-      <div class="spb-item__column spb-item__watch">Watch</div>
-      <div class="spb-item__column spb-item__info">Info</div>
+      <div class="spb-item__column spb-item__name">
+        Item
+      </div>
+      <div class="spb-item__column spb-item__price">
+        Price
+      </div>
+      <div class="spb-item__column spb-item__min-price">
+        Min price
+      </div>
+      <div class="spb-item__column spb-item__max-price">
+        Max price
+      </div>
+      <div class="spb-item__column spb-item__watch">
+        Watch
+      </div>
+      <div class="spb-item__column spb-item__info">
+        Info
+      </div>
     </div>
     <div class="spb-sale-guard__items">
       <div class="spb-sale-guard__margin-wrapper">
@@ -46,8 +58,7 @@
           :key="'item-on-sale-' + data.item.id"
           :item="data.item"
           :metadata="data.metadata"
-        >
-        </sale-guard-item>
+        />
       </div>
     </div>
     <div class="spb--flex spb-sale-guard__footer">
@@ -61,13 +72,13 @@
       </button>
       <div class="spb--flex spb--font-weight-light spb--font-size-medium">
         <button
-          class="spb-sale-guard__control spb--flex"
           v-for="(action, index) in actions"
           :key="`${action.name}-${index}`"
+          class="spb-sale-guard__control spb--flex"
           :disabled="actionsDisabled"
           @click="disableActions(action.callback())"
         >
-          <span :class="['spb-sale-guard__control-icon', 'spb--background-image-center', action.class]"></span>
+          <span :class="['spb-sale-guard__control-icon', 'spb--background-image-center', action.class]" />
           <span class="spb-sale-guard__control-name">
             {{ action.name }}
           </span>
@@ -75,8 +86,10 @@
         <div
           class="spb-sale-guard__control spb--flex"
         >
-          <div class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-items"></div>
-          <div class="spb-sale-guard__control-name">{{ itemsOnSale.size }} Items</div>
+          <div class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-items" />
+          <div class="spb-sale-guard__control-name">
+            {{ itemsOnSale.size }} Items
+          </div>
         </div>
       </div>
     </div>
@@ -89,22 +102,25 @@ import { SPB_LOG, round } from '@/utils'
 import actionMixin from '@/mixins/actionMixin'
 import processMixin from '@/mixins/processMixin'
 import itemFilterMixin from '@/mixins/itemFilterMixin'
-import AppInput from './ui/AppInput'
-import SaleGuardItem from './SaleGuardItem'
+import AppInput from '@/components/ui/AppInput'
+import SaleGuardItem from '@/components/item/SaleGuardItem'
 import alertType from '@/enums/alertType'
 import tabWindowState from '@/enums/tabWindowState'
 import itemSortType from '@/enums/itemSortType'
 import { itemOnSale, market } from '@/api/shadowpay'
 
 export default {
-  name: 'SaleGuard',
+  name: 'SaleGuardTab',
   components: {
     AppInput,
     SaleGuardItem
   },
   mixins: [actionMixin, processMixin, itemFilterMixin],
   props: {
-    id: Number
+    id: {
+      type: Number,
+      required: true
+    }
   },
   emits: ['statusUpdate'],
   data() {
