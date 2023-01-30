@@ -49,10 +49,6 @@ export default {
       type: Boolean,
       required: true
     },
-    name: {
-      type: String,
-      required: true,
-    },
     symbol: {
       type: String,
       required: true

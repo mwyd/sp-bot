@@ -15,7 +15,6 @@
           class="spb-tab__button spb--rounded-medium spb--cursor-pointer spb--flex"
           @click="addTab({
             isStatic: false,
-            name: 'Bot',
             symbol: 'B',
             childComponent: 'BotTab'
           })"

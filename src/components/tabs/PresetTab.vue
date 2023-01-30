@@ -18,11 +18,11 @@
         class="spb-preset-manager__preset-select spb-input__field spb-input__field--ok spb--font-size-medium spb--rounded-small"
       >
         <option
-          v-for="[presetId, preset] in sortedPresets(true)"
+          v-for="[presetId, userPreset] in sortedPresets(true)"
           :key="'preset-' + presetId"
           :value="presetId"
         >
-          {{ preset.name }}
+          {{ userPreset.name }}
         </option>
       </select>
     </div>

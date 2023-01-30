@@ -6,7 +6,7 @@ const initRoot = () => {
   root.classList.add('spb--z-100')
 
   if (!body) {
-    throw 'Missing body element'
+    throw new Error('Missing body element')
   }
 
   body.appendChild(root)

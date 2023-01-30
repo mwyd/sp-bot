@@ -73,7 +73,6 @@ export default {
 
         commit('app/addTab', {
           isStatic: false,
-          name: 'Bot',
           symbol: 'B',
           childComponent: 'BotTab',
           tabMounted: tab => tab.$refs.tabWindow.$refs.childComponent.presetModel = id
