@@ -85,6 +85,7 @@
       </div>
       <slot name="modal-statistics" />
       <div
+        v-if="item.inspect_url"
         class="spb-item__stat spb--cursor-pointer"
         @click="copyToClipboard(item.inspect_url)"
       >

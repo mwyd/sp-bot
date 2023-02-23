@@ -9,7 +9,10 @@
       @option-update="updateView"
     />
     <div class="spb-option">
-      <span class="spb-option__description">Manage</span>
+      <div class="spb--flex spb-option__title">
+        <span>Manage</span>
+        <span>{{ itemsValue }}</span>
+      </div>
       <div class="spb--flex">
         <app-input
           v-model="search"
@@ -153,6 +156,26 @@ export default {
     },
     targetMarket() {
       return this.$store.getters['app/config']('targetMarket')
+    },
+    itemsValue() {
+      if (this.currentView !== views.BUY_HISTORY) {
+        return ''
+      }
+
+      const pendingValue = this.pendingItems.reduce((a, item) => a + item.price_market_usd, 0)
+
+      let acceptedValue = 0
+      let finishedValue = 0
+
+      for (const item of this.finishedItems) {
+        if (item.state === 'finished') {
+          acceptedValue += item.price_market_usd
+        }
+
+        finishedValue += item.price_market_usd
+      }
+
+      return '$ ' + acceptedValue.toFixed(2) + ' / ' + (pendingValue + finishedValue).toFixed(2)
     }
   },
   watch: {

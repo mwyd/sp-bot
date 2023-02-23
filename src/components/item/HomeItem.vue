@@ -20,7 +20,10 @@
       </div>
     </template>
     <template #modal-statistics>
-      <div class="spb-item__stat spb--cursor-pointer">
+      <div
+        v-if="item.inspect_url"
+        class="spb-item__stat spb--cursor-pointer"
+      >
         <a
           target="_blank"
           class="spb--link"

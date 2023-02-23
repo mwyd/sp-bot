@@ -155,7 +155,12 @@
 
 .spb-option__row {
   justify-content: space-between;
-  padding: 0px 4px;
+  padding: 0 4px;
+}
+
+.spb-option__title {
+  justify-content: space-between;
+  padding-bottom: 8px;
 }
 
 .spb-option__description {

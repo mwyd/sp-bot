@@ -4,7 +4,10 @@
       Sale guard
     </h3>
     <div class="spb-option">
-      <span class="spb-option__description">Manage</span>
+      <div class="spb--flex spb-option__title">
+        <span>Manage</span>
+        <span>{{ itemsValue }}</span>
+      </div>
       <div class="spb--flex">
         <app-input
           v-model="search"
@@ -158,6 +161,11 @@ export default {
       return [
         !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
       ]
+    },
+    itemsValue() {
+      const value = [...this.itemsOnSale.values()].reduce((a, e) => a + e.item.price_market_usd, 0)
+
+      return '$ ' + value.toFixed(2)
     }
   },
   watch: {
