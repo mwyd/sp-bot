@@ -131,7 +131,7 @@ const isFloatProfitable = float => {
 
 const hasPaintSeedVariants = name => {
   for (const keyword of paintSeedVariantKeywords) {
-    if (name.search(keyword) > -1) {
+    if (name.indexOf(keyword) > -1) {
       return true
     }
   }
@@ -141,7 +141,7 @@ const hasPaintSeedVariants = name => {
 
 const getItemOwnerSteamId = inspectLink => {
   return inspectLink
-    .substring(inspectLink.search(inspectLinkSteamIdKeyword))
+    .substring(inspectLink.indexOf(inspectLinkSteamIdKeyword))
     .substring(...inspectLinkSteamIdRange)
 }
 
@@ -152,11 +152,11 @@ const normalizeMarketItem = item => {
   item._conduit_hash_name = item.steam_market_hash_name
 
   for (const phase of dopplerPhases) {
-    let position = item.steam_market_hash_name.search(` ${phase}`)
+    let position = item.steam_market_hash_name.indexOf(`) ${phase}`)
 
     if (position > -1) {
       item.steam_market_hash_name = item.steam_market_hash_name
-        .substring(0, position)
+        .substring(0, position + 1)
         .trim()
 
       item._conduit_hash_name = item.steam_market_hash_name.replace('(', `${phase} (`)
