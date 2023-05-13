@@ -1,3 +1,7 @@
+.spb-overlay {
+  padding-left: 50px;
+}
+
 .spb-button {
   text-transform: uppercase;
   border-radius: 4px;

@@ -9,6 +9,8 @@ const initRoot = () => {
     throw new Error('Missing body element')
   }
 
+  body.classList.add('spb-overlay')
+
   body.appendChild(root)
 
   return root
