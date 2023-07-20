@@ -7,6 +7,7 @@ const defaults = {
   credentials: 'include',
   headers: () => ({
     'Accept': 'application/json',
+    'x-requested-with': 'XMLHttpRequest',
     'x-xsrf-token': Cookies.get('XSRF-TOKEN')
   })
 }
