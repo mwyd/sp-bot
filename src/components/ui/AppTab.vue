@@ -25,103 +25,100 @@
       ref="tabWindow"
       :is-open="isOpen"
       :child-component="childComponent"
-      @status-update="newStatus => (status = newStatus)"
+      @status-update="(newStatus) => (status = newStatus)"
     />
   </div>
 </template>
 
 <script>
-import { mapMutations } from 'vuex'
-import AppTabWindow from './AppTabWindow'
-import tabWindowState from '@/enums/tabWindowState'
+import { mapMutations } from "vuex";
+import AppTabWindow from "./AppTabWindow";
+import tabWindowState from "@/enums/tabWindowState";
 
 export default {
-  name: 'AppTab',
+  name: "AppTab",
   components: {
-    AppTabWindow
+    AppTabWindow,
   },
   props: {
     id: {
       type: Number,
-      required: true
+      required: true,
     },
     isStatic: {
       type: Boolean,
-      required: true
+      required: true,
     },
     symbol: {
       type: String,
-      required: true
+      required: true,
     },
     childComponent: {
       type: String,
-      required: true
+      required: true,
     },
     tabMounted: {
       type: Function,
       default: null,
-      required: false
-    }
+      required: false,
+    },
   },
   data() {
     return {
       status: tabWindowState.IDLE,
       isOpen: false,
       isBound: false,
-      isMouseOver: false
-    }
+      isMouseOver: false,
+    };
   },
   computed: {
     displayTabPreview() {
-      return this.$store.getters['app/config']('displayTabPreview')
+      return this.$store.getters["app/config"]("displayTabPreview");
     },
     tabButtonClass() {
-      return [
-        this.isBound ? 'spb-tab__button--bound' : ''
-      ]
+      return [this.isBound ? "spb-tab__button--bound" : ""];
     },
     statusClass() {
-      return [
-        `spb-tab__icon--${this.status}`
-      ]
-    }
+      return [`spb-tab__icon--${this.status}`];
+    },
   },
   mounted() {
-    this.tabMounted?.(this)
+    this.tabMounted?.(this);
   },
   methods: {
     ...mapMutations({
-      close: 'app/closeTab'
+      close: "app/closeTab",
     }),
     toggleIsBound() {
-      this.isBound = !this.isBound
-      this.isOpen = this.isBound
+      this.isBound = !this.isBound;
+      this.isOpen = this.isBound;
     },
     showTabWindow() {
-      let barScrollPosition = this.$el.parentNode.scrollTop
-      let tabWindow = this.$refs.tabWindow.$el
-      let toBottom = window.innerHeight - this.$el.offsetTop - tabWindow.offsetHeight
+      let barScrollPosition = this.$el.parentNode.scrollTop;
+      let tabWindow = this.$refs.tabWindow.$el;
+      let toBottom =
+        window.innerHeight - this.$el.offsetTop - tabWindow.offsetHeight;
 
-      let margin = 5
-      let styleTop = this.$el.offsetTop - barScrollPosition + margin
+      let margin = 5;
+      let styleTop = this.$el.offsetTop - barScrollPosition + margin;
 
       if (toBottom + barScrollPosition < 0) {
-        styleTop = this.$el.offsetTop + toBottom - margin
+        styleTop = this.$el.offsetTop + toBottom - margin;
       } else if (this.$el.offsetTop < barScrollPosition) {
-        styleTop = margin
+        styleTop = margin;
       }
 
-      tabWindow.style.top = `${styleTop}px`
+      tabWindow.style.top = `${styleTop}px`;
 
-      this.isOpen = this.displayTabPreview || this.isBound
-      this.isMouseOver = true
+      this.isOpen = this.displayTabPreview || this.isBound;
+      this.isMouseOver = true;
     },
     hideTabWindow() {
-      this.isOpen = this.isBound
-      this.isMouseOver = false
-    }
-  }
-}
+      this.isOpen = this.isBound;
+      this.isMouseOver = false;
+    },
+  },
+};
 </script>
 
 <style>
@@ -165,26 +162,26 @@ export default {
 }
 
 .spb-tab__icon--close {
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/close.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/close.svg");
 }
 
 .spb-tab__icon--idle {
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/idle.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/idle.svg");
 }
 
 .spb-tab__icon--ok {
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/ok.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/ok.svg");
 }
 
 .spb-tab__icon--error {
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/error.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/error.svg");
 }
 
 .spb-tab__icon--pending {
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/bell.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/bell.svg");
 }
 
 .spb-tab__icon--running {
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/running.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/running.svg");
 }
 </style>

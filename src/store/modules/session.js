@@ -1,53 +1,53 @@
-import { user } from '@/api/conduit'
-import { syncStorage } from '@/utils'
-import alertType from '@/enums/alertType'
+import { user } from "@/api/conduit";
+import { syncStorage } from "@/utils";
+import alertType from "@/enums/alertType";
 
 export default {
   namespaced: true,
   state: () => ({
     user: null,
     token: null,
-    authenticated: false
+    authenticated: false,
   }),
   getters: {},
   mutations: {
     setToken(state, token) {
-      state.token = token
+      state.token = token;
     },
     setSession(state, data) {
-      Object.assign(state, data)
-    }
+      Object.assign(state, data);
+    },
   },
   actions: {
     async loadToken({ commit }) {
-      const token = await syncStorage.get('token')
+      const token = await syncStorage.get("token");
 
-      commit('setToken', token)
+      commit("setToken", token);
     },
     saveToken({ state }) {
       syncStorage.set({
-        token: state.token
-      })
+        token: state.token,
+      });
     },
     async authenticate({ commit, state, dispatch }) {
-      const { success, data, error_message } = await user.get(state.token)
+      const { success, data, error_message } = await user.get(state.token);
 
       const alert = {
         type: alertType.SUCCESS,
-        message: 'Authenticated'
-      }
+        message: "Authenticated",
+      };
 
       if (success) {
-        commit('setSession', {
+        commit("setSession", {
           user: data.name,
-          authenticated: true
-        })
+          authenticated: true,
+        });
       } else {
-        alert.type = alertType.ERROR
-        alert.message = error_message
+        alert.type = alertType.ERROR;
+        alert.message = error_message;
       }
 
-      dispatch('app/pushAlert', alert, { root: true })
-    }
-  }
-}
+      dispatch("app/pushAlert", alert, { root: true });
+    },
+  },
+};

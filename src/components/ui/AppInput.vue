@@ -7,7 +7,7 @@
       :type="type"
       :placeholder="placeholder"
       :disabled="disabled"
-      @input="e => synchronized = (e.target.value === String(modelValue))"
+      @input="(e) => (synchronized = e.target.value === String(modelValue))"
       @focusout="rollbackInternalModel"
       @keydown.enter="validateInternalModel"
     >
@@ -16,78 +16,77 @@
 
 <script>
 export default {
-  name: 'AppInput',
+  name: "AppInput",
   props: {
     type: {
       type: String,
-      default: 'text'
+      default: "text",
     },
     modelValue: {
       type: [String, Number],
-      required: true
+      required: true,
     },
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
     modelModifiers: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
     placeholder: {
       type: String,
-      default: '',
-      required: false
+      default: "",
+      required: false,
     },
     validator: {
       type: Function,
       default: () => true,
-      required: false
+      required: false,
     },
     modelUpdated: {
       type: Function,
-      default: () => {
-      },
-      required: false
-    }
+      default: () => {},
+      required: false,
+    },
   },
-  emits: ['update:modelValue'],
+  emits: ["update:modelValue"],
   data() {
     return {
       internalModel: this.modelValue,
-      synchronized: true
-    }
+      synchronized: true,
+    };
   },
   computed: {
     inputClass() {
       return [
-        this.synchronized ? 'spb-input__field--ok' : 'spb-input__field--wrong',
-        this.disabled ? 'spb--cursor-not-allowed' : ''
-      ]
-    }
+        this.synchronized ? "spb-input__field--ok" : "spb-input__field--wrong",
+        this.disabled ? "spb--cursor-not-allowed" : "",
+      ];
+    },
   },
   watch: {
     modelValue(value) {
-      this.internalModel = value
-    }
+      this.internalModel = value;
+    },
   },
   methods: {
     rollbackInternalModel() {
-      this.synchronized = true
-      this.internalModel = this.modelValue
+      this.synchronized = true;
+      this.internalModel = this.modelValue;
     },
     validateInternalModel() {
       if (this.validator(this.internalModel)) {
-        this.saveModelValue()
+        this.saveModelValue();
       }
     },
     saveModelValue() {
-      this.synchronized = true
-      this.$emit('update:modelValue', this.internalModel)
-      this.modelUpdated()
-    }
-  }
-}
+      this.synchronized = true;
+      this.$emit("update:modelValue", this.internalModel);
+      this.modelUpdated();
+    },
+  },
+};
 </script>
 
 <style>

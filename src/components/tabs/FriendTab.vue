@@ -6,7 +6,7 @@
     <app-multiple-switch
       :options="Object.values(views)"
       :selected="currentView"
-      @option-update="view => currentView = view"
+      @option-update="(view) => (currentView = view)"
     />
     <div
       v-show="currentView === views.MANAGE"
@@ -61,14 +61,18 @@
         <button
           class="spb-friend-manager__button-update spb-button spb-button--green"
           :disabled="friendModel === 0 || actionsDisabled"
-          @click="disableActions(updateFriend({id: friendModel, friend: friend}))"
+          @click="
+            disableActions(updateFriend({ id: friendModel, friend: friend }))
+          "
         >
           update
         </button>
         <button
           class="spb-friend-manager__button-delete spb-button spb-button--red"
           :disabled="friendModel === 0 || actionsDisabled"
-          @click="disableActions(deleteFriend(friendModel).then(resetFriendModel))"
+          @click="
+            disableActions(deleteFriend(friendModel).then(resetFriendModel))
+          "
         >
           delete
         </button>
@@ -78,74 +82,77 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
-import tabWindowState from '@/enums/tabWindowState'
-import actionMixin from '@/mixins/actionMixin'
-import AppInput from '@/components/ui/AppInput'
-import AppMultipleSwitch from '@/components/ui/AppMultipleSwitch'
+import { mapState, mapActions } from "vuex";
+import tabWindowState from "@/enums/tabWindowState";
+import actionMixin from "@/mixins/actionMixin";
+import AppInput from "@/components/ui/AppInput";
+import AppMultipleSwitch from "@/components/ui/AppMultipleSwitch";
 
 const views = Object.freeze({
-  ADD: 'Add',
-  MANAGE: 'Manage'
-})
+  ADD: "Add",
+  MANAGE: "Manage",
+});
 
 export default {
-  name: 'FriendTab',
+  name: "FriendTab",
   components: {
     AppInput,
-    AppMultipleSwitch
+    AppMultipleSwitch,
   },
   mixins: [actionMixin],
   props: {
     id: {
       type: Number,
-      required: true
-    }
+      required: true,
+    },
   },
-  emits: ['statusUpdate'],
+  emits: ["statusUpdate"],
   data() {
     return {
       views,
       currentView: views.ADD,
       friendModel: 0,
-      friend: { ...this.getFriend(0) }
-    }
+      friend: { ...this.getFriend(0) },
+    };
   },
   computed: {
     ...mapState({
-      friendsLoaded: state => state.friendManager.loaded
-    })
+      friendsLoaded: (state) => state.friendManager.loaded,
+    }),
   },
   watch: {
     friendModel(value) {
-      this.friend = { ...this.getFriend(value) }
+      this.friend = { ...this.getFriend(value) };
     },
     currentView() {
-      this.friendModel = 0
+      this.friendModel = 0;
     },
     friendsLoaded(value) {
-      this.$emit('statusUpdate', value ? tabWindowState.OK : tabWindowState.ERROR)
-    }
+      this.$emit(
+        "statusUpdate",
+        value ? tabWindowState.OK : tabWindowState.ERROR,
+      );
+    },
   },
   methods: {
     ...mapActions({
-      addFriend: 'friendManager/addFriend',
-      updateFriend: 'friendManager/updateFriend',
-      deleteFriend: 'friendManager/deleteFriend'
+      addFriend: "friendManager/addFriend",
+      updateFriend: "friendManager/updateFriend",
+      deleteFriend: "friendManager/deleteFriend",
     }),
     sortedFriends(sortAsc = true) {
-      return this.$store.getters['friendManager/sortedFriends'](sortAsc)
+      return this.$store.getters["friendManager/sortedFriends"](sortAsc);
     },
     getFriend(id) {
-      return this.$store.getters['friendManager/friend'](id)
+      return this.$store.getters["friendManager/friend"](id);
     },
     resetFriendModel(success) {
       if (success) {
-        this.friendModel = 0
+        this.friendModel = 0;
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>

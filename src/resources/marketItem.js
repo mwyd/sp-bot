@@ -1,32 +1,29 @@
-import { round } from '@/utils'
-import { inspectTool } from '@/api/csgo_flaot'
-import { rarePaintSeedItem } from '@/api/conduit'
-import store from '@/store'
-import alertType from '@/enums/alertType'
-import itemSortType from '@/enums/itemSortType'
-import { steamBuffDiscountOffset } from '@/config'
+import { round } from "@/utils";
+import { inspectTool } from "@/api/csgo_flaot";
+import { rarePaintSeedItem } from "@/api/conduit";
+import store from "@/store";
+import alertType from "@/enums/alertType";
+import itemSortType from "@/enums/itemSortType";
+import { steamBuffDiscountOffset } from "@/config";
 
-const inspectLinkSteamIdRange = [11, 28]
+const inspectLinkSteamIdRange = [11, 28];
 
-const inspectLinkSteamIdKeyword = 'preview'
+const inspectLinkSteamIdKeyword = "preview";
 
 const dopplerPhases = [
-  'Phase 1',
-  'Phase 2',
-  'Phase 3',
-  'Phase 4',
-  'Emerald',
-  'Ruby',
-  'Sapphire',
-  'Black Pearl'
-]
+  "Phase 1",
+  "Phase 2",
+  "Phase 3",
+  "Phase 4",
+  "Emerald",
+  "Ruby",
+  "Sapphire",
+  "Black Pearl",
+];
 
-const paintSeedVariantKeywords = [
-  'Case Hardened',
-  'Fade'
-]
+const paintSeedVariantKeywords = ["Case Hardened", "Fade"];
 
-const highRankFloat = 1e-3
+const highRankFloat = 1e-3;
 
 const profitableFloatRanges = [
   [0, 0.01],
@@ -34,139 +31,154 @@ const profitableFloatRanges = [
   [0.15, 0.18],
   [0.18, 0.21],
   [0.45, 0.5],
-  [0.76, 0.8]
-]
+  [0.76, 0.8],
+];
 
 const significantProperties = Object.freeze({
   paintindex: {
-    name: 'Paint index',
-    unit: ''
+    name: "Paint index",
+    unit: "",
   },
   paintseed: {
-    name: 'Paint seed',
-    unit: ''
+    name: "Paint seed",
+    unit: "",
   },
   phase: {
-    name: 'Doppler',
-    unit: ''
+    name: "Doppler",
+    unit: "",
   },
   steam_is_souvenir: {
-    name: '',
-    unit: ''
+    name: "",
+    unit: "",
   },
   steam_price_en: {
-    name: 'Suggested price',
-    unit: '$'
+    name: "Suggested price",
+    unit: "$",
   },
   _steam_price: {
-    name: 'Steam price',
-    unit: '$'
+    name: "Steam price",
+    unit: "$",
   },
   _steam_volume: {
-    name: 'Steam volume',
-    unit: ''
+    name: "Steam volume",
+    unit: "",
   },
   _buff_price: {
-    name: 'Buff price',
-    unit: '$'
+    name: "Buff price",
+    unit: "$",
   },
   _buff_volume: {
-    name: 'Buff volume',
-    unit: ''
-  }
-})
+    name: "Buff volume",
+    unit: "",
+  },
+});
 
 const itemSortBy = new Map([
-  [itemSortType.BUFF_DISCOUNT,
+  [
+    itemSortType.BUFF_DISCOUNT,
     {
-      name: 'Buff discount',
+      name: "Buff discount",
       callback(asc) {
-        return (a, b) => ((b._buff_discount ?? -steamBuffDiscountOffset) - (a._buff_discount ?? -steamBuffDiscountOffset)) * (asc ? -1 : 1)
-      }
-    }
+        return (a, b) =>
+          ((b._buff_discount ?? -steamBuffDiscountOffset) -
+            (a._buff_discount ?? -steamBuffDiscountOffset)) *
+          (asc ? -1 : 1);
+      },
+    },
   ],
-  [itemSortType.STEAM_DISCOUNT,
+  [
+    itemSortType.STEAM_DISCOUNT,
     {
-      name: 'Steam discount',
+      name: "Steam discount",
       callback(asc) {
-        return (a, b) => ((b._steam_discount ?? 0) - (a._steam_discount ?? 0)) * (asc ? -1 : 1)
-      }
-    }
+        return (a, b) =>
+          ((b._steam_discount ?? 0) - (a._steam_discount ?? 0)) *
+          (asc ? -1 : 1);
+      },
+    },
   ],
-  [itemSortType.SHADOWPAY_DISCOUNT,
+  [
+    itemSortType.SHADOWPAY_DISCOUNT,
     {
-      name: 'Shadowpay discount',
+      name: "Shadowpay discount",
       callback(asc) {
-        return (a, b) => (b.discount - a.discount) * (asc ? -1 : 1)
-      }
-    }
+        return (a, b) => (b.discount - a.discount) * (asc ? -1 : 1);
+      },
+    },
   ],
-  [itemSortType.ITEM_FLOAT,
+  [
+    itemSortType.ITEM_FLOAT,
     {
-      name: 'Item float',
+      name: "Item float",
       callback(asc) {
-        return (a, b) => ((b.floatvalue || 1) - (a.floatvalue || 1)) * (asc ? -1 : 1)
-      }
-    }
+        return (a, b) =>
+          ((b.floatvalue || 1) - (a.floatvalue || 1)) * (asc ? -1 : 1);
+      },
+    },
   ],
-  [itemSortType.MARKET_PRICE,
+  [
+    itemSortType.MARKET_PRICE,
     {
-      name: 'Market price',
+      name: "Market price",
       callback(asc) {
-        return (a, b) => (b.price_market_usd - a.price_market_usd) * (asc ? -1 : 1)
-      }
-    }
-  ]
-])
+        return (a, b) =>
+          (b.price_market_usd - a.price_market_usd) * (asc ? -1 : 1);
+      },
+    },
+  ],
+]);
 
-const isFloatProfitable = float => {
+const isFloatProfitable = (float) => {
   for (const [min, max] of profitableFloatRanges) {
     if (float >= min && float <= max) {
-      return true
+      return true;
     }
   }
 
-  return false
-}
+  return false;
+};
 
-const hasPaintSeedVariants = name => {
+const hasPaintSeedVariants = (name) => {
   for (const keyword of paintSeedVariantKeywords) {
     if (name.indexOf(keyword) > -1) {
-      return true
+      return true;
     }
   }
 
-  return false
-}
+  return false;
+};
 
-const getItemOwnerSteamId = inspectLink => {
+const getItemOwnerSteamId = (inspectLink) => {
   return inspectLink
     .substring(inspectLink.indexOf(inspectLinkSteamIdKeyword))
-    .substring(...inspectLinkSteamIdRange)
-}
+    .substring(...inspectLinkSteamIdRange);
+};
 
-const normalizeMarketItem = item => {
-  item.discount = Math.round(item.discount)
-  item.price_market_usd = parseFloat(item.price_market_usd)
-  item._search_steam_hash_name = item.steam_market_hash_name.toLowerCase()
-  item._conduit_hash_name = item.steam_market_hash_name
+const normalizeMarketItem = (item) => {
+  item.discount = Math.round(item.discount);
+  item.price_market_usd = parseFloat(item.price_market_usd);
+  item._search_steam_hash_name = item.steam_market_hash_name.toLowerCase();
+  item._conduit_hash_name = item.steam_market_hash_name;
 
   for (const phase of dopplerPhases) {
-    let position = item.steam_market_hash_name.indexOf(`) ${phase}`)
+    let position = item.steam_market_hash_name.indexOf(`) ${phase}`);
 
     if (position > -1) {
       item.steam_market_hash_name = item.steam_market_hash_name
         .substring(0, position + 1)
-        .trim()
+        .trim();
 
-      item._conduit_hash_name = item.steam_market_hash_name.replace('(', `${phase} (`)
+      item._conduit_hash_name = item.steam_market_hash_name.replace(
+        "(",
+        `${phase} (`,
+      );
 
-      break
+      break;
     }
   }
-}
+};
 
-const createRareItemAlert = item => ({
+const createRareItemAlert = (item) => ({
   type: alertType.INFO,
   persistent: true,
   message: `
@@ -178,47 +190,50 @@ const createRareItemAlert = item => ({
       <span style="color: greenyellow;">$</span> 
       ${item.price_market_usd} / ${item.steam_price_en}
     </span>
-  `
-})
+  `,
+});
 
 const inspectItem = async (item, showAlerts = true) => {
-  item._alerts = []
+  item._alerts = [];
 
   if (!item.paintseed) {
-    const { success, data } = await inspectTool.get(item.inspect_url)
+    const { success, data } = await inspectTool.get(item.inspect_url);
 
     if (!success || !data.iteminfo) {
-      return
+      return;
     }
 
-    item.floatvalue = round(data.iteminfo.floatvalue, 7)
-    item.paintseed = data.iteminfo.paintseed
-    item.paintindex = data.iteminfo.paintindex
+    item.floatvalue = round(data.iteminfo.floatvalue, 7);
+    item.paintseed = data.iteminfo.paintseed;
+    item.paintindex = data.iteminfo.paintindex;
   }
 
   if (item.floatvalue && highRankFloat >= item.floatvalue && showAlerts) {
-    store.dispatch('app/pushAlert', createRareItemAlert(item), { root: true })
-      .then(id => item._alerts.push(id))
+    store
+      .dispatch("app/pushAlert", createRareItemAlert(item), { root: true })
+      .then((id) => item._alerts.push(id));
   }
 
   if (!hasPaintSeedVariants(item.steam_short_name)) {
-    return
+    return;
   }
 
-  rarePaintSeedItem.get(store.state.session.token, item)
+  rarePaintSeedItem
+    .get(store.state.session.token, item)
     .then(({ success, data }) => {
       if (!success || data?.length === 0) {
-        return
+        return;
       }
 
-      item._variant = data[0].variant
+      item._variant = data[0].variant;
 
       if (showAlerts) {
-        store.dispatch('app/pushAlert', createRareItemAlert(item), { root: true })
-          .then(id => item._alerts.push(id))
+        store
+          .dispatch("app/pushAlert", createRareItemAlert(item), { root: true })
+          .then((id) => item._alerts.push(id));
       }
-    })
-}
+    });
+};
 
 export {
   significantProperties,
@@ -227,5 +242,5 @@ export {
   hasPaintSeedVariants,
   getItemOwnerSteamId,
   normalizeMarketItem,
-  inspectItem
-}
+  inspectItem,
+};

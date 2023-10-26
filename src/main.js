@@ -1,18 +1,18 @@
-import { createApp } from 'vue'
-import { initRoot } from '@/setup'
-import App from '@/App'
-import store from '@/store'
-import { SPB_LOG } from '@/utils'
+import { createApp } from "vue";
+import { initRoot } from "@/setup";
+import App from "@/App";
+import store from "@/store";
+import { SPB_LOG } from "@/utils";
 
-import '@/assets/css/main.css'
+import "@/assets/css/main.css";
 
 try {
-  const root = initRoot()
+  const root = initRoot();
 
-  const app = createApp(App)
+  const app = createApp(App);
 
-  app.use(store)
-  app.mount(root)
+  app.use(store);
+  app.mount(root);
 } catch (err) {
-  SPB_LOG(err)
+  SPB_LOG(err);
 }

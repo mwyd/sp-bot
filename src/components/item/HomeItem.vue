@@ -27,12 +27,12 @@
         <a
           target="_blank"
           class="spb--link"
-          :href="steamMarket.USER_PROFILE + getItemOwnerSteamId(item.inspect_url)"
+          :href="
+            steamMarket.USER_PROFILE + getItemOwnerSteamId(item.inspect_url)
+          "
         >
           {{ friendOwner ? friendOwner + "'s" : "Owner's" }}
-          <span class="spb--text-green">
-            steam
-          </span>
+          <span class="spb--text-green"> steam </span>
         </a>
       </div>
     </template>
@@ -40,54 +40,58 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
-import { getItemOwnerSteamId } from '@/resources/marketItem'
-import actionMixin from '@/mixins/actionMixin'
-import BaseItem from './BaseItem'
-import DateFormat from 'dateformat'
-import botItemType from '@/enums/botItemType'
-import { steamMarket } from '@/config'
+import { mapActions } from "vuex";
+import { getItemOwnerSteamId } from "@/resources/marketItem";
+import actionMixin from "@/mixins/actionMixin";
+import BaseItem from "./BaseItem";
+import DateFormat from "dateformat";
+import botItemType from "@/enums/botItemType";
+import { steamMarket } from "@/config";
 
 export default {
-  name: 'HomeItem',
+  name: "HomeItem",
   components: {
-    BaseItem
+    BaseItem,
   },
   mixins: [actionMixin],
   props: {
     type: {
       type: String,
-      required: true
+      required: true,
     },
     item: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
       steamMarket,
       botItemType,
-      friendOwner: this.$store.getters['friendManager/itemOwner'](this.item.user_id)
-    }
+      friendOwner: this.$store.getters["friendManager/itemOwner"](
+        this.item.user_id,
+      ),
+    };
   },
   computed: {
     stateClass() {
       return [
-        this.type !== botItemType.TO_CONFIRM ? `spb-item__status--${this.item.state}` : ''
-      ]
+        this.type !== botItemType.TO_CONFIRM
+          ? `spb-item__status--${this.item.state}`
+          : "",
+      ];
     },
     timeBought() {
-      return DateFormat(this.item._time_bought, 'yyyy-mm-dd H:MM:ss')
-    }
+      return DateFormat(this.item._time_bought, "yyyy-mm-dd H:MM:ss");
+    },
   },
   methods: {
     ...mapActions({
-      buyItem: 'bots/buyItem'
+      buyItem: "bots/buyItem",
     }),
-    getItemOwnerSteamId
-  }
-}
+    getItemOwnerSteamId,
+  },
+};
 </script>
 
 <style>

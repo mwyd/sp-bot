@@ -13,51 +13,51 @@
 </template>
 
 <script>
-import HomeTab from '@/components/tabs/HomeTab'
-import SaleGuardTab from '@/components/tabs/SaleGuardTab'
-import PresetTab from '@/components/tabs/PresetTab'
-import FriendTab from '@/components/tabs/FriendTab'
-import SettingsTab from '@/components/tabs/SettingsTab'
-import BotTab from '@/components/tabs/BotTab'
+import HomeTab from "@/components/tabs/HomeTab";
+import SaleGuardTab from "@/components/tabs/SaleGuardTab";
+import PresetTab from "@/components/tabs/PresetTab";
+import FriendTab from "@/components/tabs/FriendTab";
+import SettingsTab from "@/components/tabs/SettingsTab";
+import BotTab from "@/components/tabs/BotTab";
 
 export default {
-  name: 'AppTabWindow',
+  name: "AppTabWindow",
   components: {
     HomeTab,
     SaleGuardTab,
     PresetTab,
     FriendTab,
     SettingsTab,
-    BotTab
+    BotTab,
   },
   props: {
     id: {
       type: Number,
-      required: true
+      required: true,
     },
     isOpen: {
       type: Boolean,
-      required: true
+      required: true,
     },
     childComponent: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
-  emits: ['statusUpdate'],
+  emits: ["statusUpdate"],
   computed: {
     tabWindowClass() {
       return [
-        this.isOpen ? 'spb-tab__window--active' : 'spb-tab__window--hidden'
-      ]
-    }
+        this.isOpen ? "spb-tab__window--active" : "spb-tab__window--hidden",
+      ];
+    },
   },
   methods: {
     statusUpdate(status) {
-      this.$emit('statusUpdate', status)
-    }
-  }
-}
+      this.$emit("statusUpdate", status);
+    },
+  },
+};
 </script>
 
 <style scoped>

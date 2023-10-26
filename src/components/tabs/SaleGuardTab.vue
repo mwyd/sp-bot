@@ -71,7 +71,7 @@
         :disabled="actionsDisabled || isProcessTerminating"
         @click="toggleProcess"
       >
-        {{ !isProcessTerminated ? 'stop' : 'start' }}
+        {{ !isProcessTerminated ? "stop" : "start" }}
       </button>
       <div class="spb--flex spb--font-weight-light spb--font-size-medium">
         <button
@@ -81,15 +81,21 @@
           :disabled="actionsDisabled"
           @click="disableActions(action.callback())"
         >
-          <span :class="['spb-sale-guard__control-icon', 'spb--background-image-center', action.class]" />
+          <span
+            :class="[
+              'spb-sale-guard__control-icon',
+              'spb--background-image-center',
+              action.class,
+            ]"
+          />
           <span class="spb-sale-guard__control-name">
             {{ action.name }}
           </span>
         </button>
-        <div
-          class="spb-sale-guard__control spb--flex"
-        >
-          <div class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-items" />
+        <div class="spb-sale-guard__control spb--flex">
+          <div
+            class="spb-sale-guard__control-icon spb--background-image-center spb-sale-guard__control-items"
+          />
           <div class="spb-sale-guard__control-name">
             {{ itemsOnSale.size }} Items
           </div>
@@ -100,234 +106,275 @@
 </template>
 
 <script>
-import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
-import { SPB_LOG, round } from '@/utils'
-import actionMixin from '@/mixins/actionMixin'
-import processMixin from '@/mixins/processMixin'
-import itemFilterMixin from '@/mixins/itemFilterMixin'
-import AppInput from '@/components/ui/AppInput'
-import SaleGuardItem from '@/components/item/SaleGuardItem'
-import alertType from '@/enums/alertType'
-import tabWindowState from '@/enums/tabWindowState'
-import itemSortType from '@/enums/itemSortType'
-import { itemOnSale, market } from '@/api/shadowpay'
+import { mapState, mapGetters, mapMutations, mapActions } from "vuex";
+import { SPB_LOG, round } from "@/utils";
+import actionMixin from "@/mixins/actionMixin";
+import processMixin from "@/mixins/processMixin";
+import itemFilterMixin from "@/mixins/itemFilterMixin";
+import AppInput from "@/components/ui/AppInput";
+import SaleGuardItem from "@/components/item/SaleGuardItem";
+import alertType from "@/enums/alertType";
+import tabWindowState from "@/enums/tabWindowState";
+import itemSortType from "@/enums/itemSortType";
+import { itemOnSale, market } from "@/api/shadowpay";
 
 export default {
-  name: 'SaleGuardTab',
+  name: "SaleGuardTab",
   components: {
     AppInput,
-    SaleGuardItem
+    SaleGuardItem,
   },
   mixins: [actionMixin, processMixin, itemFilterMixin],
   props: {
     id: {
       type: Number,
-      required: true
-    }
+      required: true,
+    },
   },
-  emits: ['statusUpdate'],
+  emits: ["statusUpdate"],
   data() {
     return {
       sortModel: itemSortType.MARKET_PRICE,
       timeoutId: null,
       actions: [
-        { name: 'Refresh', class: 'spb-sale-guard__control-refresh', callback: () => this.refreshItems() },
-        { name: 'Adjust', class: 'spb-sale-guard__control-adjust', callback: () => this.adjustTracked() },
-        { name: 'Add all', class: 'spb-sale-guard__control-add-all', callback: () => this.startTrackAll() },
-        { name: 'Remove all', class: 'spb-sale-guard__control-remove-all', callback: () => this.stopTrackAll() }
-      ]
-    }
+        {
+          name: "Refresh",
+          class: "spb-sale-guard__control-refresh",
+          callback: () => this.refreshItems(),
+        },
+        {
+          name: "Adjust",
+          class: "spb-sale-guard__control-adjust",
+          callback: () => this.adjustTracked(),
+        },
+        {
+          name: "Add all",
+          class: "spb-sale-guard__control-add-all",
+          callback: () => this.startTrackAll(),
+        },
+        {
+          name: "Remove all",
+          class: "spb-sale-guard__control-remove-all",
+          callback: () => this.stopTrackAll(),
+        },
+      ],
+    };
   },
   computed: {
     ...mapState({
-      itemsOnSale: state => state.saleGuard.items,
-      saleGuardItemsLoaded: state => state.saleGuard.loaded
+      itemsOnSale: (state) => state.saleGuard.items,
+      saleGuardItemsLoaded: (state) => state.saleGuard.loaded,
     }),
     ...mapGetters({
-      trackedItems: 'saleGuard/trackedItems'
+      trackedItems: "saleGuard/trackedItems",
     }),
     updateDelay() {
-      return this.$store.getters['app/config']('saleGuardUpdateDelay')
+      return this.$store.getters["app/config"]("saleGuardUpdateDelay");
     },
     itemBidStep() {
-      return this.$store.getters['app/config']('saleGuardBidStep')
+      return this.$store.getters["app/config"]("saleGuardBidStep");
     },
     filteredItems() {
       return [...this.itemsOnSale.values()]
-        .filter(data => data.item._search_steam_hash_name.includes(this.search.toLowerCase()))
-        .sort((a, b) => this.itemSortBy.get(this.sortModel).callback(this.sortDirAsc)(a.item, b.item))
+        .filter((data) =>
+          data.item._search_steam_hash_name.includes(this.search.toLowerCase()),
+        )
+        .sort((a, b) =>
+          this.itemSortBy.get(this.sortModel).callback(this.sortDirAsc)(
+            a.item,
+            b.item,
+          ),
+        );
     },
     toggleProcessButtonClass() {
       return [
-        !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
-      ]
+        !this.isProcessTerminated ? "spb-button--red" : "spb-button--green",
+      ];
     },
     itemsValue() {
-      const value = [...this.itemsOnSale.values()].reduce((a, e) => a + e.item.price_market_usd, 0)
+      const value = [...this.itemsOnSale.values()].reduce(
+        (a, e) => a + e.item.price_market_usd,
+        0,
+      );
 
-      return '$ ' + value.toFixed(2)
-    }
+      return "$ " + value.toFixed(2);
+    },
   },
   watch: {
     saleGuardItemsLoaded(value) {
-      this.$emit('statusUpdate', value
-        ? (!this.isProcessTerminated ? tabWindowState.RUNNING : tabWindowState.OK)
-        : tabWindowState.ERROR
-      )
-    }
+      this.$emit(
+        "statusUpdate",
+        value
+          ? !this.isProcessTerminated
+            ? tabWindowState.RUNNING
+            : tabWindowState.OK
+          : tabWindowState.ERROR,
+      );
+    },
   },
   methods: {
     ...mapMutations({
-      setItemMarketPrice: 'saleGuard/setItemMarketPrice'
+      setItemMarketPrice: "saleGuard/setItemMarketPrice",
     }),
     ...mapActions({
-      loadSaleGuardItems: 'saleGuard/loadSaleGuardItems',
-      loadItemsOnSale: 'saleGuard/loadItemsOnSale',
-      adjustTracked: 'saleGuard/adjustTracked',
-      startTrackAll: 'saleGuard/startTrackAll',
-      stopTrackAll: 'saleGuard/stopTrackAll',
-      stopTrack: 'saleGuard/stopTrack',
-      pushAlert: 'app/pushAlert'
+      loadSaleGuardItems: "saleGuard/loadSaleGuardItems",
+      loadItemsOnSale: "saleGuard/loadItemsOnSale",
+      adjustTracked: "saleGuard/adjustTracked",
+      startTrackAll: "saleGuard/startTrackAll",
+      stopTrackAll: "saleGuard/stopTrackAll",
+      stopTrack: "saleGuard/stopTrack",
+      pushAlert: "app/pushAlert",
     }),
     isFriendItem(userId) {
-      return this.$store.getters['friendManager/itemOwner'](userId)
+      return this.$store.getters["friendManager/itemOwner"](userId);
     },
     async refreshItems() {
-      await this.loadItemsOnSale()
-      await this.loadSaleGuardItems()
+      await this.loadItemsOnSale();
+      await this.loadSaleGuardItems();
     },
     async updateTrackedItemPrice(item, metadata, newPrice) {
       try {
-        const { status, error_message } = await itemOnSale.update(item.id, newPrice)
+        const { status, error_message } = await itemOnSale.update(
+          item.id,
+          newPrice,
+        );
 
-        if (status === 'error' && error_message === 'bid_item_not_exist') {
+        if (status === "error" && error_message === "bid_item_not_exist") {
           await this.stopTrack({
             id: metadata.databaseId,
-            showAlert: false
-          })
+            showAlert: false,
+          });
 
-          await this.loadItemsOnSale()
+          await this.loadItemsOnSale();
 
-          return
+          return;
         }
 
-        if (status === 'success') {
+        if (status === "success") {
           this.setItemMarketPrice({
             id: item.id,
-            price: newPrice
-          })
+            price: newPrice,
+          });
         }
       } catch (err) {
-        SPB_LOG('Cant update price\n', err)
+        SPB_LOG("Cant update price\n", err);
       }
     },
     async checkTrackedItemPrice(trackedItem) {
-      const { item, metadata } = trackedItem
+      const { item, metadata } = trackedItem;
 
       try {
         const { status, items: marketItems } = await market.getItems({
           item_id: item.item_id,
           price_from: metadata.minPrice,
           price_to: metadata.maxPrice,
-          game: 'csgo',
+          game: "csgo",
           stack: false,
-          sort: 'asc',
-          sort_dir: 'asc',
-          sort_column: 'price',
+          sort: "asc",
+          sort_dir: "asc",
+          sort_column: "price",
           limit: 50,
-          offset: 0
-        })
+          offset: 0,
+        });
 
-        if (status !== 'success') {
-          return
+        if (status !== "success") {
+          return;
         }
 
-        let newPrice = metadata.maxPrice
+        let newPrice = metadata.maxPrice;
 
         for (const marketItem of marketItems) {
           if (marketItem.is_my_item) {
-            continue
+            continue;
           }
 
-          let targetPrice = round(marketItem.price_market_usd - this.itemBidStep)
+          let targetPrice = round(
+            marketItem.price_market_usd - this.itemBidStep,
+          );
 
           if (targetPrice > metadata.minPrice) {
-            newPrice = this.isFriendItem(marketItem.user_id) ? marketItem.price_market_usd : targetPrice
+            newPrice = this.isFriendItem(marketItem.user_id)
+              ? marketItem.price_market_usd
+              : targetPrice;
 
-            break
+            break;
           }
         }
 
         if (item.price_market_usd !== newPrice) {
-          await this.updateTrackedItemPrice(item, metadata, newPrice)
+          await this.updateTrackedItemPrice(item, metadata, newPrice);
         }
       } catch (err) {
-        SPB_LOG('\n', new Error(err))
+        SPB_LOG("\n", new Error(err));
       }
     },
     async handleTrackedItems(trackedItems) {
-      this.setProcessRunning()
+      this.setProcessRunning();
 
-      const { value: trackedItem, done } = trackedItems.next()
+      const { value: trackedItem, done } = trackedItems.next();
 
       if (done) {
-        this.run()
+        this.run();
 
-        return
+        return;
       }
 
-      await this.checkTrackedItemPrice(trackedItem)
+      await this.checkTrackedItemPrice(trackedItem);
 
       if (this.isProcessTerminating) {
-        this.toggleProcess()
+        this.toggleProcess();
 
-        return
+        return;
       }
 
-      this.timeoutId = setTimeout(() => this.handleTrackedItems(trackedItems), this.updateDelay * 1000)
+      this.timeoutId = setTimeout(
+        () => this.handleTrackedItems(trackedItems),
+        this.updateDelay * 1000,
+      );
 
-      this.setProcessIdle()
+      this.setProcessIdle();
     },
     run() {
-      this.setProcessIdle()
+      this.setProcessIdle();
 
       if ([...this.trackedItems()].length === 0) {
         this.pushAlert({
           type: alertType.INFO,
-          message: 'Sale Guard terminated - empty set'
-        })
+          message: "Sale Guard terminated - empty set",
+        });
 
-        this.toggleProcess()
+        this.toggleProcess();
 
-        return
+        return;
       }
 
-      this.handleTrackedItems(
-        this.trackedItems()
-      )
+      this.handleTrackedItems(this.trackedItems());
     },
     toggleProcess() {
       if (this.isProcessRunning) {
-        this.setProcessTerminating()
+        this.setProcessTerminating();
 
-        return
+        return;
       }
 
       if (this.isProcessTerminated) {
-        this.$emit('statusUpdate', tabWindowState.RUNNING)
-        this.run()
+        this.$emit("statusUpdate", tabWindowState.RUNNING);
+        this.run();
 
-        return
+        return;
       }
 
-      clearTimeout(this.timeoutId)
+      clearTimeout(this.timeoutId);
 
-      this.setProcessTerminated()
+      this.setProcessTerminated();
 
-      this.$emit('statusUpdate', this.saleGuardItemsLoaded ? tabWindowState.OK : tabWindowState.ERROR)
-    }
-  }
-}
+      this.$emit(
+        "statusUpdate",
+        this.saleGuardItemsLoaded ? tabWindowState.OK : tabWindowState.ERROR,
+      );
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -390,24 +437,24 @@ export default {
 }
 
 .spb-sale-guard__control-refresh {
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/refresh.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/refresh.svg");
 }
 
 .spb-sale-guard__control-adjust {
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/stack.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/stack.svg");
 }
 
 .spb-sale-guard__control-add-all {
   transform: rotate(-90deg);
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/arrow.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/arrow.svg");
 }
 
 .spb-sale-guard__control-remove-all {
   transform: rotate(90deg);
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/arrow.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/arrow.svg");
 }
 
 .spb-sale-guard__control-items {
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/pack.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/pack.svg");
 }
 </style>

@@ -1,6 +1,8 @@
 <template>
   <div class="spb-multiple-switch-wrapper">
-    <div class="spb-multiple-switch spb--cursor-pointer spb--rounded-small spb--flex">
+    <div
+      class="spb-multiple-switch spb--cursor-pointer spb--rounded-small spb--flex"
+    >
       <div
         v-for="(option, index) in options"
         :key="`option-${sanitizedOption(option)}-${index}`"
@@ -16,24 +18,24 @@
 
 <script>
 export default {
-  name: 'AppMultipleSwitch',
+  name: "AppMultipleSwitch",
   props: {
     options: {
       type: Array,
-      required: true
+      required: true,
     },
     selected: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
-  emits: ['optionUpdate'],
+  emits: ["optionUpdate"],
   methods: {
     sanitizedOption(option) {
-      return option.replace(/ /g, '-').toLowerCase()
-    }
-  }
-}
+      return option.replace(/ /g, "-").toLowerCase();
+    },
+  },
+};
 </script>
 
 <style scoped>

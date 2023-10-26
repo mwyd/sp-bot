@@ -11,7 +11,7 @@
             <app-input
               v-model.number="preset.deal"
               :type="'number'"
-              :validator="value => (value >= -1000 && value <= 100)"
+              :validator="(value) => value >= -1000 && value <= 100"
               :model-updated="checkToConfirm"
             />
           </div>
@@ -20,7 +20,7 @@
             <app-input
               v-model.number="preset.minPrice"
               :type="'number'"
-              :validator="value => (value >= 0 && value <= preset.maxPrice)"
+              :validator="(value) => value >= 0 && value <= preset.maxPrice"
             />
           </div>
           <div class="spb-option">
@@ -45,7 +45,9 @@
             <app-input
               v-model.number="dealMargin"
               :type="'number'"
-              :validator="value => (value >= -preset.deal && value <= 1000 - preset.deal)"
+              :validator="
+                (value) => value >= -preset.deal && value <= 1000 - preset.deal
+              "
               :model-updated="checkToConfirm"
             />
           </div>
@@ -54,7 +56,9 @@
             <app-input
               v-model.number="preset.maxPrice"
               :type="'number'"
-              :validator="value => (value >= preset.minPrice && value <= 1000000)"
+              :validator="
+                (value) => value >= preset.minPrice && value <= 1000000
+              "
             />
           </div>
           <div class="spb-option">
@@ -62,7 +66,7 @@
             <app-input
               v-model.number="preset.runDelay"
               :type="'number'"
-              :validator="value => (value >= 0 && value <= 1200)"
+              :validator="(value) => value >= 0 && value <= 1200"
             />
           </div>
         </div>
@@ -82,248 +86,261 @@
       :disabled="isProcessTerminating"
       @click="toggleProcess"
     >
-      {{ !isProcessTerminated ? 'stop' : 'start' }}
+      {{ !isProcessTerminated ? "stop" : "start" }}
     </button>
   </div>
 </template>
 
 <script>
-import { mapMutations, mapActions } from 'vuex'
-import { calculateDiscount, SPB_LOG } from '@/utils'
-import { normalizeMarketItem, inspectItem } from '@/resources/marketItem'
-import presetMixin from '@/mixins/presetMixin'
-import processMixin from '@/mixins/processMixin'
-import AppInput from '@/components/ui/AppInput'
-import tabWindowState from '@/enums/tabWindowState'
-import { market } from '@/api/shadowpay'
-import { getBuffMarketItemData, getSteamMarketItemData } from '@/cache/conduit'
+import { mapMutations, mapActions } from "vuex";
+import { calculateDiscount, SPB_LOG } from "@/utils";
+import { normalizeMarketItem, inspectItem } from "@/resources/marketItem";
+import presetMixin from "@/mixins/presetMixin";
+import processMixin from "@/mixins/processMixin";
+import AppInput from "@/components/ui/AppInput";
+import tabWindowState from "@/enums/tabWindowState";
+import { market } from "@/api/shadowpay";
+import { getBuffMarketItemData, getSteamMarketItemData } from "@/cache/conduit";
 
 export default {
-  name: 'BotTab',
+  name: "BotTab",
   components: {
-    AppInput
+    AppInput,
   },
   mixins: [presetMixin, processMixin],
   props: {
     id: {
       type: Number,
-      required: true
-    }
+      required: true,
+    },
   },
-  emits: ['statusUpdate'],
+  emits: ["statusUpdate"],
   data() {
     return {
       timeoutId: null,
       items: {
         filtered: [],
-        toConfirm: new Map()
-      }
-    }
+        toConfirm: new Map(),
+      },
+    };
   },
   computed: {
     marketVolumeLimit() {
-      return this.$store.getters['app/config']('marketVolumeLimit')
+      return this.$store.getters["app/config"]("marketVolumeLimit");
     },
     targetMarket() {
-      return this.$store.getters['app/config']('targetMarket')
+      return this.$store.getters["app/config"]("targetMarket");
     },
     toggleProcessButtonClass() {
       return [
-        !this.isProcessTerminated ? 'spb-button--red' : 'spb-button--green'
-      ]
-    }
+        !this.isProcessTerminated ? "spb-button--red" : "spb-button--green",
+      ];
+    },
   },
   watch: {
     presetModel() {
-      this.checkToConfirm()
+      this.checkToConfirm();
     },
     marketVolumeLimit() {
-      this.checkToConfirm()
-    }
+      this.checkToConfirm();
+    },
   },
   beforeMount() {
-    this.startTrack(this)
+    this.startTrack(this);
   },
   beforeUnmount() {
-    this.setProcessTerminating()
-    this.stopTrack(this.id)
+    this.setProcessTerminating();
+    this.stopTrack(this.id);
   },
   methods: {
     ...mapMutations({
-      startTrack: 'bots/addBot',
-      stopTrack: 'bots/closeBot',
-      deleteAlert: 'app/deleteAlert'
+      startTrack: "bots/addBot",
+      stopTrack: "bots/closeBot",
+      deleteAlert: "app/deleteAlert",
     }),
     ...mapActions({
-      buyItem: 'bots/buyItem',
-      pushAlert: 'app/pushAlert'
+      buyItem: "bots/buyItem",
+      pushAlert: "app/pushAlert",
     }),
     clear() {
-      this.items.filtered = []
+      this.items.filtered = [];
 
-      this.items.toConfirm.forEach(item => {
-        item._alerts.forEach(id => this.deleteAlert(id))
-      })
+      this.items.toConfirm.forEach((item) => {
+        item._alerts.forEach((id) => this.deleteAlert(id));
+      });
 
-      this.items.toConfirm = new Map()
+      this.items.toConfirm = new Map();
     },
     toggleProcess() {
       if (this.isProcessRunning) {
-        this.setProcessTerminating()
+        this.setProcessTerminating();
 
-        return
+        return;
       }
 
       if (this.isProcessTerminated) {
-        this.$emit('statusUpdate', tabWindowState.RUNNING)
-        this.run()
+        this.$emit("statusUpdate", tabWindowState.RUNNING);
+        this.run();
 
-        return
+        return;
       }
 
-      clearTimeout(this.timeoutId)
+      clearTimeout(this.timeoutId);
 
-      this.clear()
-      this.setProcessTerminated()
+      this.clear();
+      this.setProcessTerminated();
 
-      this.$emit('statusUpdate', tabWindowState.IDLE)
+      this.$emit("statusUpdate", tabWindowState.IDLE);
     },
     checkToConfirm() {
       if (this.isProcessTerminating || this.isProcessTerminated) {
-        return
+        return;
       }
 
-      this.items.toConfirm.forEach(item => {
+      this.items.toConfirm.forEach((item) => {
         if (this.canBuyItem(item)) {
-          this.buyItem(item)
+          this.buyItem(item);
         }
-      })
+      });
     },
     updateToConfirm() {
-      this.items.toConfirm.forEach(item => {
-        const filteredItem = this.items.filtered.find(filteredItem => filteredItem.id === item.id)
+      this.items.toConfirm.forEach((item) => {
+        const filteredItem = this.items.filtered.find(
+          (filteredItem) => filteredItem.id === item.id,
+        );
 
         if (!filteredItem) {
-          item._alerts.forEach(id => this.deleteAlert(id))
-          this.items.toConfirm.delete(item.id)
+          item._alerts.forEach((id) => this.deleteAlert(id));
+          this.items.toConfirm.delete(item.id);
 
-          return
+          return;
         }
 
         if (filteredItem.price_market_usd !== item.price_market_usd) {
-          item.discount = Math.round(filteredItem.discount)
-          item.price = filteredItem.price
-          item.price_market = filteredItem.price_market
-          item.price_usd = filteredItem.price_usd
-          item.price_market_usd = filteredItem.price_market_usd
+          item.discount = Math.round(filteredItem.discount);
+          item.price = filteredItem.price;
+          item.price_market = filteredItem.price_market;
+          item.price_usd = filteredItem.price_usd;
+          item.price_market_usd = filteredItem.price_market_usd;
 
           if (item._buff_updated) {
-            item._buff_discount = calculateDiscount(item.price_market_usd, item._buff_price)
+            item._buff_discount = calculateDiscount(
+              item.price_market_usd,
+              item._buff_price,
+            );
           }
 
           if (item._steam_updated) {
-            item._steam_discount = calculateDiscount(item.price_market_usd, item._steam_price)
+            item._steam_discount = calculateDiscount(
+              item.price_market_usd,
+              item._steam_price,
+            );
           }
 
           if (this.canBuyItem(item)) {
-            this.buyItem(item)
+            this.buyItem(item);
           }
         }
-      })
+      });
     },
     canBuyItem(item) {
-      return item[`_${this.targetMarket}_updated`]
-        && item[`_${this.targetMarket}_volume`] >= this.marketVolumeLimit
-        && item[`_${this.targetMarket}_discount`] >= this.preset.deal + this.dealMargin
+      return (
+        item[`_${this.targetMarket}_updated`] &&
+        item[`_${this.targetMarket}_volume`] >= this.marketVolumeLimit &&
+        item[`_${this.targetMarket}_discount`] >=
+          this.preset.deal + this.dealMargin
+      );
     },
     async handleMarketItem(item) {
-      normalizeMarketItem(item)
-      inspectItem(item)
+      normalizeMarketItem(item);
+      inspectItem(item);
 
-      item._buff_updated = false
-      item._steam_updated = false
+      item._buff_updated = false;
+      item._steam_updated = false;
 
       const [buffData, steamData] = await Promise.all([
         getBuffMarketItemData(item.steam_market_hash_name),
-        getSteamMarketItemData(item._conduit_hash_name)
-      ])
+        getSteamMarketItemData(item._conduit_hash_name),
+      ]);
 
       if (buffData) {
-        const { price, volume, good_id } = buffData
+        const { price, volume, good_id } = buffData;
 
-        item._buff_updated = true
-        item._buff_price = price
-        item._buff_volume = volume
-        item._buff_good_id = good_id
-        item._buff_discount = calculateDiscount(item.price_market_usd, price)
+        item._buff_updated = true;
+        item._buff_price = price;
+        item._buff_volume = volume;
+        item._buff_good_id = good_id;
+        item._buff_discount = calculateDiscount(item.price_market_usd, price);
       }
 
       if (steamData) {
-        const { price, volume } = steamData
+        const { price, volume } = steamData;
 
-        item._steam_updated = true
-        item._steam_price = price
-        item._steam_volume = volume
-        item._steam_discount = calculateDiscount(item.price_market_usd, price)
+        item._steam_updated = true;
+        item._steam_price = price;
+        item._steam_volume = volume;
+        item._steam_discount = calculateDiscount(item.price_market_usd, price);
       }
 
       if (this.canBuyItem(item)) {
-        this.buyItem(item)
+        this.buyItem(item);
       }
 
-      this.items.toConfirm.set(item.id, item)
+      this.items.toConfirm.set(item.id, item);
     },
     async run() {
-      this.setProcessRunning()
+      this.setProcessRunning();
 
       try {
         const { status, items } = await market.getItems({
           price_from: this.preset.minPrice,
           price_to: this.preset.maxPrice,
-          game: 'csgo',
+          game: "csgo",
           search: this.preset.search,
           stack: false,
-          sort: 'desc',
-          sort_dir: 'desc',
-          sort_column: 'price_rate',
+          sort: "desc",
+          sort_dir: "desc",
+          sort_column: "price_rate",
           limit: 50,
-          offset: 0
-        })
+          offset: 0,
+        });
 
         if (status === "success") {
-          this.items.filtered = items
+          this.items.filtered = items;
 
-          this.items.filtered = this.items.filtered.filter(item => !item.is_my_item
-            && item.discount >= this.preset.deal
-            && item.price_market_usd >= this.preset.minPrice
-          )
+          this.items.filtered = this.items.filtered.filter(
+            (item) =>
+              !item.is_my_item &&
+              item.discount >= this.preset.deal &&
+              item.price_market_usd >= this.preset.minPrice,
+          );
 
-          this.updateToConfirm()
+          this.updateToConfirm();
 
           for (let item of this.items.filtered) {
             if (this.items.toConfirm.has(item.id)) {
-              continue
+              continue;
             }
 
-            await this.handleMarketItem(item)
+            await this.handleMarketItem(item);
           }
         }
       } catch (err) {
-        SPB_LOG('\n', new Error(err))
+        SPB_LOG("\n", new Error(err));
       }
 
       if (this.isProcessTerminating) {
-        this.toggleProcess()
+        this.toggleProcess();
 
-        return
+        return;
       }
 
-      this.timeoutId = setTimeout(this.run, this.preset.runDelay * 1000)
+      this.timeoutId = setTimeout(this.run, this.preset.runDelay * 1000);
 
-      this.setProcessIdle()
-    }
-  }
-}
+      this.setProcessIdle();
+    },
+  },
+};
 </script>
 
 <style scoped>

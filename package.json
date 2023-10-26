@@ -5,7 +5,9 @@
   "scripts": {
     "hot": "vue-cli-service build --mode development --watch",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "prettier:fix": "npx prettier src --write",
+    "prettier:check": "npx prettier src --check"
   },
   "dependencies": {
     "core-js": "^3.27.2",
@@ -24,7 +26,8 @@
     "@vue/cli-plugin-eslint": "~5.0.8",
     "@vue/cli-service": "~5.0.8",
     "eslint": "^8.32.0",
-    "eslint-plugin-vue": "^9.9.0"
+    "eslint-plugin-vue": "^9.9.0",
+    "prettier": "3.0.3"
   },
   "eslintConfig": {
     "root": true,

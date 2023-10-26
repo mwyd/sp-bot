@@ -13,11 +13,13 @@
       <div class="spb-tab">
         <div
           class="spb-tab__button spb--rounded-medium spb--cursor-pointer spb--flex"
-          @click="addTab({
-            isStatic: false,
-            symbol: 'B',
-            childComponent: 'BotTab'
-          })"
+          @click="
+            addTab({
+              isStatic: false,
+              symbol: 'B',
+              childComponent: 'BotTab',
+            })
+          "
         >
           +
         </div>
@@ -44,65 +46,67 @@
 </template>
 
 <script>
-import { mapState, mapMutations, mapActions } from 'vuex'
-import AppTab from '@/components/ui/AppTab'
-import AppAlert from '@/components/ui/AppAlert'
+import { mapState, mapMutations, mapActions } from "vuex";
+import AppTab from "@/components/ui/AppTab";
+import AppAlert from "@/components/ui/AppAlert";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
     AppTab,
-    AppAlert
+    AppAlert,
   },
   computed: {
     ...mapState({
-      tabs: state => state.app.tabs,
-      alerts: state => state.app.alerts,
-      appLoaded: state => state.app.loaded
+      tabs: (state) => state.app.tabs,
+      alerts: (state) => state.app.alerts,
+      appLoaded: (state) => state.app.loaded,
     }),
     staticTabs() {
-      return this.tabs.filter(tab => tab.isStatic)
+      return this.tabs.filter((tab) => tab.isStatic);
     },
     dynamicTabs() {
-      return this.tabs.filter(tab => !tab.isStatic)
+      return this.tabs.filter((tab) => !tab.isStatic);
     },
     displayInterfaceOnTop() {
-      return this.$store.getters['app/config']('displayInterfaceOnTop')
+      return this.$store.getters["app/config"]("displayInterfaceOnTop");
     },
     alertBoxClass() {
-      const alertsExists = this.alerts.size > 0
+      const alertsExists = this.alerts.size > 0;
 
       return {
-        'spb-alert-box': true,
-        'spb-alert-box--overflow': this.$refs.alertBox?.scrollHeight > window.innerHeight && alertsExists
-      }
-    }
+        "spb-alert-box": true,
+        "spb-alert-box--overflow":
+          this.$refs.alertBox?.scrollHeight > window.innerHeight &&
+          alertsExists,
+      };
+    },
   },
   watch: {
     displayInterfaceOnTop(value) {
-      const root = document.querySelector('#spb-root')
+      const root = document.querySelector("#spb-root");
 
       if (value) {
-        root.classList.remove('spb--z-100')
-        root.classList.add('spb--z-1200')
+        root.classList.remove("spb--z-100");
+        root.classList.add("spb--z-1200");
       } else {
-        root.classList.remove('spb--z-1200')
-        root.classList.add('spb--z-100')
+        root.classList.remove("spb--z-1200");
+        root.classList.add("spb--z-100");
       }
-    }
+    },
   },
   created() {
-    this.setupApp()
+    this.setupApp();
   },
   methods: {
     ...mapMutations({
-      addTab: 'app/addTab'
+      addTab: "app/addTab",
     }),
     ...mapActions({
-      setupApp: 'app/setupApp'
-    })
-  }
-}
+      setupApp: "app/setupApp",
+    }),
+  },
+};
 </script>
 
 <style>

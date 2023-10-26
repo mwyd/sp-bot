@@ -1,20 +1,18 @@
-import itemSortType from '@/enums/itemSortType'
-import { itemSortBy } from '@/resources/marketItem'
+import itemSortType from "@/enums/itemSortType";
+import { itemSortBy } from "@/resources/marketItem";
 
 export default {
   data() {
     return {
       itemSortBy,
-      search: '',
+      search: "",
       sortModel: itemSortType.SHADOWPAY_DISCOUNT,
-      sortDirAsc: false
-    }
+      sortDirAsc: false,
+    };
   },
   computed: {
     sortDirClass() {
-      return [
-        this.sortDirAsc ? 'spb-sort-dir--asc' : 'spb-sort-dir--desc'
-      ]
-    }
-  }
-}
+      return [this.sortDirAsc ? "spb-sort-dir--asc" : "spb-sort-dir--desc"];
+    },
+  },
+};

@@ -1,55 +1,62 @@
-import DateFormat from 'dateformat'
-import alertType from '@/enums/alertType'
-import store from '@/store'
+import DateFormat from "dateformat";
+import alertType from "@/enums/alertType";
+import store from "@/store";
 
 const SPB_LOG = (message, data) => {
-  console.log(`[${DateFormat(new Date(), 'H:MM:ss')}] [SP-BOT] ${message}`, data)
-}
+  console.log(
+    `[${DateFormat(new Date(), "H:MM:ss")}] [SP-BOT] ${message}`,
+    data,
+  );
+};
 
 const round = (number, decimals = 2) => {
-  let places = Math.pow(10, decimals)
+  let places = Math.pow(10, decimals);
 
-  return Math.round(number * places) / places
-}
+  return Math.round(number * places) / places;
+};
 
 const copyToClipboard = async (data) => {
   const alert = {
     type: alertType.SUCCESS,
-    message: 'Copied'
-  }
+    message: "Copied",
+  };
 
   try {
-    await navigator.clipboard.writeText(data)
+    await navigator.clipboard.writeText(data);
   } catch (err) {
-    alert.type = alertType.ERROR
-    alert.message = 'Copy error'
+    alert.type = alertType.ERROR;
+    alert.message = "Copy error";
   }
 
-  store.dispatch('app/pushAlert', alert, { root: true })
-}
+  store.dispatch("app/pushAlert", alert, { root: true });
+};
 
-const fetchBackground = message => new Promise(resolve => chrome.runtime.sendMessage(message, resolve))
+const fetchBackground = (message) =>
+  new Promise((resolve) => chrome.runtime.sendMessage(message, resolve));
 
 const fetchJson = async (url, config = {}) => {
-  const response = await fetch(url, config)
+  const response = await fetch(url, config);
 
-  return response.json()
-}
+  return response.json();
+};
 
 const syncStorage = {
-  set: data => chrome.storage.sync.set(data),
-  get: key => new Promise(resolve => chrome.storage.sync.get([key], data => resolve(data[key])))
-}
+  set: (data) => chrome.storage.sync.set(data),
+  get: (key) =>
+    new Promise((resolve) =>
+      chrome.storage.sync.get([key], (data) => resolve(data[key])),
+    ),
+};
 
 const calculateDiscount = (a, b, round = true) => {
-  const discount = (1 - (a / b)) * 100
+  const discount = (1 - a / b) * 100;
 
-  return round ? Math.round(discount) : discount
-}
+  return round ? Math.round(discount) : discount;
+};
 
 const shadowpayDate = () => {
-  return new Date(Date.now() - 4 * 60 * 60 * 1000)
-}
+  return new Date(Date.now() - 4 * 60 * 60 * 1000);
+};
 
 export {
   SPB_LOG,
@@ -59,5 +66,5 @@ export {
   fetchJson,
   syncStorage,
   calculateDiscount,
-  shadowpayDate
-}
+  shadowpayDate,
+};

@@ -118,19 +118,35 @@
 }
 
 .spb-button--green {
-  background: linear-gradient(to right, var(--button-gradient-green-light), var(--button-gradient-green-dark));
+  background: linear-gradient(
+    to right,
+    var(--button-gradient-green-light),
+    var(--button-gradient-green-dark)
+  );
 }
 
 .spb-button--green:hover {
-  background: linear-gradient(to left, var(--button-gradient-green-light), var(--button-gradient-green-dark));
+  background: linear-gradient(
+    to left,
+    var(--button-gradient-green-light),
+    var(--button-gradient-green-dark)
+  );
 }
 
 .spb-button--red {
-  background: linear-gradient(to right, var(--button-gradient-red-light), var(--button-gradient-red-dark));
+  background: linear-gradient(
+    to right,
+    var(--button-gradient-red-light),
+    var(--button-gradient-red-dark)
+  );
 }
 
 .spb-button--red:hover {
-  background: linear-gradient(to left, var(--button-gradient-red-light), var(--button-gradient-red-dark));
+  background: linear-gradient(
+    to left,
+    var(--button-gradient-red-light),
+    var(--button-gradient-red-dark)
+  );
 }
 
 .spb--theme-dark {
@@ -141,8 +157,8 @@
   --blue-text-color: #00c4ff;
   --alternative-background-color: #495159;
   --active-tab-background-color: #009c66;
-  --alternative-text-color: #FF9200;
-  --highlight-text-color: #FFFF00;
+  --alternative-text-color: #ff9200;
+  --highlight-text-color: #ffff00;
   --active-color: #5799e9;
   --cancelled-color: #e95757;
   --accepted-color: #32bf91;
@@ -178,7 +194,7 @@
   height: 32px;
   flex-shrink: 0;
   background-color: var(--secondary-background-color);
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/arrow.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/arrow.svg");
 }
 
 .spb-sort-dir--desc {

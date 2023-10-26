@@ -48,7 +48,13 @@
         class="spb-item__stat"
       >
         Float
-        <span :class="isFloatProfitable(item.floatvalue) ? 'spb--text-highlight' : 'spb--text-green'">
+        <span
+          :class="
+            isFloatProfitable(item.floatvalue)
+              ? 'spb--text-highlight'
+              : 'spb--text-green'
+          "
+        >
           {{ item.floatvalue }}
         </span>
       </div>
@@ -57,7 +63,13 @@
         class="spb-item__stat"
       >
         Variant
-        <span :class="item._variant.includes('%') ? 'spb--text-highlight' : 'spb--text-blue'">
+        <span
+          :class="
+            item._variant.includes('%')
+              ? 'spb--text-highlight'
+              : 'spb--text-blue'
+          "
+        >
           {{ item._variant }}
         </span>
       </div>
@@ -68,7 +80,7 @@
       >
         {{ significantProperties[key].name }}
         <span class="spb--text-green">
-          {{ significantProperties[key].unit + ' ' + item[key] }}
+          {{ significantProperties[key].unit + " " + item[key] }}
         </span>
       </div>
       <div class="spb-item__stat spb--cursor-pointer">
@@ -78,9 +90,7 @@
           :href="buffMarketLink"
         >
           Buff
-          <span class="spb--text-green">
-            market
-          </span>
+          <span class="spb--text-green"> market </span>
         </a>
       </div>
       <slot name="modal-statistics" />
@@ -97,54 +107,63 @@
 </template>
 
 <script>
-import { copyToClipboard } from '@/utils'
-import { significantProperties, isFloatProfitable } from '@/resources/marketItem'
-import { steamMarket, buff163 } from '@/config'
+import { copyToClipboard } from "@/utils";
+import {
+  significantProperties,
+  isFloatProfitable,
+} from "@/resources/marketItem";
+import { steamMarket, buff163 } from "@/config";
 
 export default {
-  name: 'BaseItem',
+  name: "BaseItem",
   props: {
     item: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
       significantProperties,
       steamMarket,
-      displayStatistics: this.$store.getters['app/config']('displayItemStatistics')
-    }
+      displayStatistics: this.$store.getters["app/config"](
+        "displayItemStatistics",
+      ),
+    };
   },
   computed: {
     existingSignificantProperties() {
-      return Object.keys(this.significantProperties).filter(key => this.item[key])
+      return Object.keys(this.significantProperties).filter(
+        (key) => this.item[key],
+      );
     },
     buffMarketLink() {
       return this.item._buff_good_id
-        ? buff163.URL + '/goods/' + this.item._buff_good_id
-        : buff163.URL + '/market/csgo#search=' + this.item.steam_market_hash_name
+        ? buff163.URL + "/goods/" + this.item._buff_good_id
+        : buff163.URL +
+            "/market/csgo#search=" +
+            this.item.steam_market_hash_name;
     },
     targetMarket() {
-      return this.$store.getters['app/config']('targetMarket')
+      return this.$store.getters["app/config"]("targetMarket");
     },
     discountText() {
-      let text = `${this.item.discount}%`
+      let text = `${this.item.discount}%`;
 
-      const targetMarketDiscount = this.item[`_${this.targetMarket}_discount`]
+      const targetMarketDiscount = this.item[`_${this.targetMarket}_discount`];
 
       if (targetMarketDiscount != null) {
-        text = `${targetMarketDiscount}% | ` + text
+        text = `${targetMarketDiscount}% | ` + text;
       }
 
-      return text
-    }
+      return text;
+    },
   },
   methods: {
     copyToClipboard,
-    isFloatProfitable
-  }
-}
+    isFloatProfitable,
+  },
+};
 </script>
 
 <style>
@@ -219,7 +238,7 @@ export default {
 }
 
 .spb-item__info--ico {
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/info.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/info.svg");
   background-size: 20px;
   min-height: 50px;
   cursor: pointer;

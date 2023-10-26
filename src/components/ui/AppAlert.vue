@@ -16,42 +16,38 @@
 </template>
 
 <script>
-import { mapMutations } from 'vuex'
+import { mapMutations } from "vuex";
 
 export default {
-  name: 'AppAlert',
+  name: "AppAlert",
   props: {
     uuid: {
       type: String,
-      required: true
+      required: true,
     },
     type: {
       type: String,
-      required: true
+      required: true,
     },
     message: {
       type: String,
-      default: ''
-    }
+      default: "",
+    },
   },
   computed: {
     alertClass() {
-      return [
-        `spb-alert--${this.type}`
-      ]
+      return [`spb-alert--${this.type}`];
     },
     iconClass() {
-      return [
-        `spb-alert__icon--${this.type}`
-      ]
-    }
+      return [`spb-alert__icon--${this.type}`];
+    },
   },
   methods: {
     ...mapMutations({
-      deleteAlert: 'app/deleteAlert'
-    })
-  }
-}
+      deleteAlert: "app/deleteAlert",
+    }),
+  },
+};
 </script>
 
 <style scoped>
@@ -87,14 +83,14 @@ export default {
 }
 
 .spb-alert__icon--success {
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/info.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/info.svg");
 }
 
 .spb-alert__icon--info {
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/idle.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/idle.svg");
 }
 
 .spb-alert__icon--error {
-  background-image: url('chrome-extension://__MSG_@@extension_id__/assets/img/error.svg');
+  background-image: url("chrome-extension://__MSG_@@extension_id__/assets/img/error.svg");
 }
 </style>
