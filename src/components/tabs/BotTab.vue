@@ -281,7 +281,6 @@ export default {
           price_from: this.preset.minPrice,
           price_to: this.preset.maxPrice,
           game: 'csgo',
-          currency: 'USD',
           search: this.preset.search,
           stack: false,
           sort: 'desc',

@@ -103,7 +103,6 @@ export default {
           limit: 500,
           sort_column: 'time_finished',
           sort_dir: 'desc',
-          custom_id: '',
           date_start: DateFormat(state.historyProcess.timestamp, 'yyyy-mm-dd H:MM:ss'),
           date_end: '',
           state: 'all'

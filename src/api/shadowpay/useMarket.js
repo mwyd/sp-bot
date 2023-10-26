@@ -23,7 +23,7 @@ export default function ({ baseUrl, credentials, headers }) {
   const getBuyHistory = query => {
     const formData = new URLSearchParams(query)
 
-    return fetchJson(baseUrl + '/profile/get_bought_history', {
+    return fetchJson(baseUrl + '/api/market/profile/get_bought_history', {
       credentials,
       method: 'POST',
       headers: {
