@@ -148,7 +148,7 @@ export default {
 .spb-alert-box {
   position: fixed;
   right: 0;
-  top: 0;
+  bottom: 0;
   height: auto;
   width: 300px;
   padding: 4px;
