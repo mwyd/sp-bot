@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SP-BOT",
-  "version": "3.2.7",
+  "version": "3.2.8",
   "description": "",
   "icons": {
     "16": "assets/icons/spb-16x16.png",
