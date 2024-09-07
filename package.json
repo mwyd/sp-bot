@@ -1,6 +1,6 @@
 {
   "name": "sp-bot",
-  "version": "3.2.9",
+  "version": "3.2.10",
   "private": true,
   "scripts": {
     "hot": "vue-cli-service build --mode development --watch",
@@ -12,21 +12,21 @@
   "dependencies": {
     "dateformat": "^5.0.3",
     "js-cookie": "^3.0.5",
-    "uuid": "^9.0.1",
-    "vue": "^3.4.21",
+    "uuid": "^10.0.0",
+    "vue": "^3.5.3",
     "vuex": "^4.1.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.0",
-    "@babel/eslint-parser": "^7.23.10",
-    "@types/chrome": "0.0.262",
+    "@babel/core": "^7.25.2",
+    "@babel/eslint-parser": "^7.25.1",
+    "@types/chrome": "0.0.270",
     "@types/dateformat": "^5.0.2",
     "@vue/cli-plugin-babel": "~5.0.8",
     "@vue/cli-plugin-eslint": "~5.0.8",
     "@vue/cli-service": "~5.0.8",
     "eslint": "^8.57.0",
-    "eslint-plugin-vue": "^9.22.0",
-    "prettier": "3.2.5"
+    "eslint-plugin-vue": "^9.28.0",
+    "prettier": "^3.3.3"
   },
   "eslintConfig": {
     "root": true,
