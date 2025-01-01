@@ -200,48 +200,60 @@ export default {
     },
     async loadItemsOnSale({ state, rootGetters, commit }) {
       try {
-        const { status, items } = await itemOnSale.all();
-
-        if (status !== "success") {
-          return;
-        }
+        const limit = 50;
+        let loopLimit = 1;
 
         const updatedItems = new Map();
 
-        for (const item of items) {
-          normalizeMarketItem(item);
-
-          const itemOnSale = state.items.get(item.id);
-
-          if (itemOnSale) {
-            updatedItems.set(item.id, {
-              item,
-              metadata: itemOnSale.metadata,
-            });
-
-            continue;
-          }
-
-          const minPrice = item.price_market_usd;
-          let maxPrice = round(item.steam_price_en);
-
-          if (maxPrice < minPrice) {
-            maxPrice = round(
-              minPrice + rootGetters["app/config"]("saleGuardBidStep"),
-            );
-          }
-
-          updatedItems.set(item.id, {
-            item: item,
-            metadata: {
-              databaseId: null,
-              tracked: false,
-              minPrice: minPrice,
-              maxPrice: maxPrice,
-            },
+        for (let i = 0; i < loopLimit; i++) {
+          const { status, items } = await itemOnSale.all({
+            offset: i * limit,
+            limit,
           });
 
-          inspectItem(item, false);
+          if (status !== "success") {
+            break;
+          }
+
+          for (const item of items) {
+            normalizeMarketItem(item);
+
+            const itemOnSale = state.items.get(item.id);
+
+            if (itemOnSale) {
+              updatedItems.set(item.id, {
+                item,
+                metadata: itemOnSale.metadata,
+              });
+
+              continue;
+            }
+
+            const minPrice = item.price_market_usd;
+            let maxPrice = round(item.steam_price_en);
+
+            if (maxPrice < minPrice) {
+              maxPrice = round(
+                minPrice + rootGetters["app/config"]("saleGuardBidStep"),
+              );
+            }
+
+            updatedItems.set(item.id, {
+              item: item,
+              metadata: {
+                databaseId: null,
+                tracked: false,
+                minPrice: minPrice,
+                maxPrice: maxPrice,
+              },
+            });
+
+            inspectItem(item, false);
+          }
+
+          if (items.length === limit) {
+            loopLimit++;
+          }
         }
 
         commit("setItems", updatedItems);

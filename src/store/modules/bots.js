@@ -116,33 +116,46 @@ export default {
     },
     async updatePendingItems({ state, commit, dispatch }) {
       try {
-        const { items = [] } = await market.getBuyHistory({
-          page: 1,
-          limit: 500,
-          sort_column: "time_finished",
-          sort_dir: "desc",
-          date_start: DateFormat(
-            state.historyProcess.timestamp,
-            "yyyy-mm-dd H:MM:ss",
-          ),
-          date_end: "",
-          state: "all",
-        });
+        const limit = 100;
+        let loopLimit = 1;
 
-        for (const [id, item] of state.items.pending) {
-          const transaction = items.find(
-            (transaction) => transaction.id === item._transaction_id,
-          );
+        for (let i = 0; i < loopLimit; i++) {
+          const { status, items } = await market.getBuyHistory({
+            page: loopLimit,
+            limit,
+            sort_column: "time_finished",
+            sort_dir: "desc",
+            date_start: DateFormat(
+              state.historyProcess.timestamp,
+              "yyyy-mm-dd",
+            ),
+            date_end: "",
+            state: "all",
+          });
 
-          if (!transaction) {
-            continue;
+          if (status !== "success") {
+            break;
           }
 
-          if (["cancelled", "finished"].indexOf(transaction.state) > -1) {
-            item.state = transaction.state;
+          for (const [id, item] of state.items.pending) {
+            const transaction = items.find(
+              (transaction) => transaction.id === item._transaction_id,
+            );
 
-            commit("deletePendingItem", id);
-            commit("addFinishedItem", item);
+            if (!transaction) {
+              continue;
+            }
+
+            if (["cancelled", "finished"].indexOf(transaction.state) > -1) {
+              item.state = transaction.state;
+
+              commit("deletePendingItem", id);
+              commit("addFinishedItem", item);
+            }
+          }
+
+          if (items.length === limit) {
+            loopLimit++;
           }
         }
       } catch (err) {

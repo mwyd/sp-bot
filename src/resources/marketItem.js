@@ -1,5 +1,5 @@
 import { round } from "@/utils";
-import { inspectTool } from "@/api/csgo_flaot";
+import { inspectTool } from "@/api/csgo_float";
 import { rarePaintSeedItem } from "@/api/conduit";
 import store from "@/store";
 import alertType from "@/enums/alertType";
